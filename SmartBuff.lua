@@ -4386,10 +4386,7 @@ function SMARTBUFF_CheckMiniMapButton()
   end
 
   -- Update the Broker icon
-  if (IsAddOnLoaded("Broker_SmartBuff") and SMARTBUFF_BROKER_SetIcon ~= nil) then
     SMARTBUFF_BROKER_SetIcon();
-  end
-
 end
 
 function SMARTBUFF_MinimapButton_CheckPos()
