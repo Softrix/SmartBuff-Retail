@@ -281,7 +281,7 @@ local function InitBuffSettings(cBI, reset)
     cBuff.SelfNot = false;
     cBuff.CIn = false;
     cBuff.COut = true;
-    cBuff.MH = false;
+    cBuff.MH = true; -- default to checked
     cBuff.OH = false;
     cBuff.RH = false;
     cBuff.Reminder = true;
