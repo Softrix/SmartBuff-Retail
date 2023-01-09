@@ -3165,6 +3165,7 @@ function SMARTBUFF_Options_Init(self)
   if (O.VersionNr == nil or O.VersionNr < SMARTBUFF_VERSIONNR) then
     O.VersionNr = SMARTBUFF_VERSIONNR;
     SMARTBUFF_SetBuffs();
+    SMARTBUFF_BuffOrderReset();
     InitBuffOrder(true);
     print("Upgraded SmartBuff to "..SMARTBUFF_VERSION);
   end
@@ -3187,6 +3188,7 @@ function SMARTBUFF_Options_Init(self)
 
     SmartBuffWNF_lblText:SetText(SMARTBUFF_WHATSNEW);
     SmartBuffWNF:Show();
+
   else
     SMARTBUFF_SetBuffs();
   end
