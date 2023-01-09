@@ -420,6 +420,7 @@ function SMARTBUFF_OnLoad(self)
   SLASH_SMARTBUFF1 = "/sbo";
   SLASH_SMARTBUFF2 = "/sbuff";
   SLASH_SMARTBUFF3 = "/smartbuff";
+  SLASH_SMARTBUFF3 = "/sb";
 
   SlashCmdList["SMARTBUFFMENU"] = SMARTBUFF_OptionsFrame_Toggle;
   SLASH_SMARTBUFFMENU1 = "/sbm";
@@ -3165,7 +3166,6 @@ function SMARTBUFF_Options_Init(self)
   if (O.VersionNr == nil or O.VersionNr < SMARTBUFF_VERSIONNR) then
     O.VersionNr = SMARTBUFF_VERSIONNR;
     SMARTBUFF_SetBuffs();
-    SMARTBUFF_BuffOrderReset();
     InitBuffOrder(true);
     print("Upgraded SmartBuff to "..SMARTBUFF_VERSION);
   end
@@ -3177,6 +3177,7 @@ function SMARTBUFF_Options_Init(self)
   if (OG.FirstStart == nil) then OG.FirstStart = "V0";  end
 
   SMARTBUFF_Splash_ChangeFont(0);
+  SMARTBUFF_BuffOrderReset();
   if (OG.FirstStart ~= SMARTBUFF_VERSION) then
     OG.FirstStart = SMARTBUFF_VERSION;
     SMARTBUFF_OptionsFrame_Open(true);
@@ -3360,7 +3361,13 @@ function SMARTBUFF_command(msg)
     --SMARTBUFF_AddMsg("Modified: " .. spellname, true);
     -- ****************************************************
     -- ****************************************************
-
+  elseif (msg == "changes") then
+    SMARTBUFF_OptionsFrame_Open(true);
+    SmartBuffWNF_lblText:SetText(SMARTBUFF_WHATSNEW);
+    SmartBuffWNF:Show();
+  elseif (msg == "reload") then
+    SMARTBUFF_BuffOrderReset();
+    SMARTBUFF_OptionsFrame_Open(true);
   else
     --SMARTBUFF_Check(0);
     SMARTBUFF_AddMsg(SMARTBUFF_VERS_TITLE, true);
@@ -3373,6 +3380,8 @@ function SMARTBUFF_command(msg)
     SMARTBUFF_AddMsg("rafp     -  " .. "Reset all frame positions", true);
     SMARTBUFF_AddMsg("sync     -  " .. "Sync buff timers with UI", true);
     SMARTBUFF_AddMsg("rb       -  " .. "Reset key/mouse bindings", true);
+    SMARTBUFF_AddMsg("changes    -  " .. "Display changelog", true);
+    SMARTBUFF_AddMsg("reload    -  " .. "Reset buff list", true)
   end
 end
 -- END SMARTBUFF_command
