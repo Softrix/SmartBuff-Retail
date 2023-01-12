@@ -1418,7 +1418,7 @@
 			</Button>
 			<ScrollFrame name="SmartBuffOptionsFrame_ScrollFrameBuffs" inherits="FauxScrollFrameTemplate">
 				<Size>
-					<AbsDimension x="240" y="424" />
+					<AbsDimension x="240" y="540" />
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
