@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "Libs"
+		},
+		{
+			"path": "../../_WoW_API"
+		}
+	],
+	"settings": {
+		"todo-tree.tree.scanMode": "workspace only"
+	}
+}
