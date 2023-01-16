@@ -487,7 +487,7 @@ function SMARTBUFF_OnEvent(self, event, ...)
     return;
   end;
 
-  elseif (event == "PLAYER_REGEN_DISABLED") then
+  if (event == "PLAYER_REGEN_DISABLED") then
     SMARTBUFF_Ticker(true);
 
     if (O.Toggle) then
@@ -744,6 +744,9 @@ Enum.SmartBuffGroup = {
 
 -- Set the current template and create an array of units
 function SMARTBUFF_SetTemplate()
+  print(SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo])
+  print(Enum.SmartBuffGroup["Raid"])
+
   if (InCombatLockdown()) then return end
   if (SmartBuffOptionsFrame:IsVisible()) or not O.AutoSwitchTemplate then return end
 
@@ -792,7 +795,7 @@ function SMARTBUFF_SetTemplate()
   wipe(cIgnoreUnitList);
 
   -- Raid Setup
-  if (newTemplate == Enum.SmartBuffGroup.Raid) then
+  if (newTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid])) then
     cClassGroups = { };
     local name, server, rank, subgroup, level, class, classeng, zone, online, isDead;
     local sRUnit = nil;
@@ -846,7 +849,7 @@ function SMARTBUFF_SetTemplate()
     SMARTBUFF_AddMsgD("Raid Unit-Setup finished");
 
   -- Party Setup
-  elseif (newTemplate == Enum.SmartBuffGroup.Party) then
+  elseif (newTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party])) then
     cClassGroups = { };
     if (B[CS()][currentTemplate].SelfFirst) then
       SMARTBUFF_AddSoloSetup();
