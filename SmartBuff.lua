@@ -744,8 +744,8 @@ Enum.SmartBuffGroup = {
 
 -- Set the current template and create an array of units
 function SMARTBUFF_SetTemplate()
-  print(SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo])
-  print(Enum.SmartBuffGroup["Raid"])
+  -- print(SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo])
+  -- print(Enum.SmartBuffGroup["Raid"])
 
   if (InCombatLockdown()) then return end
   if (SmartBuffOptionsFrame:IsVisible()) or not O.AutoSwitchTemplate then return end
@@ -3081,7 +3081,7 @@ function SMARTBUFF_Options_Init(self)
     O.VersionNr = SMARTBUFF_VERSIONNR;
     SMARTBUFF_SetBuffs();
     InitBuffOrder(true);
-    print("Upgraded SmartBuff to "..SMARTBUFF_VERSION);
+    SMARTBUFF_AddMsg("Upgraded SmartBuff to "..SMARTBUFF_VERSION);
   end
 
   if (SMARTBUFF_OptionsGlobal == nil) then SMARTBUFF_OptionsGlobal = { }; end
@@ -3950,7 +3950,7 @@ function SMARTBUFF_Splash_ChangeFont(mode)
     iCurrentFont = iCurrentFont + 1;
   end
   if (not cFonts[iCurrentFont]) then
-    iCurrentFont = 1;
+    iCurrentFont = 6;
   end
   O.CurrentFont = iCurrentFont;
   f:ClearAllPoints();
