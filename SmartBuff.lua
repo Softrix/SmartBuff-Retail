@@ -80,7 +80,7 @@ local sLastZone = "";
 local tAutoBuff = 0;
 local tDebuff = 0;
 local sMsgWarning = "";
-local iCurrentFont = 1;
+local iCurrentFont = 6;
 local iCurrentList = -1;
 local iLastPlayer = -1;
 
@@ -3008,7 +3008,7 @@ function SMARTBUFF_Options_Init(self)
 
   if (O.SplashX == nil) then O.SplashX = 100; end
   if (O.SplashY == nil) then O.SplashY = -100; end
-  if (O.CurrentFont == nil) then O.CurrentFont = 9; end
+  if (O.CurrentFont == nil) then O.CurrentFont = 6; end
   if (O.ColSplashFont == nil) then
     O.ColSplashFont = { };
     O.ColSplashFont.r = 1.0;
@@ -3950,7 +3950,7 @@ function SMARTBUFF_Splash_ChangeFont(mode)
     iCurrentFont = iCurrentFont + 1;
   end
   if (not cFonts[iCurrentFont]) then
-    iCurrentFont = 6;
+    iCurrentFont = 1;
   end
   O.CurrentFont = iCurrentFont;
   f:ClearAllPoints();
