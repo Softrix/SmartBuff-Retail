@@ -781,8 +781,10 @@ function SMARTBUFF_SetTemplate()
     end
   end
 
-  SMARTBUFF_AddMsgD("Current tmpl: " .. currentTemplate or "nil" .. " - new tmpl: " .. newTemplate or "nil");
-  SMARTBUFF_AddMsg(SMARTBUFF_TITLE.." :: "..SMARTBUFF_OFT_AUTOSWITCHTMP .. ": " .. currentTemplate .. " -> " .. newTemplate);
+  if currentTemplate ~= newTemplate then
+    SMARTBUFF_AddMsgD("Current tmpl: " .. currentTemplate or "nil" .. " - new tmpl: " .. newTemplate or "nil");
+    SMARTBUFF_AddMsg(SMARTBUFF_TITLE.." :: "..SMARTBUFF_OFT_AUTOSWITCHTMP .. ": " .. currentTemplate .. " -> " .. newTemplate);
+  end
   currentTemplate = newTemplate;
 
   SMARTBUFF_SetBuffs();
