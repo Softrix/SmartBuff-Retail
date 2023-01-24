@@ -1,14 +1,14 @@
 -------------------------------------------------------------------------------
 -- SmartBuff
 -- Originally created by Aeldra (EU-Proudmoore)
--- Retail version fixes / improvements by Codermik
+-- Retail version fixes / improvements by Codermik & Speedwaystar
 -- Discord: https://discord.gg/R6EkZ94TKK
 -- Cast the most important buffs on you, tanks or party/raid members/pets.
 -------------------------------------------------------------------------------
 
-SMARTBUFF_DATE          = "200123 Dev";
+SMARTBUFF_DATE          = "240123";
 
-SMARTBUFF_VERSION       = "r17."..SMARTBUFF_DATE;
+SMARTBUFF_VERSION       = "r18."..SMARTBUFF_DATE;
 SMARTBUFF_VERSIONNR     = 100002;
 SMARTBUFF_TITLE         = "SmartBuff";
 SMARTBUFF_SUBTITLE      = "Supports you in casting buffs";
@@ -22,7 +22,7 @@ local SmartbuffPrefix = "Smartbuff";
 local SmartbuffSession = true;
 local SmartbuffVerCheck = false;					-- for my use when checking guild users/testers versions  :)
 local buildInfo = select(4, GetBuildInfo())
-local SmartbuffRevision = 16;
+local SmartbuffRevision = 18;
 local SmartbuffVerNotifyList = {}
 
 local SG = SMARTBUFF_GLOBALS;
