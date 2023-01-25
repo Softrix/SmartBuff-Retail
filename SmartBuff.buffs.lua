@@ -691,6 +691,7 @@ function SMARTBUFF_InitSpellIDs()
 
   -- Evoker
   SMARTBUFF_BRONZEBLESSING  = GetSpellInfo(364342);   --"Blessing of the Bronze"
+  SMARTBUFF_Visage          = GetSpellInfo(351239);   --"Visage"
 
   -- Demon Hunter
 
@@ -1170,6 +1171,7 @@ function SMARTBUFF_InitSpellList()
   if (SMARTBUFF_PLAYERCLASS == "EVOKER") then
     SMARTBUFF_BUFFLIST = {
       {SMARTBUFF_BRONZEBLESSING, 60, SMARTBUFF_CONST_SELF},
+      {SMARTBUFF_Visage, -1, SMARTBUFF_CONST_SELF}
     };
   end
 
