@@ -6,10 +6,10 @@
 -- Cast the most important buffs on you, tanks or party/raid members/pets.
 -------------------------------------------------------------------------------
 
-SMARTBUFF_DATE          = "240123";
+SMARTBUFF_DATE          = "030223";
 
 SMARTBUFF_VERSION       = "r18."..SMARTBUFF_DATE;
-SMARTBUFF_VERSIONNR     = 100002;
+SMARTBUFF_VERSIONNR     = 100003;
 SMARTBUFF_TITLE         = "SmartBuff";
 SMARTBUFF_SUBTITLE      = "Supports you in casting buffs";
 SMARTBUFF_DESC          = "Cast the most important buffs on you, your tanks, party/raid members/pets";
@@ -924,32 +924,17 @@ end
 
 -- Get Spell ID from spellbook
 function SMARTBUFF_GetSpellID(spellname)
+  local i, id = 1, nil;
+  local spellN, spellId, skillType;
   if (spellname) then
     spellname = string.lower(spellname);
   else
     return nil;
   end
-
-  local i = 0;
-  local nSpells = 0;
-  local id = nil;
-  local spellN, spellId, skillType;
-
-  -- Get number of spells
-  --for i = 1, GetNumSpellTabs() do
-  -- Common and specialization
-  for i = 1, GetNumSpellTabs() do
-    local _, _, _, n = GetSpellTabInfo(i);
-    nSpells = nSpells + n;
-  end
-
-  i = 0;
-  while (i < nSpells) do
-    i = i + 1;
+  while GetSpellBookItemName(i, BOOKTYPE_SPELL) do
     spellN = GetSpellBookItemName(i, BOOKTYPE_SPELL);
     skillType, spellId = GetSpellBookItemInfo(i, BOOKTYPE_SPELL);
     --print(spellN.." "..spellId);
-
     if (skillType == "FLYOUT") then
       for j = 1, GetNumFlyouts() do
         local fid = GetFlyoutID(j);
@@ -965,20 +950,18 @@ function SMARTBUFF_GetSpellID(spellname)
 		    end
 		  end
     end
-
     if (spellN ~= nil and string.lower(spellN) == spellname) then
       id = spellId;
       break;
     end
+    i = i + 1;
   end
-
   if (id) then
     if (IsPassiveSpell(id) or skillType == "FUTURESPELL" or not IsSpellKnown(id)) then
       id = nil;
       i = nil;
     end
   end
-
   return id, i;
 end
 -- END SMARTBUFF_GetSpellID
