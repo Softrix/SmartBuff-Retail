@@ -97,7 +97,8 @@
         "FauxScrollFrame_Update",
         "HelpPlate_IsShowing",
         "HelpPlate_Hide",
-        "HelpPlate_Show"
+        "HelpPlate_Show",
+        "LibStub"
     ],
     "Lua.diagnostics.disable": [
         // "unused-function",

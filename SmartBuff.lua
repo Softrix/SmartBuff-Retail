@@ -6,10 +6,10 @@
 -- Cast the most important buffs on you, tanks or party/raid members/pets.
 -------------------------------------------------------------------------------
 
-SMARTBUFF_DATE          = "030223";
+SMARTBUFF_DATE          = "040223";
 
 SMARTBUFF_VERSION       = "r18."..SMARTBUFF_DATE;
-SMARTBUFF_VERSIONNR     = 100003;
+SMARTBUFF_VERSIONNR     = 100004;
 SMARTBUFF_TITLE         = "SmartBuff";
 SMARTBUFF_SUBTITLE      = "Supports you in casting buffs";
 SMARTBUFF_DESC          = "Cast the most important buffs on you, your tanks, party/raid members/pets";
@@ -141,6 +141,9 @@ local Icons = {
 };
 
 -- available sounds (25)
+local sharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
+local sounds = sharedMedia:List(sharedMedia.MediaType.SOUND)
+-- dump(sounds)
 local Sounds = { 1141, 3784, 4574, 17318, 15262, 13830, 15273, 10042, 10720, 17316, 3337, 7894, 7914, 10033, 416, 57207, 78626, 49432, 10571, 58194, 21970, 17339, 84261, 43765}
 
 local DebugChatFrame = DEFAULT_CHAT_FRAME;
@@ -744,40 +747,44 @@ Enum.SmartBuffGroup = {
 
 -- Set the current template and create an array of units
 function SMARTBUFF_SetTemplate()
-  -- print(SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo])
-  -- print(Enum.SmartBuffGroup["Raid"])
-
   if (InCombatLockdown()) then return end
-  if (SmartBuffOptionsFrame:IsVisible()) or not O.AutoSwitchTemplate then return end
+  if (SmartBuffOptionsFrame:IsVisible()) then return end
 
-  local newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo];
-  local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID = GetInstanceInfo()
+  local newTemplate = currentTemplate -- default to old template
 
-  if IsInRaid() then
-    newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid];
-  elseif IsInGroup() then
-    newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party];
-  end
-  -- check instance type (allows solo raid clearing, etc)
-  if instanceType == "raid" then
-    newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid];
-    if LfgDungeonID then
-      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.LFR];
+  -- if autoswitch no group change is enabled, load new template based on group composition
+  if O.AutoSwitchTemplate then
+    newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo];
+    local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID = GetInstanceInfo()
+
+    if IsInRaid() then
+      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid];
+    elseif IsInGroup() then
+      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party];
     end
-  elseif instanceType == "party" then
-    newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party];
-    if ( difficultyID == 8 ) then
-      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.MythicKeystone];
+    -- check instance type (allows solo raid clearing, etc)
+    if instanceType == "raid" then
+      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid];
+      if LfgDungeonID then
+        newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.LFR];
+      end
+    elseif instanceType == "party" then
+      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party];
+      if ( difficultyID == 8 ) then
+        newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.MythicKeystone];
+      end
     end
   end
 
-  -- overwrite with named raid template, unless in LFR
+  -- if autoswitch on instance change is enabled, load new instance template if any, unless in LFR
+  local isRaidInstanceTemplate = false
   if O.AutoSwitchTemplateInst and not (newTemplate == SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.LFR]) then
     local zone = GetRealZoneText()
     local instances = Enum.MakeEnumFromTable(SMARTBUFF_INSTANCES);
     local i = instances[zone]
     if i and SMARTBUFF_TEMPLATES[i + Enum.SmartBuffGroup.Arena] then
       newTemplate = SMARTBUFF_TEMPLATES[i + Enum.SmartBuffGroup.Arena]
+      isRaidInstanceTemplate = true
     end
   end
 
@@ -796,8 +803,8 @@ function SMARTBUFF_SetTemplate()
   wipe(cAddUnitList);
   wipe(cIgnoreUnitList);
 
-  -- Raid Setup
-  if (newTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid])) then
+  -- Raid Setup, including smart instance templates
+  if currentTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid]) or isRaidInstanceTemplate then
     cClassGroups = { };
     local name, server, rank, subgroup, level, class, classeng, zone, online, isDead;
     local sRUnit = nil;
@@ -851,7 +858,7 @@ function SMARTBUFF_SetTemplate()
     SMARTBUFF_AddMsgD("Raid Unit-Setup finished");
 
   -- Party Setup
-  elseif (newTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party])) then
+  elseif (currentTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party])) then
     cClassGroups = { };
     if (B[CS()][currentTemplate].SelfFirst) then
       SMARTBUFF_AddSoloSetup();
@@ -3062,12 +3069,15 @@ function SMARTBUFF_Options_Init(self)
     end
   end
 
-  if (O.VersionNr == nil or O.VersionNr < SMARTBUFF_VERSIONNR) then
+  -- major version changes are backwards incompatible by definition, so trigger a RESET ALL
+  O.VersionNr = O.VersionNr or SMARTBUFF_VERSIONNR -- don't reset if O.VersionNr == nil
+  if O.VersionNr < SMARTBUFF_VERSIONNR then
     O.VersionNr = SMARTBUFF_VERSIONNR;
+    StaticPopup_Show("SMARTBUFF_DATA_PURGE");
     SMARTBUFF_SetBuffs();
     InitBuffOrder(true);
-    SMARTBUFF_AddMsg("Upgraded SmartBuff to "..SMARTBUFF_VERSION);
   end
+  SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION);
 
   if (SMARTBUFF_OptionsGlobal == nil) then SMARTBUFF_OptionsGlobal = { }; end
   OG = SMARTBUFF_OptionsGlobal;
