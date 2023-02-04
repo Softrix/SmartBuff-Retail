@@ -3066,12 +3066,15 @@ function SMARTBUFF_Options_Init(self)
     end
   end
 
-  if (O.VersionNr == nil or O.VersionNr < SMARTBUFF_VERSIONNR) then
+  -- major version changes are backwards incompatible by definition, so trigger a RESET ALL
+  O.VersionNr = O.VersionNr or SMARTBUFF_VERSIONNR -- don't reset if O.VersionNr == nil
+  if O.VersionNr < SMARTBUFF_VERSIONNR then
     O.VersionNr = SMARTBUFF_VERSIONNR;
+    StaticPopup_Show("SMARTBUFF_DATA_PURGE");
     SMARTBUFF_SetBuffs();
     InitBuffOrder(true);
-    SMARTBUFF_AddMsg("Upgraded SmartBuff to "..SMARTBUFF_VERSION);
   end
+  SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION);
 
   if (SMARTBUFF_OptionsGlobal == nil) then SMARTBUFF_OptionsGlobal = { }; end
   OG = SMARTBUFF_OptionsGlobal;
