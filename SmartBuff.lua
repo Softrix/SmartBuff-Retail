@@ -141,6 +141,9 @@ local Icons = {
 };
 
 -- available sounds (25)
+local sharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
+local sounds = sharedMedia:List(sharedMedia.MediaType.SOUND)
+-- dump(sounds)
 local Sounds = { 1141, 3784, 4574, 17318, 15262, 13830, 15273, 10042, 10720, 17316, 3337, 7894, 7914, 10033, 416, 57207, 78626, 49432, 10571, 58194, 21970, 17339, 84261, 43765}
 
 local DebugChatFrame = DEFAULT_CHAT_FRAME;
