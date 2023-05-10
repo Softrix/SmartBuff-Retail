@@ -6,10 +6,10 @@
 -- Cast the most important buffs on you, tanks or party/raid members/pets.
 -------------------------------------------------------------------------------
 
-SMARTBUFF_DATE          = "010323";
+SMARTBUFF_DATE          = "100523";
 
 SMARTBUFF_VERSION       = "r20."..SMARTBUFF_DATE;
-SMARTBUFF_VERSIONNR     = 100005;
+SMARTBUFF_VERSIONNR     = 100100;
 SMARTBUFF_TITLE         = "SmartBuff";
 SMARTBUFF_SUBTITLE      = "Supports you in casting buffs";
 SMARTBUFF_DESC          = "Cast the most important buffs on you, your tanks, party/raid members/pets";
@@ -1850,7 +1850,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
               or (bs.SelfOnly and SMARTBUFF_IsPlayer(unit))
               or (bs[uc] and (UnitIsPlayer(unit) or uct == SMARTBUFF_HUMANOID or (uc == "DRUID" and (uct == SMARTBUFF_BEAST or uct == SMARTBUFF_ELEMENTAL))))
               or (bs["HPET"] and uct == SMARTBUFF_BEAST and uc ~= "DRUID")
-              or (bs["DKPET"] and utc == SMARTBUFF_UNDEAD)
+              or (bs["DKPET"] and uct == SMARTBUFF_UNDEAD)
               or (bs["WPET"] and (uct == SMARTBUFF_DEMON or (uc ~= "DRUID" and uct == SMARTBUFF_ELEMENTAL)) and ucf ~= SMARTBUFF_DEMONTYPE)))
               or (cBuff.Type ~= SMARTBUFF_CONST_GROUP and SMARTBUFF_IsPlayer(unit))
               or SMARTBUFF_IsInList(unit, un, bs.AddList))) then
@@ -1869,7 +1869,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 	                    if (sPlayerClass == "DRUID" and buffnS == SMARTBUFF_DRUID_TRACK) then
 	                      if (isShapeshifted and sShapename == SMARTBUFF_DRUID_CAT) then
                           buff = buffnS;
-                          SetTracking(n, 1);
+                          C_Minimap.SetTracking(n, 1);
                         end
                       else
                         buff = buffnS;
@@ -2116,9 +2116,9 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   -- lockdown then keep it at 0
 
                 if not InCombatLockdown() and O.SBButtonFix then
-                  SetCVar("ActionButtonUseKeyDown",1 );
+                  C_CVar.SetCVar("ActionButtonUseKeyDown",1 );
         		    elseif O.SBButtonFix then
-                  SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
+                  C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
                 end
 
                 if (cBuff.IDS) then
@@ -2270,11 +2270,11 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                 end
               else
                 -- finished
-                if O.SBButtonFix then SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal ); end
+                if O.SBButtonFix then C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal ); end
               end
             else
               -- target does not need this buff
-              if O.SBButtonFix then SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal ); end
+              if O.SBButtonFix then C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal ); end
             end
           else
             -- cooldown
@@ -2489,7 +2489,7 @@ function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
   local caster = nil;
   local count = nil;
   local icon = nil;
-  local time = GetTime();
+  -- local time = GetTime();
   local uname = UnitName(unit) or "?";
   if (buffN) then
     defBuff = buffN;
@@ -2555,7 +2555,7 @@ function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
             if (timeleft > 0) then
 	            timeleft = timeleft;
             else
-                timeleft = time;
+                timeleft = GetTime();
             end
             SMARTBUFF_AddMsgD("Linked buff found: "..buff..", "..timeleft..", "..icon);
             return nil, n, defBuff, timeleft, count;
@@ -2598,7 +2598,7 @@ function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
   if (timeleft > 0) then
 	timeleft = timeleft;
   else
-    timeleft = time;
+    timeleft = GetTime();
   end
       if (SMARTBUFF_IsPlayer(caster)) then
         SMARTBUFF_UpdateBuffDuration(defBuff, duration);
@@ -2630,7 +2630,7 @@ function SMARTBUFF_CheckBuffLink(unit, defBuff, buffT, buffL)
   if (timeleft > 0) then
 	timeleft = timeleft;
   else
-    timeleft = time;
+    timeleft = GetTime();
   end
             SMARTBUFF_AddMsgD("Linked buff found: "..buff..", "..timeleft..", "..icon);
             return nil, n, defBuff, timeleft, count;
@@ -2696,7 +2696,7 @@ function SMARTBUFF_CheckBuff(unit, buffName, isMine)
   if (timeleft > 0) then
 	timeleft = timeleft;
   else
-    timeleft = time;
+    timeleft = GetTime();
   end
       if (isMine and caster) then
         if (SMARTBUFF_IsPlayer(caster)) then
@@ -3010,7 +3010,7 @@ function SMARTBUFF_Options_Init(self)
   if (O.HideSAButton == nil) then  O.HideSAButton = false; end
 
   if (O.SBButtonFix == nil) then O.SBButtonFix = false; end
-  if (O.SBButtonDownVal == nil) then O.SBButtonDownVal = GetCVarBool("ActionButtonUseKeyDown"); end
+  if (O.SBButtonDownVal == nil) then O.SBButtonDownVal = C_CVar.GetCVarBool("ActionButtonUseKeyDown"); end
 
   if (O.MinCharges == nil) then
     if (sPlayerClass == "SHAMAN" or sPlayerClass == "PRIEST") then
@@ -3473,7 +3473,7 @@ end
 
 function SMARTBUFF_ToggleFixBuffing()
     O.SBButtonFix = not O.SBButtonFix;
-	if not O.SBButtonFix then SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal ); end
+	if not O.SBButtonFix then C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal ); end
 end
 
 function SMARTBUFF_OptionsFrame_Toggle()
@@ -3866,7 +3866,7 @@ function SmartBuff_SetSliderText(self, text, value, valformat, setval)
   else
     s = tostring(value);
   end
-  getglobal(self:GetName().."Text"):SetText(text.." "..WH..s.."|r");
+  _G[self:GetName().."Text"]:SetText(text.." "..WH..s.."|r");
 end
 
 function SmartBuff_BuffSetup_RBTime_OnValueChanged(self)
