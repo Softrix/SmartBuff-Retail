@@ -8,7 +8,7 @@
 
 SMARTBUFF_DATE          = "110523";
 
-SMARTBUFF_VERSION       = "r20."..SMARTBUFF_DATE;
+SMARTBUFF_VERSION       = "r21."..SMARTBUFF_DATE;
 SMARTBUFF_VERSIONNR     = 100100;
 SMARTBUFF_TITLE         = "SmartBuff";
 SMARTBUFF_SUBTITLE      = "Supports you in casting buffs";
@@ -3142,7 +3142,7 @@ function SMARTBUFF_Options_Init(self)
       OG.Tutorial = SMARTBUFF_VERSIONNR;
       SMARTBUFF_ToggleTutorial();
     end
-
+    SmartBuffOptionsCredits_lblText:SetText(SMARTBUFF_CREDITS);     -- bugfix, credits now showing at first start
     SmartBuffWNF_lblText:SetText(SMARTBUFF_WHATSNEW);
     SmartBuffWNF:Show();
 
