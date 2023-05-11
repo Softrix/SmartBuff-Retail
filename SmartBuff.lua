@@ -6,7 +6,7 @@
 -- Cast the most important buffs on you, tanks or party/raid members/pets.
 -------------------------------------------------------------------------------
 
-SMARTBUFF_DATE          = "100523";
+SMARTBUFF_DATE          = "110523";
 
 SMARTBUFF_VERSION       = "r20."..SMARTBUFF_DATE;
 SMARTBUFF_VERSIONNR     = 100100;
@@ -356,13 +356,14 @@ local function InitBuffSettings(cBI, reset)
 end
 
 local function InitBuffOrder(reset)
-  if (B[CS()].Order == nil) then
-    B[CS()].Order = { };
-  end
+  if not B then B = {} end
+  if not B[CS()] then B[CS()] = {} end
+  if not B[CS()].Order then B[CS()].Order = {} end
 
   local b;
   local i;
   local ord = B[CS()].Order;
+
   if (reset) then
     wipe(ord);
     SMARTBUFF_AddMsgD("Reset buff order");
