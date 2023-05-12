@@ -2115,10 +2115,12 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   -- we have a buff, set the cvar - this will be reverted back
                   -- once smartbuff has finished its work.  If we are in combat
                   -- lockdown then keep it at 0
-
                 if not InCombatLockdown() and O.SBButtonFix then
                   C_CVar.SetCVar("ActionButtonUseKeyDown",1 );
         		    elseif O.SBButtonFix then
+                  if (O.SBButtonDownVal == nil) then
+                    O.SBButtonDownVal = C_CVar.GetCVarBool("ActionButtonUseKeyDown");
+                  end
                   C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
                 end
 
@@ -2271,11 +2273,21 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                 end
               else
                 -- finished
-                if O.SBButtonFix then C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal ); end
+                if O.SBButtonFix then
+                  if (O.SBButtonDownVal == nil) then
+                    O.SBButtonDownVal = C_CVar.GetCVarBool("ActionButtonUseKeyDown");
+                  end
+                  C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
+                end
               end
             else
               -- target does not need this buff
-              if O.SBButtonFix then C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal ); end
+              if O.SBButtonFix then
+                if (O.SBButtonDownVal == nil) then
+                  O.SBButtonDownVal = C_CVar.GetCVarBool("ActionButtonUseKeyDown");
+                end
+                C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
+              end
             end
           else
             -- cooldown
@@ -3473,8 +3485,13 @@ function SMARTBUFF_OToggleDebug()
 end
 
 function SMARTBUFF_ToggleFixBuffing()
-    O.SBButtonFix = not O.SBButtonFix;
-	if not O.SBButtonFix then C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal ); end
+  O.SBButtonFix = not O.SBButtonFix;
+  if (O.SBButtonDownVal == nil) then
+    O.SBButtonDownVal = C_CVar.GetCVarBool("ActionButtonUseKeyDown");
+  end
+	if not O.SBButtonFix then
+    C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
+  end
 end
 
 function SMARTBUFF_OptionsFrame_Toggle()
