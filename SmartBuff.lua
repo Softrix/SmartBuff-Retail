@@ -2118,9 +2118,6 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                 if not InCombatLockdown() and O.SBButtonFix then
                   C_CVar.SetCVar("ActionButtonUseKeyDown",1 );
         		    elseif O.SBButtonFix then
-                  if (O.SBButtonDownVal == nil) then
-                    O.SBButtonDownVal = C_CVar.GetCVarBool("ActionButtonUseKeyDown");
-                  end
                   C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
                 end
 
@@ -2274,18 +2271,12 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
               else
                 -- finished
                 if O.SBButtonFix then
-                  if (O.SBButtonDownVal == nil) then
-                    O.SBButtonDownVal = C_CVar.GetCVarBool("ActionButtonUseKeyDown");
-                  end
                   C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
                 end
               end
             else
               -- target does not need this buff
               if O.SBButtonFix then
-                if (O.SBButtonDownVal == nil) then
-                  O.SBButtonDownVal = C_CVar.GetCVarBool("ActionButtonUseKeyDown");
-                end
                 C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
               end
             end
@@ -3023,7 +3014,7 @@ function SMARTBUFF_Options_Init(self)
   if (O.HideSAButton == nil) then  O.HideSAButton = false; end
 
   if (O.SBButtonFix == nil) then O.SBButtonFix = false; end
-  if (O.SBButtonDownVal == nil) then O.SBButtonDownVal = C_CVar.GetCVarBool("ActionButtonUseKeyDown"); end
+  if (O.SBButtonDownVal == nil or O.SBButtonDownVal == true or O.SBButtonDownVal == false) then O.SBButtonDownVal = C_CVar.GetCVar("ActionButtonUseKeyDown"); end
 
   if (O.MinCharges == nil) then
     if (sPlayerClass == "SHAMAN" or sPlayerClass == "PRIEST") then
@@ -3486,9 +3477,6 @@ end
 
 function SMARTBUFF_ToggleFixBuffing()
   O.SBButtonFix = not O.SBButtonFix;
-  if (O.SBButtonDownVal == nil) then
-    O.SBButtonDownVal = C_CVar.GetCVarBool("ActionButtonUseKeyDown");
-  end
 	if not O.SBButtonFix then
     C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
   end
