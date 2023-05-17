@@ -6,9 +6,9 @@
 -- Cast the most important buffs on you, tanks or party/raid members/pets.
 -------------------------------------------------------------------------------
 
-SMARTBUFF_DATE          = "110523";
+SMARTBUFF_DATE          = "170523";
 
-SMARTBUFF_VERSION       = "r21."..SMARTBUFF_DATE;
+SMARTBUFF_VERSION       = "r22."..SMARTBUFF_DATE;
 SMARTBUFF_VERSIONNR     = 100100;
 SMARTBUFF_TITLE         = "SmartBuff";
 SMARTBUFF_SUBTITLE      = "Supports you in casting buffs";
@@ -22,7 +22,7 @@ local SmartbuffPrefix = "Smartbuff";
 local SmartbuffSession = true;
 local SmartbuffVerCheck = false;					-- for my use when checking guild users/testers versions  :)
 local buildInfo = select(4, GetBuildInfo())
-local SmartbuffRevision = 20;
+local SmartbuffRevision = 22;
 local SmartbuffVerNotifyList = {}
 
 local SG = SMARTBUFF_GLOBALS;
@@ -236,7 +236,7 @@ function SMARTBUFF_ChooseSplashSound()
   -- make the menu appear at the frame:
   dropDown:SetPoint("CENTER", UIParent, "CENTER")
   dropDown:SetScript("OnMouseUp", function (self, button, down)
-    print("mousedown")
+--    print("mousedown")
     -- EasyMenu(menu, dropDown, dropDown, 0 , 0, "MENU");
   end)
 end
@@ -470,7 +470,7 @@ function SMARTBUFF_OnLoad(self)
   SLASH_SMARTBUFF1 = "/sbo";
   SLASH_SMARTBUFF2 = "/sbuff";
   SLASH_SMARTBUFF3 = "/smartbuff";
-  SLASH_SMARTBUFF3 = "/sb";
+  SLASH_SMARTBUFF4 = "/sb";
 
   SlashCmdList["SMARTBUFFMENU"] = SMARTBUFF_OptionsFrame_Toggle;
   SLASH_SMARTBUFFMENU1 = "/sbm";
@@ -2112,15 +2112,6 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
               if (buff) then
 
-                  -- we have a buff, set the cvar - this will be reverted back
-                  -- once smartbuff has finished its work.  If we are in combat
-                  -- lockdown then keep it at 0
-                if not InCombatLockdown() and O.SBButtonFix then
-                  C_CVar.SetCVar("ActionButtonUseKeyDown",1 );
-        		    elseif O.SBButtonFix then
-                  C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
-                end
-
                 if (cBuff.IDS) then
                   SMARTBUFF_AddMsgD("Checking " ..i .. " - " .. cBuff.IDS .. " " .. buffnS);
                 end
@@ -2268,16 +2259,6 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   -- no spell selected
                   if (mode == 0) then SMARTBUFF_AddMsgD(SMARTBUFF_MSG_CHAT); end
                 end
-              else
-                -- finished
-                if O.SBButtonFix then
-                  C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
-                end
-              end
-            else
-              -- target does not need this buff
-              if O.SBButtonFix then
-                C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
               end
             end
           else
@@ -3477,7 +3458,7 @@ end
 
 function SMARTBUFF_ToggleFixBuffing()
   O.SBButtonFix = not O.SBButtonFix;
-	if not O.SBButtonFix then
+  if not O.SBButtonFix then
     C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
   end
 end
@@ -4197,7 +4178,7 @@ end
 
 local sScript;
 function SMARTBUFF_OnClick(obj)
-  SMARTBUFF_AddMsgD("OnClick");
+--    print("SMARTBUFF_OnClick: CVAL is "..C_CVar.GetCVar("ActionButtonUseKeyDown"));
 end
 
 
@@ -4212,7 +4193,6 @@ function SMARTBUFF_OnPreClick(self, button, down)
   end
 
   if (not InCombatLockdown()) then
-
     self:SetAttribute("type", nil);
     self:SetAttribute("unit", nil);
     self:SetAttribute("spell", nil);
@@ -4221,11 +4201,25 @@ function SMARTBUFF_OnPreClick(self, button, down)
     self:SetAttribute("target-slot", nil);
     self:SetAttribute("target-item", nil);
     self:SetAttribute("action", nil);
-
   end
 
   --sScript = self:GetScript("OnClick");
   --self:SetScript("OnClick", SMARTBUFF_OnClick);
+
+  if O.SBButtonFix then
+      -- macros really dont like the cvar set to 1 so lets test we are
+      -- actually clicking the action button rather than using the scroll
+      -- mouse to ensure buffing works for both.
+      if button == "LeftButton" or button == "RightButton" then  
+          -- clicked manually either the action button or macro
+          -- using a mouse button - crazy blizzard issues strike
+          -- again :)
+          C_CVar.SetCVar("ActionButtonUseKeyDown", 0 ); 
+      else 
+          -- assume this is a scroll mouse.
+          C_CVar.SetCVar("ActionButtonUseKeyDown", 1 );
+      end
+  end
 
   local td;
   if (lastBuffType == "") then
@@ -4298,7 +4292,9 @@ function SMARTBUFF_OnPostClick(self, button, down)
     end
   end
 
-  if (InCombatLockdown()) then return end
+  if (InCombatLockdown()) then 
+	  return 
+  end
 
   self:SetAttribute("type", nil);
   self:SetAttribute("unit", nil);
@@ -4310,6 +4306,11 @@ function SMARTBUFF_OnPostClick(self, button, down)
   self:SetAttribute("action", nil);
 
   SMARTBUFF_SetButtonTexture(SmartBuff_KeyButton, imgSB);
+
+  -- ensure we reset the cvar back to the original players setting.
+  if O.SBButtonFix then
+    C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal );
+  end
 
   --SMARTBUFF_AddMsgD("Button reseted, " .. button);
   --self:SetScript("OnClick", sScript);
