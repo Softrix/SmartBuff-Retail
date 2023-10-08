@@ -1,0 +1,6 @@
+10/8 12:47:47.956  vendor: GenuineIntel
+10/8 12:47:47.956  branding: Intel(R) Core(TM) i7-8700K CPU @ 3.70GHz
+10/8 12:47:47.956  features: lahf64 cmpxchg16b sse sse2 sse3 ssse3 sse41 sse42 avx avx2 aesni clmul rdrand 
+10/8 12:47:47.956  sockets: 1
+10/8 12:47:47.956  cores: 6
+10/8 12:47:47.956  threads: 12
