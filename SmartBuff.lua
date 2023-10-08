@@ -8,7 +8,7 @@
 
 SMARTBUFF_DATE          = "081023";
 
-SMARTBUFF_VERSION       = "r23."..SMARTBUFF_DATE;
+SMARTBUFF_VERSION       = "r24."..SMARTBUFF_DATE;
 SMARTBUFF_VERSIONNR     = 100107;
 SMARTBUFF_TITLE         = "SmartBuff";
 SMARTBUFF_SUBTITLE      = "Supports you in casting buffs";
