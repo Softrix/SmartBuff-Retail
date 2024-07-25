@@ -1085,7 +1085,7 @@ function SMARTBUFF_SetBuffs()
   wipe(cBuffsCombat);
   SMARTBUFF_SetInCombatBuffs();
 
-  InitBuffOrder(false);
+  InitBuffOrder(true);
 
   numBuffs = n - 1;
   isSetBuffs = false;
