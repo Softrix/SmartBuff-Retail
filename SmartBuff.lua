@@ -384,7 +384,7 @@ local function InitBuffOrder(reset)
   -- Remove not longer existing buffs in the order list
   for k, v in pairs(ord) do
     if (v and cBuffIndex[v] == nil) then
-      SMARTBUFF_AddMsgD("Remove from buff order: " .. v.name);
+      SMARTBUFF_AddMsgD("Remove from buff order: " .. v);
       tremove(ord, k);
     end
   end
@@ -1113,8 +1113,6 @@ function SMARTBUFF_SetBuff(buff, i, ia)
     cBuffs[i] = nil;
     return i;
   end
-
-  SMARTBUFF_AddMsgD("ID: "..cBuffs[i].IDS);
 
   if (buff[4] ~= nil) then cBuffs[i].LevelsS = buff[4] else cBuffs[i].LevelsS = nil end
   if (buff[5] ~= nil) then cBuffs[i].Params = buff[5] else cBuffs[i].Params = SG.NIL end
@@ -3797,6 +3795,9 @@ function SMARTBUFF_Options_OnShow()
   end
 
   SmartBuff_ShowControls("SmartBuffOptionsFrame", true);
+
+  -- Temporary hack to avoid ever growing list.
+  SMARTBUFF_BuffOrderReset();
 
   SmartBuffOptionsFrame_cbSB:SetChecked(O.Toggle);
   SmartBuffOptionsFrame_cbAuto:SetChecked(O.ToggleAuto);
