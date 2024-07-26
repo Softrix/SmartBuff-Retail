@@ -393,7 +393,7 @@ local function InitBuffOrder(reset)
   while (cBuffs[i] and cBuffs[i].BuffS) do
     b = false;
     for _, v in pairs(ord) do
-      if (v and v.name == cBuffs[i].BuffS) then
+      if (v and v == cBuffs[i].BuffS) then
         b = true;
         break;
       end
@@ -1085,7 +1085,7 @@ function SMARTBUFF_SetBuffs()
   wipe(cBuffsCombat);
   SMARTBUFF_SetInCombatBuffs();
 
-  InitBuffOrder(true);
+  InitBuffOrder(false);
 
   numBuffs = n - 1;
   isSetBuffs = false;
@@ -1114,7 +1114,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
     return i;
   end
 
-  --  print(cBuffs[i].IDS);
+  SMARTBUFF_AddMsgD("ID: "..cBuffs[i].IDS);
 
   if (buff[4] ~= nil) then cBuffs[i].LevelsS = buff[4] else cBuffs[i].LevelsS = nil end
   if (buff[5] ~= nil) then cBuffs[i].Params = buff[5] else cBuffs[i].Params = SG.NIL end
@@ -1927,7 +1927,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                       buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, cBuff.Params, cBuff.Type,
                         cBuff.Links, cBuff.Chain);
                     end
-                    SMARTBUFF_AddMsgD("Buff time (" .. cBuff.Params .. ") = " .. tostring(bt));
+                    SMARTBUFF_AddMsgD("Buff time (" .. tostring(cBuff.Params) .. ") = " .. tostring(bt));
                   else
                     buff = nil;
                   end
@@ -3797,6 +3797,9 @@ function SMARTBUFF_Options_OnShow()
   end
 
   SmartBuff_ShowControls("SmartBuffOptionsFrame", true);
+
+  -- Temporary hack to avoid ever growing list.
+  SMARTBUFF_BuffOrderReset();
 
   SmartBuffOptionsFrame_cbSB:SetChecked(O.Toggle);
   SmartBuffOptionsFrame_cbAuto:SetChecked(O.ToggleAuto);
