@@ -3798,9 +3798,6 @@ function SMARTBUFF_Options_OnShow()
 
   SmartBuff_ShowControls("SmartBuffOptionsFrame", true);
 
-  -- Temporary hack to avoid ever growing list.
-  SMARTBUFF_BuffOrderReset();
-
   SmartBuffOptionsFrame_cbSB:SetChecked(O.Toggle);
   SmartBuffOptionsFrame_cbAuto:SetChecked(O.ToggleAuto);
   SmartBuffOptionsFrameAutoTimer:SetValue(O.AutoTimer);
