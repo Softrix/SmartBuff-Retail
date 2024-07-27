@@ -623,7 +623,7 @@ function SMARTBUFF_OnEvent(self, event, ...)
 
     -- checks if aspect of cheetah or pack is active and cancel it if someone gets dazed
     if (sPlayerClass == "HUNTER" and O.AntiDaze and (arg1 == "player" or string.find(arg1, "^party") or string.find(arg1, "^raid") or string.find(arg1, "pet"))) then
-      local _, _, stuntex = C_Spell.GetSpellTexture(1604); --get Dazed icon
+      local _, stuntex = C_Spell.GetSpellTexture(1604); --get Dazed icon
       if (SMARTBUFF_IsDebuffTexture(arg1, stuntex)) then
         buff = nil;
         if (arg1 == "player" and SMARTBUFF_CheckBuff(arg1, SMARTBUFF_AOTC)) then
