@@ -742,7 +742,7 @@ function SMARTBUFF_InitSpellIDs()
 
   -- Misc
   SMARTBUFF_KIRUSSOV        = getSpellInfoByName(46302); --"K'iru's Song of Victory"
-  SMARTBUFF_FISHING         = getSpellInfoByName(7620) or C_Spell.GetSpellInfo(111541); --"Fishing"
+  SMARTBUFF_FISHING         = C_Spell.GetSpellInfo(450647) or C_Spell.GetSpellInfo(131476); --"Fishing"
 
   -- Scroll
   SMARTBUFF_SBAGILITY       = getSpellInfoByName(8115);   --"Scroll buff: Agility"

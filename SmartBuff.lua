@@ -623,7 +623,7 @@ function SMARTBUFF_OnEvent(self, event, ...)
 
     -- checks if aspect of cheetah or pack is active and cancel it if someone gets dazed
     if (sPlayerClass == "HUNTER" and O.AntiDaze and (arg1 == "player" or string.find(arg1, "^party") or string.find(arg1, "^raid") or string.find(arg1, "pet"))) then
-      local _, _, stuntex = GetSpellInfo(1604); --get Dazed icon
+      local _, _, stuntex = C_Spell.GetSpellTexture(1604); --get Dazed icon
       if (SMARTBUFF_IsDebuffTexture(arg1, stuntex)) then
         buff = nil;
         if (arg1 == "player" and SMARTBUFF_CheckBuff(arg1, SMARTBUFF_AOTC)) then
@@ -1042,6 +1042,7 @@ function SMARTBUFF_SetBuffs()
     B[CS()] = {};
   end
 
+  SMARTBUFF_InitSpellIDs();
   SMARTBUFF_InitItemList();
   SMARTBUFF_InitSpellList();
 
@@ -1295,10 +1296,10 @@ function SMARTBUFF_PreCheck(mode, force)
 
   if (UnitAffectingCombat("player")) then
     isCombat = true;
-    --SMARTBUFF_AddMsgD("In combat");
+    SMARTBUFF_AddMsgD("In combat");
   else
     isCombat = false;
-    --SMARTBUFF_AddMsgD("Out of combat");
+    SMARTBUFF_AddMsgD("Out of combat");
   end
 
   if (not isCombat and isSetBuffs) then
@@ -1588,7 +1589,7 @@ function SMARTBUFF_IsShapeshifted()
     local i;
     for i = 1, GetNumShapeshiftForms(), 1 do
       local icon, active, castable, spellId = GetShapeshiftFormInfo(i);
-      local name = GetSpellInfo(spellId);
+      local name = C_Spell.GetSpellInfo(spellId);
       if (active and castable and name ~= SMARTBUFF_DRUID_TREANT) then
         return true, name;
       end
@@ -2425,6 +2426,7 @@ end
 
 -- Casts a spell
 function SMARTBUFF_doCast(unit, id, spellName, levels, type)
+  SMARTBUFF_AddMsgD("doCast spellName "..spellName);
   if (id == nil) then return 9; end
   if (type == SMARTBUFF_CONST_TRACK and (GetTrackingTexture() ~= "Interface\\Minimap\\Tracking\\None")) then
     --SMARTBUFF_AddMsgD("Track already enabled: " .. iconTrack);
@@ -2773,8 +2775,8 @@ end
 function SMARTBUFF_IsFishing(unit)
   -- spell, rank, displayName, icon, startTime, endTime, isTradeSkill = UnitChannelInfo("unit")
   local spell = UnitChannelInfo(unit);
-  if (spell ~= nil and SMARTBUFF_FISHING ~= nil and spell == SMARTBUFF_FISHING) then
-    --SMARTBUFF_AddMsgD("Channeling "..SMARTBUFF_FISHING);
+  if (spell ~= nil and SMARTBUFF_FISHING["name"] ~= nil and spell == SMARTBUFF_FISHING["name"]) then
+    SMARTBUFF_AddMsgD("Channeling "..SMARTBUFF_FISHING);
     return true;
   end
   return false;
