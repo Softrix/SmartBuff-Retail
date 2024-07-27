@@ -1180,7 +1180,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
   cBuffs[i].BuffG = nil; --buff[6]; -- Disabled for Cataclysm
   cBuffs[i].IDG = nil;   --SMARTBUFF_GetSpellID(cBuffs[i].BuffG);
   if (cBuffs[i].IDG ~= nil) then
-    cBuffs[i].IconG = GetSpellTexture(cBuffs[i].BuffG);
+    cBuffs[i].IconG = C_Spell.GetSpellTexture(cBuffs[i].BuffG);
   else
     cBuffs[i].IconG = nil;
   end
@@ -1835,7 +1835,9 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
           cd = 0;
           cds = 0;
           if (cBuff.IDS) then
-            cds, cd = GetSpellCooldown(buffnS);
+            local cooldown = C_Spell.GetSpellCooldown(buffnS);
+            cds = cooldown["startTime"];
+            cd = cooldown["duration"];
             cd = (cds + cd) - GetTime();
             if (cd < 0) then
               cd = 0;
@@ -2434,7 +2436,8 @@ function SMARTBUFF_doCast(unit, id, spellName, levels, type)
   end
 
   -- check if spell has cooldown
-  local _, cd = GetSpellCooldown(spellName)
+  local cooldown = C_Spell.GetSpellCooldown(spellName)
+  local cd = cooldown["duration"]
   if (not cd) then
     -- move on
   elseif (cd > maxSkipCoolDown) then

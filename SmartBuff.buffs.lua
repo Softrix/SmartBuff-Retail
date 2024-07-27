@@ -39,7 +39,8 @@ local function GetItems(items)
   return t;
 end
 
-local function getSpellInfoByName(spellId)
+-- Spellbook abilities are not filtered properly this is workaround
+local function getSpellBookItemByName(spellId)
   local name = C_Spell.GetSpellName(spellId);
   if (name == nil) then
     return nil;
@@ -49,7 +50,7 @@ end
 
 local function InsertItem(t, type, itemId, spellId, duration, link)
   local _,item = C_Item.GetItemInfo(itemId); -- item link
-  local spell = getSpellInfoByName(spellId);
+  local spell = C_Spell.GetSpellInfo(spellId);
   if (item and spell) then
     --print("Item found: "..item..", "..spell);
     tinsert(t, {item, duration, type, nil, spell, link});
@@ -478,262 +479,262 @@ end
 
 
 function SMARTBUFF_InitSpellIDs()
-  SMARTBUFF_TESTSPELL       = getSpellInfoByName(774);
+  SMARTBUFF_TESTSPELL       = getSpellBookItemByName(774);
 
   -- Druid
-  SMARTBUFF_DRUID_CAT       = getSpellInfoByName(768);   --"Cat Form"
-  SMARTBUFF_DRUID_TREE      = getSpellInfoByName(33891); --"Incarnation: Tree of Life"
-  SMARTBUFF_DRUID_TREANT    = getSpellInfoByName(114282);--"Treant Form"
-  SMARTBUFF_DRUID_MOONKIN   = getSpellInfoByName(24858); --"Moonkin Form"
-  --SMARTBUFF_DRUID_MKAURA    = getSpellInfoByName(24907); --"Moonkin Aura"
-  SMARTBUFF_DRUID_TRACK     = getSpellInfoByName(5225);  --"Track Humanoids"
-  SMARTBUFF_MOTW            = getSpellInfoByName(1126);  --"Mark of the Wild"
-  SMARTBUFF_BARKSKIN        = getSpellInfoByName(22812); --"Barkskin"
-  SMARTBUFF_TIGERSFURY      = getSpellInfoByName(5217);  --"Tiger's Fury"
-  SMARTBUFF_SAVAGEROAR      = getSpellInfoByName(52610); --"Savage Roar"
-  SMARTBUFF_CENARIONWARD    = getSpellInfoByName(102351);--"Cenarion Ward"
-  SMARTBUFF_DRUID_BEAR      = getSpellInfoByName(5487);  --"Bear Form"
+  SMARTBUFF_DRUID_CAT       = getSpellBookItemByName(768);   --"Cat Form"
+  SMARTBUFF_DRUID_TREE      = getSpellBookItemByName(33891); --"Incarnation: Tree of Life"
+  SMARTBUFF_DRUID_TREANT    = getSpellBookItemByName(114282);--"Treant Form"
+  SMARTBUFF_DRUID_MOONKIN   = getSpellBookItemByName(24858); --"Moonkin Form"
+  --SMARTBUFF_DRUID_MKAURA    = getSpellBookItemByName(24907); --"Moonkin Aura"
+  SMARTBUFF_DRUID_TRACK     = getSpellBookItemByName(5225);  --"Track Humanoids"
+  SMARTBUFF_MOTW            = getSpellBookItemByName(1126);  --"Mark of the Wild"
+  SMARTBUFF_BARKSKIN        = getSpellBookItemByName(22812); --"Barkskin"
+  SMARTBUFF_TIGERSFURY      = getSpellBookItemByName(5217);  --"Tiger's Fury"
+  SMARTBUFF_SAVAGEROAR      = getSpellBookItemByName(52610); --"Savage Roar"
+  SMARTBUFF_CENARIONWARD    = getSpellBookItemByName(102351);--"Cenarion Ward"
+  SMARTBUFF_DRUID_BEAR      = getSpellBookItemByName(5487);  --"Bear Form"
 
   -- Priest
-  SMARTBUFF_PWF             = getSpellInfoByName(21562); --"Power Word: Fortitude"
-  SMARTBUFF_PWS             = getSpellInfoByName(17);    --"Power Word: Shield"
-  --SMARTBUFF_FEARWARD        = getSpellInfoByName(6346);  --"Fear Ward"
-  SMARTBUFF_RENEW           = getSpellInfoByName(139);   --"Renew"
-  SMARTBUFF_LEVITATE        = getSpellInfoByName(1706);  --"Levitate"
-  SMARTBUFF_SHADOWFORM      = getSpellInfoByName(232698); --"Shadowform"
-  SMARTBUFF_VAMPIRICEMBRACE = getSpellInfoByName(15286); --"Vampiric Embrace"
-  --SMARTBUFF_LIGHTWELL       = getSpellInfoByName(724);   --"Lightwell"
-  --SMARTBUFF_CHAKRA1         = getSpellInfoByName(81206)  --"Chakra Sanctuary"
-  --SMARTBUFF_CHAKRA2         = getSpellInfoByName(81208)  --"Chakra Serenity"
-  --SMARTBUFF_CHAKRA3         = getSpellInfoByName(81209)  --"Chakra Chastise"
+  SMARTBUFF_PWF             = getSpellBookItemByName(21562); --"Power Word: Fortitude"
+  SMARTBUFF_PWS             = getSpellBookItemByName(17);    --"Power Word: Shield"
+  --SMARTBUFF_FEARWARD        = getSpellBookItemByName(6346);  --"Fear Ward"
+  SMARTBUFF_RENEW           = getSpellBookItemByName(139);   --"Renew"
+  SMARTBUFF_LEVITATE        = getSpellBookItemByName(1706);  --"Levitate"
+  SMARTBUFF_SHADOWFORM      = getSpellBookItemByName(232698); --"Shadowform"
+  SMARTBUFF_VAMPIRICEMBRACE = getSpellBookItemByName(15286); --"Vampiric Embrace"
+  --SMARTBUFF_LIGHTWELL       = getSpellBookItemByName(724);   --"Lightwell"
+  --SMARTBUFF_CHAKRA1         = getSpellBookItemByName(81206)  --"Chakra Sanctuary"
+  --SMARTBUFF_CHAKRA2         = getSpellBookItemByName(81208)  --"Chakra Serenity"
+  --SMARTBUFF_CHAKRA3         = getSpellBookItemByName(81209)  --"Chakra Chastise"
   -- Priest buff links
   S.LinkPriestChakra        = { SMARTBUFF_CHAKRA1, SMARTBUFF_CHAKRA2, SMARTBUFF_CHAKRA3 };
 
   -- Mage
-  SMARTBUFF_AB              = getSpellInfoByName(1459);  --"Arcane Intellect"
-  --SMARTBUFF_DALARANB        = getSpellInfoByName(61316); --"Dalaran Brilliance"
-  --SMARTBUFF_FROSTARMOR      = getSpellInfoByName(7302);  --"Frost Armor"
-  --SMARTBUFF_MAGEARMOR       = getSpellInfoByName(6117);  --"Mage Armor"
-  --SMARTBUFF_MOLTENARMOR     = getSpellInfoByName(30482); --"Molten Armor"
-  SMARTBUFF_MANASHIELD      = getSpellInfoByName(35064); --"Mana Shield"
-  --SMARTBUFF_ICEWARD         = getSpellInfoByName(111264);--"Ice Ward"
-  SMARTBUFF_ICEBARRIER      = getSpellInfoByName(11426); --"Ice Barrier"
-  --SMARTBUFF_COMBUSTION      = getSpellInfoByName(11129); --"Combustion"
-  SMARTBUFF_ARCANEPOWER     = getSpellInfoByName(12042); --"Arcane Power"
-  SMARTBUFF_PRESENCEOFMIND  = getSpellInfoByName(205025); --"Presence of Mind"
-  SMARTBUFF_ICYVEINS        = getSpellInfoByName(12472); --"Icy Veins"
-  SMARTBUFF_SUMMONWATERELE  = getSpellInfoByName(31687); --"Summon Water Elemental"
-  SMARTBUFF_SLOWFALL        = getSpellInfoByName(130);   --"Slow Fall"
-  SMARTBUFF_REFRESHMENT     = getSpellInfoByName(42955); --"Conjure Refreshment"
-  --SMARTBUFF_TEMPSHIELD      = getSpellInfoByName(198111);--"Temporal Shield"
-  --SMARTBUFF_AMPMAGIC        = getSpellInfoByName(159916);--"Amplify Magic"
+  SMARTBUFF_AB              = getSpellBookItemByName(1459);  --"Arcane Intellect"
+  --SMARTBUFF_DALARANB        = getSpellBookItemByName(61316); --"Dalaran Brilliance"
+  --SMARTBUFF_FROSTARMOR      = getSpellBookItemByName(7302);  --"Frost Armor"
+  --SMARTBUFF_MAGEARMOR       = getSpellBookItemByName(6117);  --"Mage Armor"
+  --SMARTBUFF_MOLTENARMOR     = getSpellBookItemByName(30482); --"Molten Armor"
+  SMARTBUFF_MANASHIELD      = getSpellBookItemByName(35064); --"Mana Shield"
+  --SMARTBUFF_ICEWARD         = getSpellBookItemByName(111264);--"Ice Ward"
+  SMARTBUFF_ICEBARRIER      = getSpellBookItemByName(11426); --"Ice Barrier"
+  --SMARTBUFF_COMBUSTION      = getSpellBookItemByName(11129); --"Combustion"
+  SMARTBUFF_ARCANEPOWER     = getSpellBookItemByName(12042); --"Arcane Power"
+  SMARTBUFF_PRESENCEOFMIND  = getSpellBookItemByName(205025); --"Presence of Mind"
+  SMARTBUFF_ICYVEINS        = getSpellBookItemByName(12472); --"Icy Veins"
+  SMARTBUFF_SUMMONWATERELE  = getSpellBookItemByName(31687); --"Summon Water Elemental"
+  SMARTBUFF_SLOWFALL        = getSpellBookItemByName(130);   --"Slow Fall"
+  SMARTBUFF_REFRESHMENT     = getSpellBookItemByName(42955); --"Conjure Refreshment"
+  --SMARTBUFF_TEMPSHIELD      = getSpellBookItemByName(198111);--"Temporal Shield"
+  --SMARTBUFF_AMPMAGIC        = getSpellBookItemByName(159916);--"Amplify Magic"
 
-  SMARTBUFF_PRISBARRIER     = getSpellInfoByName(235450);--"Prismatic Barrier"
-  SMARTBUFF_IMPPRISBARRIER     = getSpellInfoByName(321745);--"Improved Prismatic Barrier"
+  SMARTBUFF_PRISBARRIER     = getSpellBookItemByName(235450);--"Prismatic Barrier"
+  SMARTBUFF_IMPPRISBARRIER     = getSpellBookItemByName(321745);--"Improved Prismatic Barrier"
 
-  SMARTBUFF_BLAZBARRIER     = getSpellInfoByName(235313);--"Blazing Barrier"
-  SMARTBUFF_ARCANEFAMILIAR  = getSpellInfoByName(205022);--"Arcane Familiar"
-  SMARTBUFF_CREATEMG		= getSpellInfoByName(759);   --"Conjure Mana Gem"
+  SMARTBUFF_BLAZBARRIER     = getSpellBookItemByName(235313);--"Blazing Barrier"
+  SMARTBUFF_ARCANEFAMILIAR  = getSpellBookItemByName(205022);--"Arcane Familiar"
+  SMARTBUFF_CREATEMG		= getSpellBookItemByName(759);   --"Conjure Mana Gem"
 
   -- Mage buff links
   S.ChainMageArmor = { SMARTBUFF_FROSTARMOR, SMARTBUFF_MAGEARMOR, SMARTBUFF_MOLTENARMOR };
 
   -- Warlock
-  SMARTBUFF_AMPLIFYCURSE    = getSpellInfoByName(328774);--"Amplify Curse"
-  SMARTBUFF_DEMONARMOR      = getSpellInfoByName(285933);--"Demon ARmor"
-  SMARTBUFF_DARKINTENT      = getSpellInfoByName(183582);--"Dark Intent"
-  SMARTBUFF_UNENDINGBREATH  = getSpellInfoByName(5697);  --"Unending Breath"
-  SMARTBUFF_SOULLINK        = getSpellInfoByName(108447);--"Soul Link"
-  SMARTBUFF_LIFETAP         = getSpellInfoByName(1454);  --"Life Tap"
-  SMARTBUFF_CREATEHS        = getSpellInfoByName(6201);  --"Create Healthstone"
-  SMARTBUFF_SOULSTONE       = getSpellInfoByName(20707); --"Soulstone"
-  SMARTBUFF_GOSACRIFICE     = getSpellInfoByName(108503);--"Grimoire of Sacrifice"
-  SMARTBUFF_INQUISITORGAZE  = getSpellInfoByName(386344);--"Inquisitor's Gaze"
+  SMARTBUFF_AMPLIFYCURSE    = getSpellBookItemByName(328774);--"Amplify Curse"
+  SMARTBUFF_DEMONARMOR      = getSpellBookItemByName(285933);--"Demon ARmor"
+  SMARTBUFF_DARKINTENT      = getSpellBookItemByName(183582);--"Dark Intent"
+  SMARTBUFF_UNENDINGBREATH  = getSpellBookItemByName(5697);  --"Unending Breath"
+  SMARTBUFF_SOULLINK        = getSpellBookItemByName(108447);--"Soul Link"
+  SMARTBUFF_LIFETAP         = getSpellBookItemByName(1454);  --"Life Tap"
+  SMARTBUFF_CREATEHS        = getSpellBookItemByName(6201);  --"Create Healthstone"
+  SMARTBUFF_SOULSTONE       = getSpellBookItemByName(20707); --"Soulstone"
+  SMARTBUFF_GOSACRIFICE     = getSpellBookItemByName(108503);--"Grimoire of Sacrifice"
+  SMARTBUFF_INQUISITORGAZE  = getSpellBookItemByName(386344);--"Inquisitor's Gaze"
 
   -- Warlock pets
-  SMARTBUFF_SUMMONIMP		= getSpellInfoByName(688);    --"Summon Imp"
-  SMARTBUFF_SUMMONFELHUNTER	= getSpellInfoByName(691);    --"Summon Fellhunter"
-  SMARTBUFF_SUMMONVOIDWALKER= getSpellInfoByName(697);    --"Summon Voidwalker"
-  SMARTBUFF_SUMMONSUCCUBUS	= getSpellInfoByName(712);    --"Summon Succubus"
-  SMARTBUFF_SUMMONINFERNAL	= getSpellInfoByName(1122);   --"Summon Infernal"
-  SMARTBUFF_SUMMONDOOMGUARD	= getSpellInfoByName(18540);  --"Summon Doomguard"
-  SMARTBUFF_SUMMONFELGUARD  = getSpellInfoByName(30146);  --"Summon Felguard"
-  SMARTBUFF_SUMMONFELIMP	= getSpellInfoByName(112866); --"Summon Fel Imp"
-  SMARTBUFF_SUMMONVOIDLORD	= getSpellInfoByName(112867); --"Summon Voidlord"
-  SMARTBUFF_SUMMONSHIVARRA	= getSpellInfoByName(112868); --"Summon Shivarra"
-  SMARTBUFF_SUMMONOBSERVER	= getSpellInfoByName(112869); --"Summon Observer"
-  SMARTBUFF_SUMMONWRATHGUARD= getSpellInfoByName(112870); --"Summon Wrathguard"
+  SMARTBUFF_SUMMONIMP		= getSpellBookItemByName(688);    --"Summon Imp"
+  SMARTBUFF_SUMMONFELHUNTER	= getSpellBookItemByName(691);    --"Summon Fellhunter"
+  SMARTBUFF_SUMMONVOIDWALKER= getSpellBookItemByName(697);    --"Summon Voidwalker"
+  SMARTBUFF_SUMMONSUCCUBUS	= getSpellBookItemByName(712);    --"Summon Succubus"
+  SMARTBUFF_SUMMONINFERNAL	= getSpellBookItemByName(1122);   --"Summon Infernal"
+  SMARTBUFF_SUMMONDOOMGUARD	= getSpellBookItemByName(18540);  --"Summon Doomguard"
+  SMARTBUFF_SUMMONFELGUARD  = getSpellBookItemByName(30146);  --"Summon Felguard"
+  SMARTBUFF_SUMMONFELIMP	= getSpellBookItemByName(112866); --"Summon Fel Imp"
+  SMARTBUFF_SUMMONVOIDLORD	= getSpellBookItemByName(112867); --"Summon Voidlord"
+  SMARTBUFF_SUMMONSHIVARRA	= getSpellBookItemByName(112868); --"Summon Shivarra"
+  SMARTBUFF_SUMMONOBSERVER	= getSpellBookItemByName(112869); --"Summon Observer"
+  SMARTBUFF_SUMMONWRATHGUARD= getSpellBookItemByName(112870); --"Summon Wrathguard"
 
   -- Hunter
-  SMARTBUFF_TRUESHOTAURA    = getSpellInfoByName(193526); --"Trueshot Aura" (P)
-  SMARTBUFF_VOLLEY          = getSpellInfoByName(194386); --"Volley"
-  SMARTBUFF_RAPIDFIRE       = getSpellInfoByName(3045);  --"Rapid Fire"
-  SMARTBUFF_FOCUSFIRE       = getSpellInfoByName(82692); --"Focus Fire"
-  --SMARTBUFF_TRAPLAUNCHER    = getSpellInfoByName(77769); --"Trap Launcher"
-  --SMARTBUFF_CAMOFLAUGE      = getSpellInfoByName(51753); --"Camoflauge"
-  SMARTBUFF_AOTC            = getSpellInfoByName(186257);  --"Aspect of the Cheetah"
-  --SMARTBUFF_AOTP            = getSpellInfoByName(13159); --"Aspect of the Pack"
-  --SMARTBUFF_AOTF            = getSpellInfoByName(172106); --"Aspect of the Fox"
-  SMARTBUFF_AOTW			= getSpellInfoByName(193530);	--"Aspect of the Wild"
-  SMARTBUFF_AMMOI           = getSpellInfoByName(162536); --"Incendiary Ammo"
-  SMARTBUFF_AMMOP           = getSpellInfoByName(162537); --"Poisoned Ammo"
-  SMARTBUFF_AMMOF           = getSpellInfoByName(162539); --"Frozen Ammo"
-  --SMARTBUFF_LW1             = getSpellInfoByName(160200); --"Lone Wolf: Ferocity of the Raptor"
-  --SMARTBUFF_LW2             = getSpellInfoByName(160203); --"Lone Wolf: Haste of the Hyena"
-  --SMARTBUFF_LW3             = getSpellInfoByName(160198); --"Lone Wolf: Grace of the Cat"
-  --SMARTBUFF_LW4             = getSpellInfoByName(160206); --"Lone Wolf: Power of the Primates"
-  --SMARTBUFF_LW5             = getSpellInfoByName(160199); --"Lone Wolf: Fortitude of the Bear"
-  --SMARTBUFF_LW6             = getSpellInfoByName(160205); --"Lone Wolf: Wisdom of the Serpent"
-  --SMARTBUFF_LW7             = getSpellInfoByName(172967); --"Lone Wolf: Versatility of the Ravager"
-  --SMARTBUFF_LW8             = getSpellInfoByName(172968); --"Lone Wolf: Quickness of the Dragonhawk"
+  SMARTBUFF_TRUESHOTAURA    = getSpellBookItemByName(193526); --"Trueshot Aura" (P)
+  SMARTBUFF_VOLLEY          = getSpellBookItemByName(194386); --"Volley"
+  SMARTBUFF_RAPIDFIRE       = getSpellBookItemByName(3045);  --"Rapid Fire"
+  SMARTBUFF_FOCUSFIRE       = getSpellBookItemByName(82692); --"Focus Fire"
+  --SMARTBUFF_TRAPLAUNCHER    = getSpellBookItemByName(77769); --"Trap Launcher"
+  --SMARTBUFF_CAMOFLAUGE      = getSpellBookItemByName(51753); --"Camoflauge"
+  SMARTBUFF_AOTC            = getSpellBookItemByName(186257);  --"Aspect of the Cheetah"
+  --SMARTBUFF_AOTP            = getSpellBookItemByName(13159); --"Aspect of the Pack"
+  --SMARTBUFF_AOTF            = getSpellBookItemByName(172106); --"Aspect of the Fox"
+  SMARTBUFF_AOTW			= getSpellBookItemByName(193530);	--"Aspect of the Wild"
+  SMARTBUFF_AMMOI           = getSpellBookItemByName(162536); --"Incendiary Ammo"
+  SMARTBUFF_AMMOP           = getSpellBookItemByName(162537); --"Poisoned Ammo"
+  SMARTBUFF_AMMOF           = getSpellBookItemByName(162539); --"Frozen Ammo"
+  --SMARTBUFF_LW1             = getSpellBookItemByName(160200); --"Lone Wolf: Ferocity of the Raptor"
+  --SMARTBUFF_LW2             = getSpellBookItemByName(160203); --"Lone Wolf: Haste of the Hyena"
+  --SMARTBUFF_LW3             = getSpellBookItemByName(160198); --"Lone Wolf: Grace of the Cat"
+  --SMARTBUFF_LW4             = getSpellBookItemByName(160206); --"Lone Wolf: Power of the Primates"
+  --SMARTBUFF_LW5             = getSpellBookItemByName(160199); --"Lone Wolf: Fortitude of the Bear"
+  --SMARTBUFF_LW6             = getSpellBookItemByName(160205); --"Lone Wolf: Wisdom of the Serpent"
+  --SMARTBUFF_LW7             = getSpellBookItemByName(172967); --"Lone Wolf: Versatility of the Ravager"
+  --SMARTBUFF_LW8             = getSpellBookItemByName(172968); --"Lone Wolf: Quickness of the Dragonhawk"
   -- Hunter pets
-  SMARTBUFF_CALL_PET_1      = getSpellInfoByName(883); -- "Call Pet 1"
-  SMARTBUFF_CALL_PET_2      = getSpellInfoByName(83242); -- "Call Pet 2"
-  SMARTBUFF_CALL_PET_3      = getSpellInfoByName(83243); -- "Call Pet 3"
-  SMARTBUFF_CALL_PET_4      = getSpellInfoByName(83244); -- "Call Pet 4"
-  SMARTBUFF_CALL_PET_5      = getSpellInfoByName(83245); -- "Call Pet 5"
+  SMARTBUFF_CALL_PET_1      = getSpellBookItemByName(883); -- "Call Pet 1"
+  SMARTBUFF_CALL_PET_2      = getSpellBookItemByName(83242); -- "Call Pet 2"
+  SMARTBUFF_CALL_PET_3      = getSpellBookItemByName(83243); -- "Call Pet 3"
+  SMARTBUFF_CALL_PET_4      = getSpellBookItemByName(83244); -- "Call Pet 4"
+  SMARTBUFF_CALL_PET_5      = getSpellBookItemByName(83245); -- "Call Pet 5"
   -- Hunter buff links
   S.LinkAspects  = { SMARTBUFF_AOTF, SMARTBUFF_AOTC, SMARTBUFF_AOTP, SMARTBUFF_AOTW };
   S.LinkAmmo     = { SMARTBUFF_AMMOI, SMARTBUFF_AMMOP, SMARTBUFF_AMMOF };
   S.LinkLoneWolf = { SMARTBUFF_LW1, SMARTBUFF_LW2, SMARTBUFF_LW3, SMARTBUFF_LW4, SMARTBUFF_LW5, SMARTBUFF_LW6, SMARTBUFF_LW7, SMARTBUFF_LW8 };
 
   -- Shaman
-  SMARTBUFF_LIGHTNINGSHIELD = getSpellInfoByName(192106); --"Lightning Shield"
-  SMARTBUFF_WATERSHIELD     = getSpellInfoByName(52127);  --"Water Shield"
-  SMARTBUFF_EARTHSHIELD     = getSpellInfoByName(974);    --"Earth Shield"
-  SMARTBUFF_WATERWALKING    = getSpellInfoByName(546);    --"Water Walking"
-  SMARTBUFF_EMASTERY        = getSpellInfoByName(16166);  --"Elemental Mastery"
-  SMARTBUFF_ASCENDANCE_ELE  = getSpellInfoByName(114050); --"Ascendance (Elemental)"
-  SMARTBUFF_ASCENDANCE_ENH  = getSpellInfoByName(114051); --"Ascendance (Enhancement)"
-  SMARTBUFF_ASCENDANCE_RES  = getSpellInfoByName(114052); --"Ascendance (Restoration)"
-  SMARTBUFF_WINDFURYW       = getSpellInfoByName(33757);  --"Windfury Weapon"
-  SMARTBUFF_FLAMETONGUEW    = getSpellInfoByName(318038); --"Flametongue Weapon"
-  SMARTBUFF_EVERLIVINGW     = getSpellInfoByName(382021); --"Everliving Weapon"
+  SMARTBUFF_LIGHTNINGSHIELD = getSpellBookItemByName(192106); --"Lightning Shield"
+  SMARTBUFF_WATERSHIELD     = getSpellBookItemByName(52127);  --"Water Shield"
+  SMARTBUFF_EARTHSHIELD     = getSpellBookItemByName(974);    --"Earth Shield"
+  SMARTBUFF_WATERWALKING    = getSpellBookItemByName(546);    --"Water Walking"
+  SMARTBUFF_EMASTERY        = getSpellBookItemByName(16166);  --"Elemental Mastery"
+  SMARTBUFF_ASCENDANCE_ELE  = getSpellBookItemByName(114050); --"Ascendance (Elemental)"
+  SMARTBUFF_ASCENDANCE_ENH  = getSpellBookItemByName(114051); --"Ascendance (Enhancement)"
+  SMARTBUFF_ASCENDANCE_RES  = getSpellBookItemByName(114052); --"Ascendance (Restoration)"
+  SMARTBUFF_WINDFURYW       = getSpellBookItemByName(33757);  --"Windfury Weapon"
+  SMARTBUFF_FLAMETONGUEW    = getSpellBookItemByName(318038); --"Flametongue Weapon"
+  SMARTBUFF_EVERLIVINGW     = getSpellBookItemByName(382021); --"Everliving Weapon"
 
   -- Shaman buff links
   S.ChainShamanShield = { SMARTBUFF_LIGHTNINGSHIELD, SMARTBUFF_WATERSHIELD, SMARTBUFF_EARTHSHIELD };
 
   -- Warrior
-  SMARTBUFF_BATTLESHOUT     = getSpellInfoByName(6673);   --"Battle Shout"
-  --SMARTBUFF_COMMANDINGSHOUT = getSpellInfoByName(97462);    --"Reallying Cry"
-  SMARTBUFF_BERSERKERRAGE   = getSpellInfoByName(18499);  --"Berserker Rage"
-  SMARTBUFF_BATSTANCE       = getSpellInfoByName(386164); --"Battle Stance"
-  SMARTBUFF_DEFSTANCE       = getSpellInfoByName(197690); --"Defensive Stance"
-  SMARTBUFF_GLADSTANCE      = getSpellInfoByName(156291); --"Gladiator Stance"
-  SMARTBUFF_SHIELDBLOCK     = getSpellInfoByName(2565);   --"Shield Block"
+  SMARTBUFF_BATTLESHOUT     = getSpellBookItemByName(6673);   --"Battle Shout"
+  --SMARTBUFF_COMMANDINGSHOUT = getSpellBookItemByName(97462);    --"Reallying Cry"
+  SMARTBUFF_BERSERKERRAGE   = getSpellBookItemByName(18499);  --"Berserker Rage"
+  SMARTBUFF_BATSTANCE       = getSpellBookItemByName(386164); --"Battle Stance"
+  SMARTBUFF_DEFSTANCE       = getSpellBookItemByName(197690); --"Defensive Stance"
+  SMARTBUFF_GLADSTANCE      = getSpellBookItemByName(156291); --"Gladiator Stance"
+  SMARTBUFF_SHIELDBLOCK     = getSpellBookItemByName(2565);   --"Shield Block"
 
   -- Warrior buff links
   S.ChainWarriorStance = { SMARTBUFF_BATSTANCE, SMARTBUFF_DEFSTANCE, SMARTBUFF_GLADSTANCE };
   S.ChainWarriorShout  = { SMARTBUFF_BATTLESHOUT, SMARTBUFF_COMMANDINGSHOUT };
 
   -- Rogue
-  SMARTBUFF_STEALTH         = getSpellInfoByName(1784);  --"Stealth"
-  SMARTBUFF_BLADEFLURRY     = getSpellInfoByName(13877); --"Blade Flurry"
-  SMARTBUFF_SAD             = getSpellInfoByName(5171);  --"Slice and Dice"
-  SMARTBUFF_EVASION         = getSpellInfoByName(5277);  --"Evasion"
-  SMARTBUFF_HUNGERFORBLOOD  = getSpellInfoByName(60177); --"Hunger For Blood"
-  SMARTBUFF_TRICKS          = getSpellInfoByName(57934); --"Tricks of the Trade"
-  SMARTBUFF_RECUPERATE      = getSpellInfoByName(185311); --"Crimson Vial
+  SMARTBUFF_STEALTH         = getSpellBookItemByName(1784);  --"Stealth"
+  SMARTBUFF_BLADEFLURRY     = getSpellBookItemByName(13877); --"Blade Flurry"
+  SMARTBUFF_SAD             = getSpellBookItemByName(5171);  --"Slice and Dice"
+  SMARTBUFF_EVASION         = getSpellBookItemByName(5277);  --"Evasion"
+  SMARTBUFF_HUNGERFORBLOOD  = getSpellBookItemByName(60177); --"Hunger For Blood"
+  SMARTBUFF_TRICKS          = getSpellBookItemByName(57934); --"Tricks of the Trade"
+  SMARTBUFF_RECUPERATE      = getSpellBookItemByName(185311); --"Crimson Vial
   -- Poisons
-  SMARTBUFF_WOUNDPOISON         = getSpellInfoByName(8679);   --"Wound Poison"
-  SMARTBUFF_CRIPPLINGPOISON     = getSpellInfoByName(3408);   --"Crippling Poison"
-  SMARTBUFF_DEADLYPOISON        = getSpellInfoByName(2823);   --"Deadly Poison"
-  SMARTBUFF_LEECHINGPOISON      = getSpellInfoByName(108211); --"Leeching Poison"
-  SMARTBUFF_INSTANTPOISON       = getSpellInfoByName(315584); --"Instant Poison"
-  SMARTBUFF_NUMBINGPOISON       = getSpellInfoByName(5761);   --"Numbing Poison"
-  SMARTBUFF_AMPLIFYPOISON       = getSpellInfoByName(381664); --"Amplifying Poison"
-  SMARTBUFF_ATROPHICPOISON      = getSpellInfoByName(381637);   --"Atrophic Poison"
+  SMARTBUFF_WOUNDPOISON         = getSpellBookItemByName(8679);   --"Wound Poison"
+  SMARTBUFF_CRIPPLINGPOISON     = getSpellBookItemByName(3408);   --"Crippling Poison"
+  SMARTBUFF_DEADLYPOISON        = getSpellBookItemByName(2823);   --"Deadly Poison"
+  SMARTBUFF_LEECHINGPOISON      = getSpellBookItemByName(108211); --"Leeching Poison"
+  SMARTBUFF_INSTANTPOISON       = getSpellBookItemByName(315584); --"Instant Poison"
+  SMARTBUFF_NUMBINGPOISON       = getSpellBookItemByName(5761);   --"Numbing Poison"
+  SMARTBUFF_AMPLIFYPOISON       = getSpellBookItemByName(381664); --"Amplifying Poison"
+  SMARTBUFF_ATROPHICPOISON      = getSpellBookItemByName(381637);   --"Atrophic Poison"
 
   -- Rogue buff links
   S.ChainRoguePoisonsLethal     = { SMARTBUFF_DEADLYPOISON, SMARTBUFF_WOUNDPOISON, SMARTBUFF_INSTANTPOISON, SMARTBUFF_AGONIZINGPOISON, SMARTBUFF_AMPLIFYPOISON };
   S.ChainRoguePoisonsNonLethal  = { SMARTBUFF_CRIPPLINGPOISON, SMARTBUFF_LEECHINGPOISON, SMARTBUFF_NUMBINGPOISON, SMARTBUFF_ATROPHICPOISON };
 
   -- Paladin
-  SMARTBUFF_RIGHTEOUSFURY         = getSpellInfoByName(25780);  --"Righteous Fury"
---  SMARTBUFF_HOLYSHIELD            = getSpellInfoByName(20925);  --"Sacred Shield"
-  SMARTBUFF_BOK                   = getSpellInfoByName(203538); --"Greater Blessing of Kings"
---  SMARTBUFF_BOM                   = getSpellInfoByName(203528); --"Greater Blessing of Might"
-  SMARTBUFF_BOW                   = getSpellInfoByName(203539); --"Greater Blessing of Wisdom"
-  SMARTBUFF_HOF                   = getSpellInfoByName(1044);   --"Blessing of Freedom"
-  SMARTBUFF_HOP                   = getSpellInfoByName(1022);   --"Blessing of Protection"
-  SMARTBUFF_HOSAL                 = getSpellInfoByName(204013); --"Blessing of Salvation"
---  SMARTBUFF_SOJUSTICE             = getSpellInfoByName(20164);  --"Seal of Justice"
---  SMARTBUFF_SOINSIGHT             = getSpellInfoByName(20165);  --"Seal of Insight"
---  SMARTBUFF_SORIGHTEOUSNESS       = getSpellInfoByName(20154);  --"Seal of Righteousness"
---  SMARTBUFF_SOTRUTH               = getSpellInfoByName(31801);  --"Seal of Truth"
---  SMARTBUFF_SOCOMMAND             = getSpellInfoByName(105361); --"Seal of Command"
-  SMARTBUFF_AVENGINGWARTH         = getSpellInfoByName(31884);  --"Avenging Wrath"
-  SMARTBUFF_BEACONOFLIGHT         = getSpellInfoByName(53563);  --"Beacon of Light"
-  SMARTBUFF_BEACONOFAITH          = getSpellInfoByName(156910); --"Beacon of Faith"
-  SMARTBUFF_CRUSADERAURA          = getSpellInfoByName(32223); --"Crusader Aura"
-  SMARTBUFF_DEVOTIONAURA          = getSpellInfoByName(465); --"Devotion Aura"
-  SMARTBUFF_RETRIBUTIONAURA       = getSpellInfoByName(183435); --"Retribution Aura"
+  SMARTBUFF_RIGHTEOUSFURY         = getSpellBookItemByName(25780);  --"Righteous Fury"
+--  SMARTBUFF_HOLYSHIELD            = getSpellBookIteByName(20925);  --"Sacred Shield"
+  SMARTBUFF_BOK                   = getSpellBookItemByName(203538); --"Greater Blessing of Kings"
+--  SMARTBUFF_BOM                   = getSpellBookIteByName(203528); --"Greater Blessing of Might"
+  SMARTBUFF_BOW                   = getSpellBookItemByName(203539); --"Greater Blessing of Wisdom"
+  SMARTBUFF_HOF                   = getSpellBookItemByName(1044);   --"Blessing of Freedom"
+  SMARTBUFF_HOP                   = getSpellBookItemByName(1022);   --"Blessing of Protection"
+  SMARTBUFF_HOSAL                 = getSpellBookItemByName(204013); --"Blessing of Salvation"
+--  SMARTBUFF_SOJUSTICE             = getSpellBookIteByName(20164);  --"Seal of Justice"
+--  SMARTBUFF_SOINSIGHT             = getSpellBookIteByName(20165);  --"Seal of Insight"
+--  SMARTBUFF_SORIGHTEOUSNESS       = getSpellBookIteByName(20154);  --"Seal of Righteousness"
+--  SMARTBUFF_SOTRUTH               = getSpellBookIteByName(31801);  --"Seal of Truth"
+--  SMARTBUFF_SOCOMMAND             = getSpellBookIteByName(105361); --"Seal of Command"
+  SMARTBUFF_AVENGINGWARTH         = getSpellBookItemByName(31884);  --"Avenging Wrath"
+  SMARTBUFF_BEACONOFLIGHT         = getSpellBookItemByName(53563);  --"Beacon of Light"
+  SMARTBUFF_BEACONOFAITH          = getSpellBookItemByName(156910); --"Beacon of Faith"
+  SMARTBUFF_CRUSADERAURA          = getSpellBookItemByName(32223); --"Crusader Aura"
+  SMARTBUFF_DEVOTIONAURA          = getSpellBookItemByName(465); --"Devotion Aura"
+  SMARTBUFF_RETRIBUTIONAURA       = getSpellBookItemByName(183435); --"Retribution Aura"
   -- Paladin buff links
   S.ChainPaladinAura     = { SMARTBUFF_DEVOTIONAURA, SMARTBUFF_RETRIBUTIONAURA };
   S.ChainPaladinSeal     = { SMARTBUFF_SOCOMMAND, SMARTBUFF_SOTRUTH, SMARTBUFF_SOJUSTICE, SMARTBUFF_SOINSIGHT, SMARTBUFF_SORIGHTEOUSNESS };
   S.ChainPaladinBlessing = { SMARTBUFF_BOK, SMARTBUFF_BOM, SMARTBUFF_BOW};
 
   -- Death Knight
-  SMARTBUFF_DANCINGRW         = getSpellInfoByName(49028); --"Dancing Rune Weapon"
---  SMARTBUFF_BLOODPRESENCE     = getSpellInfoByName(48263); --"Blood Presence"
---  SMARTBUFF_FROSTPRESENCE     = getSpellInfoByName(48266); --"Frost Presence"
---  SMARTBUFF_UNHOLYPRESENCE    = getSpellInfoByName(48265); --"Unholy Presence"
-  SMARTBUFF_PATHOFFROST       = getSpellInfoByName(3714);  --"Path of Frost"
---  SMARTBUFF_BONESHIELD        = getSpellInfoByName(49222); --"Bone Shield"
-  SMARTBUFF_HORNOFWINTER      = getSpellInfoByName(57330); --"Horn of Winter"
-  SMARTBUFF_RAISEDEAD         = getSpellInfoByName(46584); --"Raise Dead"
---  SMARTBUFF_POTGRAVE          = getSpellInfoByName(155522); --"Power of the Grave" (P)
+  SMARTBUFF_DANCINGRW         = getSpellBookItemByName(49028); --"Dancing Rune Weapon"
+--  SMARTBUFF_BLOODPRESENCE     = getSpellBookIteByName(48263); --"Blood Presence"
+--  SMARTBUFF_FROSTPRESENCE     = getSpellBookIteByName(48266); --"Frost Presence"
+--  SMARTBUFF_UNHOLYPRESENCE    = getSpellBookIteByName(48265); --"Unholy Presence"
+  SMARTBUFF_PATHOFFROST       = getSpellBookItemByName(3714);  --"Path of Frost"
+--  SMARTBUFF_BONESHIELD        = getSpellBookIteByName(49222); --"Bone Shield"
+  SMARTBUFF_HORNOFWINTER      = getSpellBookItemByName(57330); --"Horn of Winter"
+  SMARTBUFF_RAISEDEAD         = getSpellBookItemByName(46584); --"Raise Dead"
+--  SMARTBUFF_POTGRAVE          = getSpellBookIteByName(155522); --"Power of the Grave" (P)
   -- Death Knight buff links
   S.ChainDKPresence = { SMARTBUFF_BLOODPRESENCE, SMARTBUFF_FROSTPRESENCE, SMARTBUFF_UNHOLYPRESENCE };
 
   -- Monk
---  SMARTBUFF_LOTWT           = getSpellInfoByName(116781); --"Legacy of the White Tiger"
---  SMARTBUFF_LOTE            = getSpellInfoByName(115921); --"Legacy of the Emperor"
-  SMARTBUFF_BLACKOX         = getSpellInfoByName(115315); --"Summon Black Ox Statue"
-  SMARTBUFF_JADESERPENT     = getSpellInfoByName(115313); --"Summon Jade Serpent Statue"
-  SMARTBUFF_SOTFIERCETIGER  = getSpellInfoByName(103985); --"Stance of the Fierce Tiger"
-  SMARTBUFF_SOTSTURDYOX     = getSpellInfoByName(115069); --"Stagger"
---  SMARTBUFF_SOTWISESERPENT  = getSpellInfoByName(115070); --"Stance of the Wise Serpent"
---  SMARTBUFF_SOTSPIRITEDCRANE= getSpellInfoByName(154436); --"Stance of the Spirited Crane"
+--  SMARTBUFF_LOTWT           = getSpellBookIteByName(116781); --"Legacy of the White Tiger"
+--  SMARTBUFF_LOTE            = getSpellBookIteByName(115921); --"Legacy of the Emperor"
+  SMARTBUFF_BLACKOX         = getSpellBookItemByName(115315); --"Summon Black Ox Statue"
+  SMARTBUFF_JADESERPENT     = getSpellBookItemByName(115313); --"Summon Jade Serpent Statue"
+  SMARTBUFF_SOTFIERCETIGER  = getSpellBookItemByName(103985); --"Stance of the Fierce Tiger"
+  SMARTBUFF_SOTSTURDYOX     = getSpellBookItemByName(115069); --"Stagger"
+--  SMARTBUFF_SOTWISESERPENT  = getSpellBookIteByName(115070); --"Stance of the Wise Serpent"
+--  SMARTBUFF_SOTSPIRITEDCRANE= getSpellBookIteByName(154436); --"Stance of the Spirited Crane"
 
   -- Monk buff links
   S.ChainMonkStatue = { SMARTBUFF_BLACKOX, SMARTBUFF_JADESERPENT };
   S.ChainMonkStance = { SMARTBUFF_SOTFIERCETIGER, SMARTBUFF_SOTSTURDYOX, SMARTBUFF_SOTWISESERPENT, SMARTBUFF_SOTSPIRITEDCRANE };
 
   -- Evoker
-  SMARTBUFF_BRONZEBLESSING  = getSpellInfoByName(364342);   --"Blessing of the Bronze"
-  SMARTBUFF_Visage          = getSpellInfoByName(351239);   --"Visage"
+  SMARTBUFF_BRONZEBLESSING  = getSpellBookItemByName(364342);   --"Blessing of the Bronze"
+  SMARTBUFF_Visage          = getSpellBookItemByName(351239);   --"Visage"
 
-  SMARTBUFF_SourceOfMagic   = getSpellInfoByName(369459);   --"Source of Magic"
-  SMARTBUFF_EbonMight       = getSpellInfoByName(395152);   --"Ebon Might"
-  SMARTBUFF_BlisteringScale = getSpellInfoByName(360827);   --"Blistering Scales"
-  SMARTBUFF_Timelessness    = getSpellInfoByName(412710);   --"Timelessness"
-  SMARTBUFF_BronzeAttunement = getSpellInfoByName(403265);  --"Bronze Attunement"
-  SMARTBUFF_BlackAttunement = getSpellInfoByName(403264);   --"Black Attunement"
+  SMARTBUFF_SourceOfMagic   = getSpellBookItemByName(369459);   --"Source of Magic"
+  SMARTBUFF_EbonMight       = getSpellBookItemByName(395152);   --"Ebon Might"
+  SMARTBUFF_BlisteringScale = getSpellBookItemByName(360827);   --"Blistering Scales"
+  SMARTBUFF_Timelessness    = getSpellBookItemByName(412710);   --"Timelessness"
+  SMARTBUFF_BronzeAttunement = getSpellBookItemByName(403265);  --"Bronze Attunement"
+  SMARTBUFF_BlackAttunement = getSpellBookItemByName(403264);   --"Black Attunement"
 
 
   -- Demon Hunter
 
 
-  -- Tracking
-  SMARTBUFF_FINDMINERALS    = getSpellInfoByName(2580);  --"Find Minerals"
-  SMARTBUFF_FINDHERBS       = getSpellInfoByName(2383);  --"Find Herbs"
-  SMARTBUFF_FINDTREASURE    = getSpellInfoByName(2481);  --"Find Treasure"
-  SMARTBUFF_TRACKHUMANOIDS  = getSpellInfoByName(19883); --"Track Humanoids"
-  SMARTBUFF_TRACKBEASTS     = getSpellInfoByName(1494);  --"Track Beasts"
-  SMARTBUFF_TRACKUNDEAD     = getSpellInfoByName(19884); --"Track Undead"
-  SMARTBUFF_TRACKHIDDEN     = getSpellInfoByName(19885); --"Track Hidden"
-  SMARTBUFF_TRACKELEMENTALS = getSpellInfoByName(19880); --"Track Elementals"
-  SMARTBUFF_TRACKDEMONS     = getSpellInfoByName(19878); --"Track Demons"
-  SMARTBUFF_TRACKGIANTS     = getSpellInfoByName(19882); --"Track Giants"
-  SMARTBUFF_TRACKDRAGONKIN  = getSpellInfoByName(19879); --"Track Dragonkin"
+  -- Tracking -- this is deprecated due to moving to minimap
+  SMARTBUFF_FINDMINERALS    = getSpellBookItemByName(2580);  --"Find Minerals"
+  SMARTBUFF_FINDHERBS       = getSpellBookItemByName(2383);  --"Find Herbs"
+  SMARTBUFF_FINDTREASURE    = getSpellBookItemByName(2481);  --"Find Treasure"
+  SMARTBUFF_TRACKHUMANOIDS  = getSpellBookItemByName(19883); --"Track Humanoids"
+  SMARTBUFF_TRACKBEASTS     = getSpellBookItemByName(1494);  --"Track Beasts"
+  SMARTBUFF_TRACKUNDEAD     = getSpellBookItemByName(19884); --"Track Undead"
+  SMARTBUFF_TRACKHIDDEN     = getSpellBookItemByName(19885); --"Track Hidden"
+  SMARTBUFF_TRACKELEMENTALS = getSpellBookItemByName(19880); --"Track Elementals"
+  SMARTBUFF_TRACKDEMONS     = getSpellBookItemByName(19878); --"Track Demons"
+  SMARTBUFF_TRACKGIANTS     = getSpellBookItemByName(19882); --"Track Giants"
+  SMARTBUFF_TRACKDRAGONKIN  = getSpellBookItemByName(19879); --"Track Dragonkin"
 
   -- Racial
-  SMARTBUFF_STONEFORM       = getSpellInfoByName(20594); --"Stoneform"
-  SMARTBUFF_BLOODFURY       = getSpellInfoByName(20572); --"Blood Fury" 33697, 33702
-  SMARTBUFF_BERSERKING      = getSpellInfoByName(26297); --"Berserking"
-  SMARTBUFF_WOTFORSAKEN     = getSpellInfoByName(7744);  --"Will of the Forsaken"
-  SMARTBUFF_WarStomp        = getSpellInfoByName(20549); --"War Stomp"
+  SMARTBUFF_STONEFORM       = getSpellBookItemByName(20594); --"Stoneform"
+  SMARTBUFF_BLOODFURY       = getSpellBookItemByName(20572); --"Blood Fury" 33697, 33702
+  SMARTBUFF_BERSERKING      = getSpellBookItemByName(26297); --"Berserking"
+  SMARTBUFF_WOTFORSAKEN     = getSpellBookItemByName(7744);  --"Will of the Forsaken"
+  SMARTBUFF_WarStomp        = getSpellBookItemByName(20549); --"War Stomp"
 
   -- Food
   SMARTBUFF_FOOD_AURA       = C_Spell.GetSpellInfo(46899); --"Well Fed"
@@ -741,114 +742,114 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_DRINK_SPELL     = C_Spell.GetSpellInfo(430);   --"Drink"
 
   -- Misc
-  SMARTBUFF_KIRUSSOV        = getSpellInfoByName(46302); --"K'iru's Song of Victory"
+  SMARTBUFF_KIRUSSOV        = C_Spell.GetSpellInfo(46302); --"K'iru's Song of Victory"
   SMARTBUFF_FISHING         = C_Spell.GetSpellInfo(450647) or C_Spell.GetSpellInfo(131476); --"Fishing"
 
   -- Scroll
-  SMARTBUFF_SBAGILITY       = getSpellInfoByName(8115);   --"Scroll buff: Agility"
-  SMARTBUFF_SBINTELLECT     = getSpellInfoByName(8096);   --"Scroll buff: Intellect"
-  SMARTBUFF_SBSTAMINA       = getSpellInfoByName(8099);   --"Scroll buff: Stamina"
-  SMARTBUFF_SBSPIRIT        = getSpellInfoByName(8112);   --"Scroll buff: Spirit"
-  SMARTBUFF_SBSTRENGHT      = getSpellInfoByName(8118);   --"Scroll buff: Strength"
-  SMARTBUFF_SBPROTECTION    = getSpellInfoByName(89344);  --"Scroll buff: Armor"
-  SMARTBUFF_BMiscItem1      = getSpellInfoByName(326396); --"WoW's 16th Anniversary"
-  SMARTBUFF_BMiscItem2      = getSpellInfoByName(62574);  --"Warts-B-Gone Lip Balm"
-  SMARTBUFF_BMiscItem3      = getSpellInfoByName(98444);  --"Vrykul Drinking Horn"
-  SMARTBUFF_BMiscItem4      = getSpellInfoByName(127230); --"Visions of Insanity"
-  SMARTBUFF_BMiscItem5      = getSpellInfoByName(124036); --"Anglers Fishing Raft"
-  SMARTBUFF_BMiscItem6      = getSpellInfoByName(125167); --"Ancient Pandaren Fishing Charm"
-  SMARTBUFF_BMiscItem7      = getSpellInfoByName(138927); --"Burning Essence"
-  SMARTBUFF_BMiscItem8      = getSpellInfoByName(160331); --"Blood Elf Illusion"
-  SMARTBUFF_BMiscItem9      = getSpellInfoByName(158486); --"Safari Hat"
-  SMARTBUFF_BMiscItem10     = getSpellInfoByName(158474); --"Savage Safari Hat"
-  SMARTBUFF_BMiscItem11     = getSpellInfoByName(176151); --"Whispers of Insanity"
-  SMARTBUFF_BMiscItem12     = getSpellInfoByName(193456); --"Gaze of the Legion"
-  SMARTBUFF_BMiscItem13     = getSpellInfoByName(193547); --"Fel Crystal Infusion"
-  SMARTBUFF_BMiscItem14     = getSpellInfoByName(190668); --"Empower"
-  SMARTBUFF_BMiscItem14_1   = getSpellInfoByName(175457); --"Focus Augmentation"
-  SMARTBUFF_BMiscItem14_2   = getSpellInfoByName(175456); --"Hyper Augmentation"
-  SMARTBUFF_BMiscItem14_3   = getSpellInfoByName(175439); --"Stout Augmentation
-  SMARTBUFF_BMiscItem16     = getSpellInfoByName(181642); --"Bodyguard Miniaturization Device"
-  SMARTBUFF_BMiscItem17     = getSpellInfoByName(242551); --"Fel Focus"
+  SMARTBUFF_SBAGILITY       = C_Spell.GetSpellInfo(8115);   --"Scroll buff: Agility"
+  SMARTBUFF_SBINTELLECT     = C_Spell.GetSpellInfo(8096);   --"Scroll buff: Intellect"
+  SMARTBUFF_SBSTAMINA       = C_Spell.GetSpellInfo(8099);   --"Scroll buff: Stamina"
+  SMARTBUFF_SBSPIRIT        = C_Spell.GetSpellInfo(8112);   --"Scroll buff: Spirit"
+  SMARTBUFF_SBSTRENGHT      = C_Spell.GetSpellInfo(8118);   --"Scroll buff: Strength"
+  SMARTBUFF_SBPROTECTION    = C_Spell.GetSpellInfo(89344);  --"Scroll buff: Armor"
+  SMARTBUFF_BMiscItem1      = C_Spell.GetSpellInfo(326396); --"WoW's 16th Anniversary"
+  SMARTBUFF_BMiscItem2      = C_Spell.GetSpellInfo(62574);  --"Warts-B-Gone Lip Balm"
+  SMARTBUFF_BMiscItem3      = C_Spell.GetSpellInfo(98444);  --"Vrykul Drinking Horn"
+  SMARTBUFF_BMiscItem4      = C_Spell.GetSpellInfo(127230); --"Visions of Insanity"
+  SMARTBUFF_BMiscItem5      = C_Spell.GetSpellInfo(124036); --"Anglers Fishing Raft"
+  SMARTBUFF_BMiscItem6      = C_Spell.GetSpellInfo(125167); --"Ancient Pandaren Fishing Charm"
+  SMARTBUFF_BMiscItem7      = C_Spell.GetSpellInfo(138927); --"Burning Essence"
+  SMARTBUFF_BMiscItem8      = C_Spell.GetSpellInfo(160331); --"Blood Elf Illusion"
+  SMARTBUFF_BMiscItem9      = C_Spell.GetSpellInfo(158486); --"Safari Hat"
+  SMARTBUFF_BMiscItem10     = C_Spell.GetSpellInfo(158474); --"Savage Safari Hat"
+  SMARTBUFF_BMiscItem11     = C_Spell.GetSpellInfo(176151); --"Whispers of Insanity"
+  SMARTBUFF_BMiscItem12     = C_Spell.GetSpellInfo(193456); --"Gaze of the Legion"
+  SMARTBUFF_BMiscItem13     = C_Spell.GetSpellInfo(193547); --"Fel Crystal Infusion"
+  SMARTBUFF_BMiscItem14     = C_Spell.GetSpellInfo(190668); --"Empower"
+  SMARTBUFF_BMiscItem14_1   = C_Spell.GetSpellInfo(175457); --"Focus Augmentation"
+  SMARTBUFF_BMiscItem14_2   = C_Spell.GetSpellInfo(175456); --"Hyper Augmentation"
+  SMARTBUFF_BMiscItem14_3   = C_Spell.GetSpellInfo(175439); --"Stout Augmentation
+  SMARTBUFF_BMiscItem16     = C_Spell.GetSpellInfo(181642); --"Bodyguard Miniaturization Device"
+  SMARTBUFF_BMiscItem17     = C_Spell.GetSpellInfo(242551); --"Fel Focus"
   -- Shadowlands
-  SMARTBUFF_BAugmentRune    = getSpellInfoByName(367405); --"Eternal Augmentation from Eternal Augment Rune"
-  SMARTBUFF_BVieledAugment  = getSpellInfoByName(347901); --"Veiled Augmentation from Veiled Augment Rune"
-  SMARTBUFF_BDreamAugmentRune  = getSpellInfoByName(393438); --"Dream Augmentation from Dream Augment Rune"
+  SMARTBUFF_BAugmentRune    = C_Spell.GetSpellInfo(367405); --"Eternal Augmentation from Eternal Augment Rune"
+  SMARTBUFF_BVieledAugment  = C_Spell.GetSpellInfo(347901); --"Veiled Augmentation from Veiled Augment Rune"
+  SMARTBUFF_BDreamAugmentRune  = C_Spell.GetSpellInfo(393438); --"Dream Augmentation from Dream Augment Rune"
   -- Dragonflight
-  SMARTBUFF_BDraconicRune   = getSpellInfoByName(393438); -- Draconic Augmentation from Draconic Augment Rune
-  SMARTBUFF_BVantusRune_VotI_q1 = getSpellInfoByName(384154); -- Vantus Rune: Vault of the Incarnates (Quality 1)
-  SMARTBUFF_BVantusRune_VotI_q2 = getSpellInfoByName(384248); -- Vantus Rune: Vault of the Incarnates (Quality 2)
-  SMARTBUFF_BVantusRune_VotI_q3 = getSpellInfoByName(384306); -- Vantus Rune: Vault of the Incarnates (Quality 3)
+  SMARTBUFF_BDraconicRune   = C_Spell.GetSpellInfo(393438); -- Draconic Augmentation from Draconic Augment Rune
+  SMARTBUFF_BVantusRune_VotI_q1 = C_Spell.GetSpellInfo(384154); -- Vantus Rune: Vault of the Incarnates (Quality 1)
+  SMARTBUFF_BVantusRune_VotI_q2 = C_Spell.GetSpellInfo(384248); -- Vantus Rune: Vault of the Incarnates (Quality 2)
+  SMARTBUFF_BVantusRune_VotI_q3 = C_Spell.GetSpellInfo(384306); -- Vantus Rune: Vault of the Incarnates (Quality 3)
 
   S.LinkSafariHat           = { SMARTBUFF_BMiscItem9, SMARTBUFF_BMiscItem10 };
   S.LinkAugment             = { SMARTBUFF_BMiscItem14, SMARTBUFF_BMiscItem14_1, SMARTBUFF_BMiscItem14_2, SMARTBUFF_BMiscItem14_3, SMARTBUFF_BAugmentRune,  SMARTBUFF_BVieledAugment, SMARTBUFF_BDreamAugmentRune, SMARTBUFF_BDraconicRune };
 
   -- Flasks & Elixirs
-  SMARTBUFF_BFLASKTBC1      = getSpellInfoByName(28520);  --"Flask of Relentless Assault"
-  SMARTBUFF_BFLASKTBC2      = getSpellInfoByName(28540);  --"Flask of Pure Death"
-  SMARTBUFF_BFLASKTBC3      = getSpellInfoByName(28518);  --"Flask of Fortification"
-  SMARTBUFF_BFLASKTBC4      = getSpellInfoByName(28521);  --"Flask of Blinding Light"
-  SMARTBUFF_BFLASKTBC5      = getSpellInfoByName(28519);  --"Flask of Mighty Versatility"
-  SMARTBUFF_BFLASK1         = getSpellInfoByName(53760);  --"Flask of Endless Rage"
-  SMARTBUFF_BFLASK2         = getSpellInfoByName(53755);  --"Flask of the Frost Wyrm"
-  SMARTBUFF_BFLASK3         = getSpellInfoByName(53758);  --"Flask of Stoneblood"
-  SMARTBUFF_BFLASK4         = getSpellInfoByName(54212);  --"Flask of Pure Mojo"
-  SMARTBUFF_BFLASKCT1       = getSpellInfoByName(79471);  --"Flask of the Winds"
-  SMARTBUFF_BFLASKCT2       = getSpellInfoByName(79472);  --"Flask of Titanic Strength"
-  SMARTBUFF_BFLASKCT3       = getSpellInfoByName(79470);  --"Flask of the Draconic Mind"
-  SMARTBUFF_BFLASKCT4       = getSpellInfoByName(79469);  --"Flask of Steelskin"
-  SMARTBUFF_BFLASKCT5       = getSpellInfoByName(94160);  --"Flask of Flowing Water"
-  SMARTBUFF_BFLASKCT7       = getSpellInfoByName(92679);  --"Flask of Battle"
-  SMARTBUFF_BFLASKMOP1      = getSpellInfoByName(105617); --"Alchemist's Flask"
-  SMARTBUFF_BFLASKMOP2      = getSpellInfoByName(105694); --"Flask of the Earth"
-  SMARTBUFF_BFLASKMOP3      = getSpellInfoByName(105693); --"Flask of Falling Leaves"
-  SMARTBUFF_BFLASKMOP4      = getSpellInfoByName(105689); --"Flask of Spring Blossoms"
-  SMARTBUFF_BFLASKMOP5      = getSpellInfoByName(105691); --"Flask of the Warm Sun"
-  SMARTBUFF_BFLASKMOP6      = getSpellInfoByName(105696); --"Flask of Winter's Bite"
-  SMARTBUFF_BFLASKCT61      = getSpellInfoByName(79640);  --"Enhanced Intellect"
-  SMARTBUFF_BFLASKCT62      = getSpellInfoByName(79639);  --"Enhanced Agility"
-  SMARTBUFF_BFLASKCT63      = getSpellInfoByName(79638);  --"Enhanced Strength"
-  SMARTBUFF_BFLASKWOD1      = getSpellInfoByName(156077); --"Draenic Stamina Flask"
-  SMARTBUFF_BFLASKWOD2      = getSpellInfoByName(156071); --"Draenic Strength Flask"
-  SMARTBUFF_BFLASKWOD3      = getSpellInfoByName(156070); --"Draenic Intellect Flask"
-  SMARTBUFF_BFLASKWOD4      = getSpellInfoByName(156073); --"Draenic Agility Flask"
-  SMARTBUFF_BGRFLASKWOD1    = getSpellInfoByName(156084); --"Greater Draenic Stamina Flask"
-  SMARTBUFF_BGRFLASKWOD2    = getSpellInfoByName(156080); --"Greater Draenic Strength Flask"
-  SMARTBUFF_BGRFLASKWOD3    = getSpellInfoByName(156079); --"Greater Draenic Intellect Flask"
-  SMARTBUFF_BGRFLASKWOD4    = getSpellInfoByName(156064); --"Greater Draenic Agility Flask"
-  SMARTBUFF_BFLASKLEG1      = getSpellInfoByName(188035); --"Flask of Ten Thousand Scars"
-  SMARTBUFF_BFLASKLEG2      = getSpellInfoByName(188034); --"Flask of the Countless Armies"
-  SMARTBUFF_BFLASKLEG3      = getSpellInfoByName(188031); --"Flask of the Whispered Pact"
-  SMARTBUFF_BFLASKLEG4      = getSpellInfoByName(188033); --"Flask of the Seventh Demon"
-  SMARTBUFF_BFLASKBFA1      = getSpellInfoByName(251837); --"Flask of Endless Fathoms"
-  SMARTBUFF_BFLASKBFA2      = getSpellInfoByName(251836); --"Flask of the Currents"
-  SMARTBUFF_BFLASKBFA3      = getSpellInfoByName(251839); --"Flask of the Undertow"
-  SMARTBUFF_BFLASKBFA4      = getSpellInfoByName(251838); --"Flask of the Vast Horizon"
-  SMARTBUFF_BGRFLASKBFA1    = getSpellInfoByName(298837); --"Greather Flask of Endless Fathoms"
-  SMARTBUFF_BGRFLASKBFA2    = getSpellInfoByName(298836); --"Greater Flask of the Currents"
-  SMARTBUFF_BGRFLASKBFA3    = getSpellInfoByName(298841); --"Greather Flask of teh Untertow"
-  SMARTBUFF_BGRFLASKBFA4    = getSpellInfoByName(298839); --"Greater Flask of the Vast Horizon"
-  SMARTBUFF_BFLASKSL1       = getSpellInfoByName(307185); --"Spectral Flask of Power"
-  SMARTBUFF_BFLASKSL2       = getSpellInfoByName(307187); --"Spectral Flask of Stamina"
+  SMARTBUFF_BFLASKTBC1      = C_Spell.GetSpellInfo(28520);  --"Flask of Relentless Assault"
+  SMARTBUFF_BFLASKTBC2      = C_Spell.GetSpellInfo(28540);  --"Flask of Pure Death"
+  SMARTBUFF_BFLASKTBC3      = C_Spell.GetSpellInfo(28518);  --"Flask of Fortification"
+  SMARTBUFF_BFLASKTBC4      = C_Spell.GetSpellInfo(28521);  --"Flask of Blinding Light"
+  SMARTBUFF_BFLASKTBC5      = C_Spell.GetSpellInfo(28519);  --"Flask of Mighty Versatility"
+  SMARTBUFF_BFLASK1         = C_Spell.GetSpellInfo(53760);  --"Flask of Endless Rage"
+  SMARTBUFF_BFLASK2         = C_Spell.GetSpellInfo(53755);  --"Flask of the Frost Wyrm"
+  SMARTBUFF_BFLASK3         = C_Spell.GetSpellInfo(53758);  --"Flask of Stoneblood"
+  SMARTBUFF_BFLASK4         = C_Spell.GetSpellInfo(54212);  --"Flask of Pure Mojo"
+  SMARTBUFF_BFLASKCT1       = C_Spell.GetSpellInfo(79471);  --"Flask of the Winds"
+  SMARTBUFF_BFLASKCT2       = C_Spell.GetSpellInfo(79472);  --"Flask of Titanic Strength"
+  SMARTBUFF_BFLASKCT3       = C_Spell.GetSpellInfo(79470);  --"Flask of the Draconic Mind"
+  SMARTBUFF_BFLASKCT4       = C_Spell.GetSpellInfo(79469);  --"Flask of Steelskin"
+  SMARTBUFF_BFLASKCT5       = C_Spell.GetSpellInfo(94160);  --"Flask of Flowing Water"
+  SMARTBUFF_BFLASKCT7       = C_Spell.GetSpellInfo(92679);  --"Flask of Battle"
+  SMARTBUFF_BFLASKMOP1      = C_Spell.GetSpellInfo(105617); --"Alchemist's Flask"
+  SMARTBUFF_BFLASKMOP2      = C_Spell.GetSpellInfo(105694); --"Flask of the Earth"
+  SMARTBUFF_BFLASKMOP3      = C_Spell.GetSpellInfo(105693); --"Flask of Falling Leaves"
+  SMARTBUFF_BFLASKMOP4      = C_Spell.GetSpellInfo(105689); --"Flask of Spring Blossoms"
+  SMARTBUFF_BFLASKMOP5      = C_Spell.GetSpellInfo(105691); --"Flask of the Warm Sun"
+  SMARTBUFF_BFLASKMOP6      = C_Spell.GetSpellInfo(105696); --"Flask of Winter's Bite"
+  SMARTBUFF_BFLASKCT61      = C_Spell.GetSpellInfo(79640);  --"Enhanced Intellect"
+  SMARTBUFF_BFLASKCT62      = C_Spell.GetSpellInfo(79639);  --"Enhanced Agility"
+  SMARTBUFF_BFLASKCT63      = C_Spell.GetSpellInfo(79638);  --"Enhanced Strength"
+  SMARTBUFF_BFLASKWOD1      = C_Spell.GetSpellInfo(156077); --"Draenic Stamina Flask"
+  SMARTBUFF_BFLASKWOD2      = C_Spell.GetSpellInfo(156071); --"Draenic Strength Flask"
+  SMARTBUFF_BFLASKWOD3      = C_Spell.GetSpellInfo(156070); --"Draenic Intellect Flask"
+  SMARTBUFF_BFLASKWOD4      = C_Spell.GetSpellInfo(156073); --"Draenic Agility Flask"
+  SMARTBUFF_BGRFLASKWOD1    = C_Spell.GetSpellInfo(156084); --"Greater Draenic Stamina Flask"
+  SMARTBUFF_BGRFLASKWOD2    = C_Spell.GetSpellInfo(156080); --"Greater Draenic Strength Flask"
+  SMARTBUFF_BGRFLASKWOD3    = C_Spell.GetSpellInfo(156079); --"Greater Draenic Intellect Flask"
+  SMARTBUFF_BGRFLASKWOD4    = C_Spell.GetSpellInfo(156064); --"Greater Draenic Agility Flask"
+  SMARTBUFF_BFLASKLEG1      = C_Spell.GetSpellInfo(188035); --"Flask of Ten Thousand Scars"
+  SMARTBUFF_BFLASKLEG2      = C_Spell.GetSpellInfo(188034); --"Flask of the Countless Armies"
+  SMARTBUFF_BFLASKLEG3      = C_Spell.GetSpellInfo(188031); --"Flask of the Whispered Pact"
+  SMARTBUFF_BFLASKLEG4      = C_Spell.GetSpellInfo(188033); --"Flask of the Seventh Demon"
+  SMARTBUFF_BFLASKBFA1      = C_Spell.GetSpellInfo(251837); --"Flask of Endless Fathoms"
+  SMARTBUFF_BFLASKBFA2      = C_Spell.GetSpellInfo(251836); --"Flask of the Currents"
+  SMARTBUFF_BFLASKBFA3      = C_Spell.GetSpellInfo(251839); --"Flask of the Undertow"
+  SMARTBUFF_BFLASKBFA4      = C_Spell.GetSpellInfo(251838); --"Flask of the Vast Horizon"
+  SMARTBUFF_BGRFLASKBFA1    = C_Spell.GetSpellInfo(298837); --"Greather Flask of Endless Fathoms"
+  SMARTBUFF_BGRFLASKBFA2    = C_Spell.GetSpellInfo(298836); --"Greater Flask of the Currents"
+  SMARTBUFF_BGRFLASKBFA3    = C_Spell.GetSpellInfo(298841); --"Greather Flask of teh Untertow"
+  SMARTBUFF_BGRFLASKBFA4    = C_Spell.GetSpellInfo(298839); --"Greater Flask of the Vast Horizon"
+  SMARTBUFF_BFLASKSL1       = C_Spell.GetSpellInfo(307185); --"Spectral Flask of Power"
+  SMARTBUFF_BFLASKSL2       = C_Spell.GetSpellInfo(307187); --"Spectral Flask of Stamina"
   -- Dragonflight
-  SMARTBUFF_BFlaskDF1      = getSpellInfoByName(371345); -- Phial of the Eye in the Storm
-  SMARTBUFF_BFlaskDF2      = getSpellInfoByName(371204); -- Phial of Still Air
-  SMARTBUFF_BFlaskDF3      = getSpellInfoByName(371036); -- Phial of Icy Preservation
-  SMARTBUFF_BFlaskDF4      = getSpellInfoByName(374000); -- Iced Phial of Corrupting Rage
-  SMARTBUFF_BFlaskDF5      = getSpellInfoByName(371386); -- Phial of Charged Isolation
-  SMARTBUFF_BFlaskDF6      = getSpellInfoByName(373257); -- Phial of Glacial Fury
-  SMARTBUFF_BFlaskDF7      = getSpellInfoByName(370652); -- Phial of Static Empowerment
-  SMARTBUFF_BFlaskDF8      = getSpellInfoByName(371172); -- Phial of Tepid Versatility
-  SMARTBUFF_BFlaskDF9      = getSpellInfoByName(393700); -- Aerated Phial of Deftness
-  SMARTBUFF_BFlaskDF10     = getSpellInfoByName(393717); -- Steaming Phial of Finesse
-  SMARTBUFF_BFlaskDF11     = getSpellInfoByName(371186); -- Charged Phial of Alacrity
-  SMARTBUFF_BFlaskDF12     = getSpellInfoByName(393714); -- Crystalline Phial of Perception
+  SMARTBUFF_BFlaskDF1      = C_Spell.GetSpellInfo(371345); -- Phial of the Eye in the Storm
+  SMARTBUFF_BFlaskDF2      = C_Spell.GetSpellInfo(371204); -- Phial of Still Air
+  SMARTBUFF_BFlaskDF3      = C_Spell.GetSpellInfo(371036); -- Phial of Icy Preservation
+  SMARTBUFF_BFlaskDF4      = C_Spell.GetSpellInfo(374000); -- Iced Phial of Corrupting Rage
+  SMARTBUFF_BFlaskDF5      = C_Spell.GetSpellInfo(371386); -- Phial of Charged Isolation
+  SMARTBUFF_BFlaskDF6      = C_Spell.GetSpellInfo(373257); -- Phial of Glacial Fury
+  SMARTBUFF_BFlaskDF7      = C_Spell.GetSpellInfo(370652); -- Phial of Static Empowerment
+  SMARTBUFF_BFlaskDF8      = C_Spell.GetSpellInfo(371172); -- Phial of Tepid Versatility
+  SMARTBUFF_BFlaskDF9      = C_Spell.GetSpellInfo(393700); -- Aerated Phial of Deftness
+  SMARTBUFF_BFlaskDF10     = C_Spell.GetSpellInfo(393717); -- Steaming Phial of Finesse
+  SMARTBUFF_BFlaskDF11     = C_Spell.GetSpellInfo(371186); -- Charged Phial of Alacrity
+  SMARTBUFF_BFlaskDF12     = C_Spell.GetSpellInfo(393714); -- Crystalline Phial of Perception
   -- the Phial of Elemental Chaos gives 1 the following 4 random buffs every 60 seconds
-  SMARTBUFF_BFlaskDF13_1   = getSpellInfoByName(371348); -- Elemental Chaos: Fire
-  SMARTBUFF_BFlaskDF13_2   = getSpellInfoByName(371350); -- Elemental Chaos: Air
-  SMARTBUFF_BFlaskDF13_3   = getSpellInfoByName(371351); -- Elemental Chaos: Earth
-  SMARTBUFF_BFlaskDF13_4   = getSpellInfoByName(371353); -- Elemental Chaos: Frost
-  SMARTBUFF_BFlaskDF14     = getSpellInfoByName(393665); -- Aerated Phial of Quick Hands
+  SMARTBUFF_BFlaskDF13_1   = C_Spell.GetSpellInfo(371348); -- Elemental Chaos: Fire
+  SMARTBUFF_BFlaskDF13_2   = C_Spell.GetSpellInfo(371350); -- Elemental Chaos: Air
+  SMARTBUFF_BFlaskDF13_3   = C_Spell.GetSpellInfo(371351); -- Elemental Chaos: Earth
+  SMARTBUFF_BFlaskDF13_4   = C_Spell.GetSpellInfo(371353); -- Elemental Chaos: Frost
+  SMARTBUFF_BFlaskDF14     = C_Spell.GetSpellInfo(393665); -- Aerated Phial of Quick Hands
 
   S.LinkFlaskTBC            = { SMARTBUFF_BFLASKTBC1, SMARTBUFF_BFLASKTBC2, SMARTBUFF_BFLASKTBC3, SMARTBUFF_BFLASKTBC4, SMARTBUFF_BFLASKTBC5 };
   S.LinkFlaskCT7            = { SMARTBUFF_BFLASKCT1, SMARTBUFF_BFLASKCT2, SMARTBUFF_BFLASKCT3, SMARTBUFF_BFLASKCT4, SMARTBUFF_BFLASKCT5 };
@@ -859,57 +860,57 @@ function SMARTBUFF_InitSpellIDs()
   S.LinkFlaskSL             = { SMARTBUFF_BFLASKSL1, SMARTBUFF_BFLASKSL2 };
   S.LinkFlaskDF             = { SMARTBUFF_BFlaskDF1, SMARTBUFF_BFlaskDF2, SMARTBUFF_BFlaskDF3, SMARTBUFF_BFlaskDF4, SMARTBUFF_BFlaskDF5, SMARTBUFF_BFlaskDF6, SMARTBUFF_BFlaskDF7, SMARTBUFF_BFlaskDF8, SMARTBUFF_BFlaskDF9, SMARTBUFF_BFlaskDF10, SMARTBUFF_BFlaskDF11, SMARTBUFF_BFlaskDF12, SMARTBUFF_BFlaskDF13_1, SMARTBUFF_BFlaskDF13_2, SMARTBUFF_BFlaskDF13_3, SMARTBUFF_BFlaskDF13_4, SMARTBUFF_BFlaskDF14 };
 
-  SMARTBUFF_BELIXIRTBC1     = getSpellInfoByName(54494);  --"Major Agility" B
-  SMARTBUFF_BELIXIRTBC2     = getSpellInfoByName(33726);  --"Mastery" B
-  SMARTBUFF_BELIXIRTBC3     = getSpellInfoByName(28491);  --"Healing Power" B
-  SMARTBUFF_BELIXIRTBC4     = getSpellInfoByName(28502);  --"Major Defense" G
-  SMARTBUFF_BELIXIRTBC5     = getSpellInfoByName(28490);  --"Major Strength" B
-  SMARTBUFF_BELIXIRTBC6     = getSpellInfoByName(39625);  --"Major Fortitude" G
-  SMARTBUFF_BELIXIRTBC7     = getSpellInfoByName(28509);  --"Major Mageblood" B
-  SMARTBUFF_BELIXIRTBC8     = getSpellInfoByName(39627);  --"Draenic Wisdom" B
-  SMARTBUFF_BELIXIRTBC9     = getSpellInfoByName(54452);  --"Adept's Elixir" B
-  SMARTBUFF_BELIXIRTBC10    = getSpellInfoByName(134870); --"Empowerment" B
-  SMARTBUFF_BELIXIRTBC11    = getSpellInfoByName(33720);  --"Onslaught Elixir" B
-  SMARTBUFF_BELIXIRTBC12    = getSpellInfoByName(28503);  --"Major Shadow Power" B
-  SMARTBUFF_BELIXIRTBC13    = getSpellInfoByName(39628);  --"Ironskin" G
-  SMARTBUFF_BELIXIRTBC14    = getSpellInfoByName(39626);  --"Earthen Elixir" G
-  SMARTBUFF_BELIXIRTBC15    = getSpellInfoByName(28493);  --"Major Frost Power" B
-  SMARTBUFF_BELIXIRTBC16    = getSpellInfoByName(38954);  --"Fel Strength Elixir" B
-  SMARTBUFF_BELIXIRTBC17    = getSpellInfoByName(28501);  --"Major Firepower" B
-  SMARTBUFF_BELIXIR1        = getSpellInfoByName(28497);  --"Mighty Agility" B
-  SMARTBUFF_BELIXIR2        = getSpellInfoByName(60347);  --"Mighty Thoughts" G
-  SMARTBUFF_BELIXIR3        = getSpellInfoByName(53751);  --"Elixir of Mighty Fortitude" G
-  SMARTBUFF_BELIXIR4        = getSpellInfoByName(53748);  --"Mighty Strength" B
-  SMARTBUFF_BELIXIR5        = getSpellInfoByName(53747);  --"Elixir of Spirit" B
-  SMARTBUFF_BELIXIR6        = getSpellInfoByName(53763);  --"Protection" G
-  SMARTBUFF_BELIXIR7        = getSpellInfoByName(60343);  --"Mighty Defense" G
-  SMARTBUFF_BELIXIR8        = getSpellInfoByName(60346);  --"Lightning Speed" B
-  SMARTBUFF_BELIXIR9        = getSpellInfoByName(60344);  --"Expertise" B
-  SMARTBUFF_BELIXIR10       = getSpellInfoByName(60341);  --"Deadly Strikes" B
-  SMARTBUFF_BELIXIR11       = getSpellInfoByName(80532);  --"Armor Piercing"
-  SMARTBUFF_BELIXIR12       = getSpellInfoByName(60340);  --"Accuracy" B
-  SMARTBUFF_BELIXIR13       = getSpellInfoByName(53749);  --"Guru's Elixir" B
-  SMARTBUFF_BELIXIR14       = getSpellInfoByName(11334);  --"Elixir of Greater Agility" B
-  SMARTBUFF_BELIXIR15       = getSpellInfoByName(54452);  --"Adept's Elixir" B
-  SMARTBUFF_BELIXIR16       = getSpellInfoByName(33721);  --"Spellpower Elixir" B
-  SMARTBUFF_BELIXIRCT1      = getSpellInfoByName(79635);  --"Elixir of the Master" B
-  SMARTBUFF_BELIXIRCT2      = getSpellInfoByName(79632);  --"Elixir of Mighty Speed" B
-  SMARTBUFF_BELIXIRCT3      = getSpellInfoByName(79481);  --"Elixir of Impossible Accuracy" B
-  SMARTBUFF_BELIXIRCT4      = getSpellInfoByName(79631);  --"Prismatic Elixir" G
-  SMARTBUFF_BELIXIRCT5      = getSpellInfoByName(79480);  --"Elixir of Deep Earth" G
-  SMARTBUFF_BELIXIRCT6      = getSpellInfoByName(79477);  --"Elixir of the Cobra" B
-  SMARTBUFF_BELIXIRCT7      = getSpellInfoByName(79474);  --"Elixir of the Naga" B
-  SMARTBUFF_BELIXIRCT8      = getSpellInfoByName(79468);  --"Ghost Elixir" B
-  SMARTBUFF_BELIXIRMOP1     = getSpellInfoByName(105687); --"Elixir of Mirrors" G
-  SMARTBUFF_BELIXIRMOP2     = getSpellInfoByName(105685); --"Elixir of Peace" B
-  SMARTBUFF_BELIXIRMOP3     = getSpellInfoByName(105686); --"Elixir of Perfection" B
-  SMARTBUFF_BELIXIRMOP4     = getSpellInfoByName(105684); --"Elixir of the Rapids" B
-  SMARTBUFF_BELIXIRMOP5     = getSpellInfoByName(105683); --"Elixir of Weaponry" B
-  SMARTBUFF_BELIXIRMOP6     = getSpellInfoByName(105682); --"Mad Hozen Elixir" B
-  SMARTBUFF_BELIXIRMOP7     = getSpellInfoByName(105681); --"Mantid Elixir" G
-  SMARTBUFF_BELIXIRMOP8     = getSpellInfoByName(105688); --"Monk's Elixir" B
+  SMARTBUFF_BELIXIRTBC1     = C_Spell.GetSpellInfo(54494);  --"Major Agility" B
+  SMARTBUFF_BELIXIRTBC2     = C_Spell.GetSpellInfo(33726);  --"Mastery" B
+  SMARTBUFF_BELIXIRTBC3     = C_Spell.GetSpellInfo(28491);  --"Healing Power" B
+  SMARTBUFF_BELIXIRTBC4     = C_Spell.GetSpellInfo(28502);  --"Major Defense" G
+  SMARTBUFF_BELIXIRTBC5     = C_Spell.GetSpellInfo(28490);  --"Major Strength" B
+  SMARTBUFF_BELIXIRTBC6     = C_Spell.GetSpellInfo(39625);  --"Major Fortitude" G
+  SMARTBUFF_BELIXIRTBC7     = C_Spell.GetSpellInfo(28509);  --"Major Mageblood" B
+  SMARTBUFF_BELIXIRTBC8     = C_Spell.GetSpellInfo(39627);  --"Draenic Wisdom" B
+  SMARTBUFF_BELIXIRTBC9     = C_Spell.GetSpellInfo(54452);  --"Adept's Elixir" B
+  SMARTBUFF_BELIXIRTBC10    = C_Spell.GetSpellInfo(134870); --"Empowerment" B
+  SMARTBUFF_BELIXIRTBC11    = C_Spell.GetSpellInfo(33720);  --"Onslaught Elixir" B
+  SMARTBUFF_BELIXIRTBC12    = C_Spell.GetSpellInfo(28503);  --"Major Shadow Power" B
+  SMARTBUFF_BELIXIRTBC13    = C_Spell.GetSpellInfo(39628);  --"Ironskin" G
+  SMARTBUFF_BELIXIRTBC14    = C_Spell.GetSpellInfo(39626);  --"Earthen Elixir" G
+  SMARTBUFF_BELIXIRTBC15    = C_Spell.GetSpellInfo(28493);  --"Major Frost Power" B
+  SMARTBUFF_BELIXIRTBC16    = C_Spell.GetSpellInfo(38954);  --"Fel Strength Elixir" B
+  SMARTBUFF_BELIXIRTBC17    = C_Spell.GetSpellInfo(28501);  --"Major Firepower" B
+  SMARTBUFF_BELIXIR1        = C_Spell.GetSpellInfo(28497);  --"Mighty Agility" B
+  SMARTBUFF_BELIXIR2        = C_Spell.GetSpellInfo(60347);  --"Mighty Thoughts" G
+  SMARTBUFF_BELIXIR3        = C_Spell.GetSpellInfo(53751);  --"Elixir of Mighty Fortitude" G
+  SMARTBUFF_BELIXIR4        = C_Spell.GetSpellInfo(53748);  --"Mighty Strength" B
+  SMARTBUFF_BELIXIR5        = C_Spell.GetSpellInfo(53747);  --"Elixir of Spirit" B
+  SMARTBUFF_BELIXIR6        = C_Spell.GetSpellInfo(53763);  --"Protection" G
+  SMARTBUFF_BELIXIR7        = C_Spell.GetSpellInfo(60343);  --"Mighty Defense" G
+  SMARTBUFF_BELIXIR8        = C_Spell.GetSpellInfo(60346);  --"Lightning Speed" B
+  SMARTBUFF_BELIXIR9        = C_Spell.GetSpellInfo(60344);  --"Expertise" B
+  SMARTBUFF_BELIXIR10       = C_Spell.GetSpellInfo(60341);  --"Deadly Strikes" B
+  SMARTBUFF_BELIXIR11       = C_Spell.GetSpellInfo(80532);  --"Armor Piercing"
+  SMARTBUFF_BELIXIR12       = C_Spell.GetSpellInfo(60340);  --"Accuracy" B
+  SMARTBUFF_BELIXIR13       = C_Spell.GetSpellInfo(53749);  --"Guru's Elixir" B
+  SMARTBUFF_BELIXIR14       = C_Spell.GetSpellInfo(11334);  --"Elixir of Greater Agility" B
+  SMARTBUFF_BELIXIR15       = C_Spell.GetSpellInfo(54452);  --"Adept's Elixir" B
+  SMARTBUFF_BELIXIR16       = C_Spell.GetSpellInfo(33721);  --"Spellpower Elixir" B
+  SMARTBUFF_BELIXIRCT1      = C_Spell.GetSpellInfo(79635);  --"Elixir of the Master" B
+  SMARTBUFF_BELIXIRCT2      = C_Spell.GetSpellInfo(79632);  --"Elixir of Mighty Speed" B
+  SMARTBUFF_BELIXIRCT3      = C_Spell.GetSpellInfo(79481);  --"Elixir of Impossible Accuracy" B
+  SMARTBUFF_BELIXIRCT4      = C_Spell.GetSpellInfo(79631);  --"Prismatic Elixir" G
+  SMARTBUFF_BELIXIRCT5      = C_Spell.GetSpellInfo(79480);  --"Elixir of Deep Earth" G
+  SMARTBUFF_BELIXIRCT6      = C_Spell.GetSpellInfo(79477);  --"Elixir of the Cobra" B
+  SMARTBUFF_BELIXIRCT7      = C_Spell.GetSpellInfo(79474);  --"Elixir of the Naga" B
+  SMARTBUFF_BELIXIRCT8      = C_Spell.GetSpellInfo(79468);  --"Ghost Elixir" B
+  SMARTBUFF_BELIXIRMOP1     = C_Spell.GetSpellInfo(105687); --"Elixir of Mirrors" G
+  SMARTBUFF_BELIXIRMOP2     = C_Spell.GetSpellInfo(105685); --"Elixir of Peace" B
+  SMARTBUFF_BELIXIRMOP3     = C_Spell.GetSpellInfo(105686); --"Elixir of Perfection" B
+  SMARTBUFF_BELIXIRMOP4     = C_Spell.GetSpellInfo(105684); --"Elixir of the Rapids" B
+  SMARTBUFF_BELIXIRMOP5     = C_Spell.GetSpellInfo(105683); --"Elixir of Weaponry" B
+  SMARTBUFF_BELIXIRMOP6     = C_Spell.GetSpellInfo(105682); --"Mad Hozen Elixir" B
+  SMARTBUFF_BELIXIRMOP7     = C_Spell.GetSpellInfo(105681); --"Mantid Elixir" G
+  SMARTBUFF_BELIXIRMOP8     = C_Spell.GetSpellInfo(105688); --"Monk's Elixir" B
   -- Draught of Ten Lands
-  SMARTBUFF_BEXP_POTION     = getSpellInfoByName(289982); --Draught of Ten Lands
+  SMARTBUFF_BEXP_POTION     = C_Spell.GetSpellInfo(289982); --Draught of Ten Lands
 
   --if (SMARTBUFF_GOTW) then
   --  SMARTBUFF_AddMsgD(SMARTBUFF_GOTW.." found");
@@ -917,26 +918,26 @@ function SMARTBUFF_InitSpellIDs()
 
   -- Buff map
   S.LinkStats = { SMARTBUFF_BOK, SMARTBUFF_MOTW, SMARTBUFF_LOTE, SMARTBUFF_LOTWT,
-                  getSpellInfoByName(159988), -- Bark of the Wild
-                  getSpellInfoByName(203538), -- Greater Blessing of Kings
-                  getSpellInfoByName(90363),  -- Embrace of the Shale Spider
-                  getSpellInfoByName(160077)  -- Strength of the Earth
+                  getSpellBookItemByName(159988), -- Bark of the Wild
+                  getSpellBookItemByName(203538), -- Greater Blessing of Kings
+                  getSpellBookItemByName(90363),  -- Embrace of the Shale Spider
+                  getSpellBookItemByName(160077)  -- Strength of the Earth
                 };
 
   S.LinkSta   = { SMARTBUFF_PWF, SMARTBUFF_COMMANDINGSHOUT, SMARTBUFF_BLOODPACT,
-                  getSpellInfoByName(50256),  -- Invigorating Roar
-                  getSpellInfoByName(90364),  -- Qiraji Fortitude
-                  getSpellInfoByName(160014), -- Sturdiness
-                  getSpellInfoByName(160003)  -- Savage Vigor
+                  getSpellBookItemByName(50256),  -- Invigorating Roar
+                  getSpellBookItemByName(90364),  -- Qiraji Fortitude
+                  getSpellBookItemByName(160014), -- Sturdiness
+                  getSpellBookItemByName(160003)  -- Savage Vigor
                 };
 
   S.LinkAp    = { SMARTBUFF_HORNOFWINTER, SMARTBUFF_BATTLESHOUT, SMARTBUFF_TRUESHOTAURA };
 
   S.LinkMa    = { SMARTBUFF_BOM, SMARTBUFF_DRUID_MKAURA, SMARTBUFF_GRACEOFAIR, SMARTBUFF_POTGRAVE,
-                  getSpellInfoByName(93435),  -- Roar of Courage
-                  getSpellInfoByName(160039), -- Keen Senses
-                  getSpellInfoByName(128997), -- Spirit Beast Blessing
-                  getSpellInfoByName(160073)  -- Plainswalking
+                  getSpellBookItemByName(93435),  -- Roar of Courage
+                  getSpellBookItemByName(160039), -- Keen Senses
+                  getSpellBookItemByName(128997), -- Spirit Beast Blessing
+                  getSpellBookItemByName(160073)  -- Plainswalking
                 };
 
   S.LinkInt   = { SMARTBUFF_BOW, SMARTBUFF_AB, SMARTBUFF_DALARANB };
