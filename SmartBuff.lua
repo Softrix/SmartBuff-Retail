@@ -9,6 +9,7 @@
 SMARTBUFF_DATE               = "111223";
 
 SMARTBUFF_VERSION            = "r25." .. SMARTBUFF_DATE;
+-- Update the NR below to force full reload of SB_Data on first login
 SMARTBUFF_VERSIONNR          = 100200;
 SMARTBUFF_TITLE              = "SmartBuff";
 SMARTBUFF_SUBTITLE           = "Supports you in casting buffs";
@@ -666,12 +667,11 @@ function SMARTBUFF_OnEvent(self, event, ...)
       local unit = nil;
       local spell = nil;
       local target = nil;
-
       if (arg1 and arg2) then
         if (not arg3) then arg3 = ""; end
         if (not arg4) then arg4 = ""; end
         SMARTBUFF_AddMsgD("Spellcast succeeded: target " ..
-        arg1 .. ", spellID " .. arg3 .. " (" .. GetSpellInfo(arg3) .. "), " .. arg4)
+        arg1 .. ", spellID " .. arg3 .. " (" .. C_Spell.GetSpellName(arg3) .. "), " .. arg4)
         if (string.find(arg1, "party") or string.find(arg1, "raid")) then
           spell = arg2;
         end
@@ -1041,7 +1041,7 @@ function SMARTBUFF_SetBuffs()
   if (B[CS()] == nil) then
     B[CS()] = {};
   end
-
+  
   SMARTBUFF_InitSpellIDs();
   SMARTBUFF_InitItemList();
   SMARTBUFF_InitSpellList();
@@ -1148,14 +1148,14 @@ function SMARTBUFF_SetBuff(buff, i, ia)
       end
     elseif (ia or cBuffs[i].Type == SMARTBUFF_CONST_ITEMGROUP) then
       -- itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice
-      local _, _, _, _, minLevel, _, _, _, _, texture = GetItemInfo(cBuffs[i].BuffS);
+      local _, _, _, _, minLevel, _, _, _, _, texture = C_Item.GetItemInfo(cBuffs[i].BuffS);
       if (not IsMinLevel(minLevel)) then
         cBuffs[i] = nil;
         return i;
       end
       cBuffs[i].IconS = texture;
     else
-      local _, _, _, _, minLevel = GetItemInfo(cBuffs[i].BuffS);
+      local _, _, _, _, minLevel = C_Item.GetItemInfo(cBuffs[i].BuffS);
       if (not IsMinLevel(minLevel)) then
         cBuffs[i] = nil;
         return i;
@@ -1296,10 +1296,10 @@ function SMARTBUFF_PreCheck(mode, force)
 
   if (UnitAffectingCombat("player")) then
     isCombat = true;
-    SMARTBUFF_AddMsgD("In combat");
+    --SMARTBUFF_AddMsgD("In combat");
   else
     isCombat = false;
-    SMARTBUFF_AddMsgD("Out of combat");
+    --SMARTBUFF_AddMsgD("Out of combat");
   end
 
   if (not isCombat and isSetBuffs) then
@@ -1513,7 +1513,7 @@ function SMARTBUFF_SyncBuffTimers()
   isSync = true;
   tSync = GetTime();
 
-  local ct = currentTemplate;
+  local ct = CT();
   local rbTime = 0;
   local i = 0;
   local buffS = nil;
@@ -1583,7 +1583,7 @@ end
 function SMARTBUFF_IsShapeshifted()
   if (sPlayerClass == "SHAMAN") then
     if (GetShapeshiftForm(true) > 0) then
-      return true, "Ghost Wolf";
+      return true, C_Spell.GetSpellInfo("Ghost Wolf");
     end
   elseif (sPlayerClass == "DRUID") then
     local i;
@@ -1951,7 +1951,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                     if (cr > 0) then
                       buff = buffnS;
                       if (cBuff.Type == SMARTBUFF_CONST_ITEMGROUP or cBuff.Type == SMARTBUFF_CONST_SCROLL) then
-                        cds, cd = GetItemCooldown(iid);
+                        cds, cd = 	C_Container.GetItemCooldown(iid);
                         cd = (cds + cd) - GetTime();
                         SMARTBUFF_AddMsgD(cr .. " " .. buffnS .. " found, cd = " .. cd);
                         if (cd > 0) then
@@ -2111,9 +2111,9 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
               -- check if shapeshifted and cancel buff if it is not possible to cast it
               if (buff and cBuff.Type ~= SMARTBUFF_CONST_TRACK and cBuff.Type ~= SMARTBUFF_CONST_FORCESELF) then
                 --isShapeshifted = true;
-                --sShapename = "Moonkingestalt";
+                --sShapename["name"] = "Moonkingestalt";
                 if (isShapeshifted) then
-                  if (string.find(cBuff.Params, sShapename)) then
+                  if (string.find(cBuff.Params, sShapename["name"])) then
                     --SMARTBUFF_AddMsgD("Cast " .. buff .. " while shapeshifted");
                   else
                     if (cBuff.Params == SMARTBUFF_DRUID_CAT) then
@@ -2145,7 +2145,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                       local bag, slot, count = SMARTBUFF_FindItem(buffnS, cBuff.Chain);
                       if (count > 0) then
                         sMsgWarning = "";
-                        return 0, SMARTBUFF_ACTION_ITEM, GetItemInfo(buffnS), iSlot, "player", cBuff.Type;
+                        return 0, SMARTBUFF_ACTION_ITEM, C_Item.GetItemInfo(buffnS), iSlot, "player", cBuff.Type;
                       end
                     end
                     r = 50;
@@ -2392,7 +2392,7 @@ function SMARTBUFF_CanApplyWeaponBuff(buff, slot)
 
   local itemLink = GetInventoryItemLink("player", slot);
   local _, _, itemCode = string.find(itemLink, "(%d+):");
-  local _, _, _, _, _, itemType, itemSubType = GetItemInfo(itemCode);
+  local _, _, _, _, _, itemType, itemSubType = C_Item.GetItemInfo(itemCode);
 
   --if (itemType and itemSubType) then
   --  SMARTBUFF_AddMsgD("Type: " .. itemType .. ", Subtype: " .. itemSubType);
@@ -2428,7 +2428,7 @@ end
 
 -- Casts a spell
 function SMARTBUFF_doCast(unit, id, spellName, levels, type)
-  SMARTBUFF_AddMsgD("doCast spellName "..spellName);
+  --SMARTBUFF_AddMsgD("doCast spellName "..spellName);
   if (id == nil) then return 9; end
   if (type == SMARTBUFF_CONST_TRACK and (GetTrackingTexture() ~= "Interface\\Minimap\\Tracking\\None")) then
     --SMARTBUFF_AddMsgD("Track already enabled: " .. iconTrack);
@@ -2436,8 +2436,8 @@ function SMARTBUFF_doCast(unit, id, spellName, levels, type)
   end
 
   -- check if spell has cooldown
-  local cooldown = C_Spell.GetSpellCooldown(spellName)
-  local cd = cooldown["duration"]
+  local cooldown = C_Spell.GetSpellCooldown(spellName);
+  local cd = cooldown["duration"];
   if (not cd) then
     -- move on
   elseif (cd > maxSkipCoolDown) then
@@ -2791,7 +2791,7 @@ function SMARTBUFF_IsFishingPoleEquiped()
   local link = GetInventoryItemLink("player", GetInventorySlotInfo("MainHandSlot"));
   if (not link) then return false end
 
-  local _, _, _, _, _, _, subType = GetItemInfo(link);
+  local _, _, _, _, _, _, subType = C_Item.GetItemInfo(link);
   if (not subType) then return false end
 
   --print(SG.FishingPole.." - "..subType);
@@ -2848,7 +2848,7 @@ function SMARTBUFF_CountReagent(reagent, chain)
     return -1, nil;
   end
   if (O.IncludeToys) then
-    local _, link = GetItemInfo(reagent) -- itemlink
+    local _, link = C_Item.GetItemInfo(reagent) -- itemlink
     local toy = SG.Toybox[link];
     if (toy) then
       return 1, toy[1];
@@ -2886,7 +2886,7 @@ function SMARTBUFF_FindItem(reagent, chain)
   end
 
   if (O.IncludeToys) then
-    local _, link = GetItemInfo(reagent) -- itemlink
+    local _, link = C_Item.GetItemInfo(reagent) -- itemlink
     local toy = SG.Toybox[link];
     if (toy) then
       return 999, toy[1], 1, toy[2];
@@ -3163,7 +3163,7 @@ function SMARTBUFF_Options_Init(self)
     SMARTBUFF_SetBuffs();
     InitBuffOrder(true);
   end
-  SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION);
+  --SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION);
 
   if (SMARTBUFF_OptionsGlobal == nil) then
     SMARTBUFF_OptionsGlobal = {};
@@ -4582,12 +4582,13 @@ local function OnScroll(self, cData, sBtnName)
   end
 
   FauxScrollFrame_Update(self, num, floor(numToDisplay / 3 + 0.5), ScrLineHeight);
+  -- [B]ufflist for current spec, current template
   local t = B[CS()][CT()];
   for i = 1, maxScrollButtons, 1 do
     n = i + FauxScrollFrame_GetOffset(self);
     btn = _G[sBtnName .. i];
     if (btn) then
-      if (n <= num) then
+      if (n <= num and t ~= nil) then
         btn:SetNormalFontObject("GameFontNormalSmall");
         btn:SetHighlightFontObject("GameFontHighlightSmall");
         btn:SetText(cData[n]);
