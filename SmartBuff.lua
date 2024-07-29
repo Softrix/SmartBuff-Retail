@@ -1296,10 +1296,10 @@ function SMARTBUFF_PreCheck(mode, force)
 
   if (UnitAffectingCombat("player")) then
     isCombat = true;
-    --SMARTBUFF_AddMsgD("In combat");
+    SMARTBUFF_AddMsgD("In combat");
   else
     isCombat = false;
-    --SMARTBUFF_AddMsgD("Out of combat");
+    SMARTBUFF_AddMsgD("Out of combat");
   end
 
   if (not isCombat and isSetBuffs) then
@@ -1951,7 +1951,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                     if (cr > 0) then
                       buff = buffnS;
                       if (cBuff.Type == SMARTBUFF_CONST_ITEMGROUP or cBuff.Type == SMARTBUFF_CONST_SCROLL) then
-                        cds, cd = 	C_Container.GetItemCooldown(iid);
+                        cds, cd = C_Container.GetItemCooldown(iid);
                         cd = (cds + cd) - GetTime();
                         SMARTBUFF_AddMsgD(cr .. " " .. buffnS .. " found, cd = " .. cd);
                         if (cd > 0) then
@@ -2428,7 +2428,7 @@ end
 
 -- Casts a spell
 function SMARTBUFF_doCast(unit, id, spellName, levels, type)
-  --SMARTBUFF_AddMsgD("doCast spellName "..spellName);
+  SMARTBUFF_AddMsgD("doCast spellName "..spellName);
   if (id == nil) then return 9; end
   if (type == SMARTBUFF_CONST_TRACK and (GetTrackingTexture() ~= "Interface\\Minimap\\Tracking\\None")) then
     --SMARTBUFF_AddMsgD("Track already enabled: " .. iconTrack);
@@ -3163,7 +3163,7 @@ function SMARTBUFF_Options_Init(self)
     SMARTBUFF_SetBuffs();
     InitBuffOrder(true);
   end
-  --SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION);
+  SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION);
 
   if (SMARTBUFF_OptionsGlobal == nil) then
     SMARTBUFF_OptionsGlobal = {};
