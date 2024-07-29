@@ -40,12 +40,18 @@ local function GetItems(items)
 end
 
 -- Spellbook abilities are not filtered properly this is workaround
+-- Return a spell name even if spell is not available
+-- This avoids nil comparisons hopefully
 local function getSpellBookItemByName(spellId)
   local name = C_Spell.GetSpellName(spellId);
   if (name == nil) then
     return nil;
   end
-  return C_Spell.GetSpellInfo(name);
+  local spellInfo = C_Spell.GetSpellInfo(name);
+  if (spellInfo == nil) then
+    return name;
+  end
+  return spellInfo;
 end
 
 local function InsertItem(t, type, itemId, spellId, duration, link)

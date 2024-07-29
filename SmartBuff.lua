@@ -1589,9 +1589,9 @@ function SMARTBUFF_IsShapeshifted()
     local i;
     for i = 1, GetNumShapeshiftForms(), 1 do
       local icon, active, castable, spellId = GetShapeshiftFormInfo(i);
-      local name = C_Spell.GetSpellInfo(spellId);
-      if (active and castable and name ~= SMARTBUFF_DRUID_TREANT) then
-        return true, name;
+      local spellIinfo = C_Spell.GetSpellInfo(spellId);
+      if (active and castable and spellIinfo ~= SMARTBUFF_DRUID_TREANT) then
+        return true, spellIinfo;
       end
     end
   end
@@ -1766,6 +1766,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
     --if (un) then print("Grp "..subgroup.." checking "..un.." ("..unit.."/"..uc.."/"..ur.."/"..uct.."/"..ucf..")", 0, 1, 0.5); end
 
     isShapeshifted, sShapename = SMARTBUFF_IsShapeshifted();
+    -- sShapename is spellInfo array
     --while (cBuffs[i] and cBuffs[i].BuffS) do
     for i, buffnS in pairs(B[CS()].Order) do
       --print(buffnS)
@@ -1788,7 +1789,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
         SMARTBUFF_AddMsgD("Exclusive check on " .. spell .. ", current spell = " .. buffnS);
       end
       if (bUsable and cBuff.Type == SMARTBUFF_CONST_SELF and not SMARTBUFF_IsPlayer(unit)) then bUsable = false end
-      if (bUsable and not cBuff.Type == SMARTBUFF_CONST_TRACK and not SMARTBUFF_IsItem(cBuff.Type) and not IsUsableSpell(buffnS)) then bUsable = false end
+      if (bUsable and not cBuff.Type == SMARTBUFF_CONST_TRACK and not SMARTBUFF_IsItem(cBuff.Type) and not C_Spell.IsSpellUsable(buffnS)) then bUsable = false end
       if (bUsable and bs.SelfNot and SMARTBUFF_IsPlayer(unit)) then bUsable = false end
       if (bUsable and cBuff.Params == SG.CheckFishingPole and SMARTBUFF_IsFishingPoleEquiped()) then bUsable = false end
 
@@ -1801,12 +1802,12 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
         isMounted = false;
         if (sPlayerClass == "PALADIN") then
           isMounted = IsMounted() or IsFlying();
-          if ((buffnS ~= SMARTBUFF_CRUSADERAURA and isMounted) or (buffnS == SMARTBUFF_CRUSADERAURA and not isMounted)) then
+          if ((buffnS ~= SMARTBUFF_CRUSADERAURA.name and isMounted) or (buffnS == SMARTBUFF_CRUSADERAURA.name and not isMounted)) then
             bUsable = false;
           end
         elseif (sPlayerClass == "DEATHKNIGHT") then
           isMounted = IsMounted();
-          if (buffnS ~= SMARTBUFF_PATHOFFROST and isMounted) then
+          if (buffnS ~= SMARTBUFF_PATHOFFROST.name and isMounted) then
             bUsable = false;
           end
         end
@@ -1814,11 +1815,11 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
       if (bUsable and not (cBuff.Type == SMARTBUFF_CONST_TRACK or SMARTBUFF_IsItem(cBuff.Type))) then
         -- check if you have enough mana/rage/energy to cast
-        local isUsable, notEnoughMana = IsUsableSpell(buffnS);
+        local isUsable, notEnoughMana = C_Spell.IsSpellUsable(buffnS);
         if (notEnoughMana) then
           bUsable = false;
           SMARTBUFF_AddMsgD("Buff " .. cBuff.BuffS .. ", not enough mana!");
-        elseif (mode ~= 1 and isUsable == nil and buffnS ~= SMARTBUFF_PWS) then
+        elseif (mode ~= 1 and isUsable == nil and buffnS ~= SMARTBUFF_PWS.name) then
           bUsable = false;
           SMARTBUFF_AddMsgD("Buff " .. cBuff.BuffS .. " is not usable!");
         end
@@ -1878,7 +1879,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   if (trackN ~= nil and not trackA) then
                     SMARTBUFF_AddMsgD(n .. ". " .. trackN .. " (" .. trackC .. ")");
                     if (trackN == buffnS) then
-                      if (sPlayerClass == "DRUID" and buffnS == SMARTBUFF_DRUID_TRACK) then
+                      if (sPlayerClass == "DRUID" and buffnS == SMARTBUFF_DRUID_TRACK.name) then
                         if (isShapeshifted and sShapename == SMARTBUFF_DRUID_CAT) then
                           buff = buffnS;
                           C_Minimap.SetTracking(n, 1);
@@ -2111,9 +2112,10 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
               -- check if shapeshifted and cancel buff if it is not possible to cast it
               if (buff and cBuff.Type ~= SMARTBUFF_CONST_TRACK and cBuff.Type ~= SMARTBUFF_CONST_FORCESELF) then
                 --isShapeshifted = true;
-                --sShapename["name"] = "Moonkingestalt";
                 if (isShapeshifted) then
-                  if (string.find(cBuff.Params, sShapename["name"])) then
+                  -- Buff linked to shapeshift form... or not
+                  -- Params is buff[5] in buffs 
+                  if (cBuff.Params == sShapename) then
                     --SMARTBUFF_AddMsgD("Cast " .. buff .. " while shapeshifted");
                   else
                     if (cBuff.Params == SMARTBUFF_DRUID_CAT) then
@@ -2461,7 +2463,7 @@ function SMARTBUFF_doCast(unit, id, spellName, levels, type)
   end
 
   -- check if you have enough mana/energy/rage to cast
-  local isUsable, notEnoughMana = IsUsableSpell(spellName);
+  local isUsable, notEnoughMana = C_Spell.IsSpellUsable(spellName);
   if (notEnoughMana) then
     return 6;
   end
@@ -2485,10 +2487,18 @@ end
 
 function UnitBuffByBuffName(target, buffname, filter)
   for i = 1, 40 do
-    name = UnitBuff(target, i, filter);
+    local AuraData = C_UnitAuras.GetAuraDataByIndex(target, i, filter);
+    if not AuraData then return end;
+    local name = AuraData.name;
     if not name then return end
     if name == buffname then
-      return UnitBuff(target, i, filter);
+      local icon = AuraData.icon;
+      local charges = AuraData.charges or 0;
+      local dispelName = AuraData.dispelName;
+      local duration = AuraData.duration;
+      local expirationTime = AuraData.expirationTime;
+      local source = AuraData.sourceUnit;
+      return name, icon, charges, dispelName, duration, expirationTime, source;
     end
   end
 end
@@ -2698,10 +2708,14 @@ end
 
 function UnitAuraBySpellName(target, spellname, filter)
   for i = 1, 40 do
-    name = UnitAura(target, i, filter);
+    local AuraData = C_UnitAuras.GetAuraDataByIndex(target, i, filter);
+    if not AuraData then return end;
+    local name = AuraData.name;
     if not name then return end
     if name == spellname then
-      return UnitAura(target, i, filter);
+      local timeleft = AuraData.expirationTime;
+      local caster = AuraData.sourceUnit;
+      return name, timeleft, caster;
     end
   end
 end
@@ -2710,7 +2724,7 @@ function SMARTBUFF_CheckBuff(unit, buffName, isMine)
   if (not unit or not buffName) then
     return false, 0;
   end
-  local buff, _, _, _, _, timeleft, caster = UnitAuraBySpellName(unit, buffName, "HELPFUL");
+  local buff, timeleft, caster = UnitAuraBySpellName(unit, buffName, "HELPFUL");
   if (buff) then
     SMARTBUFF_AddMsgD(UnitName(unit) .. " buff found: " .. buff, 0, 1, 0.5);
     if (buff == buffName) then
@@ -2778,7 +2792,7 @@ end
 function SMARTBUFF_IsFishing(unit)
   -- spell, rank, displayName, icon, startTime, endTime, isTradeSkill = UnitChannelInfo("unit")
   local spell = UnitChannelInfo(unit);
-  if (spell ~= nil and SMARTBUFF_FISHING["name"] ~= nil and spell == SMARTBUFF_FISHING["name"]) then
+  if (spell ~= nil and SMARTBUFF_FISHING.name ~= nil and spell == SMARTBUFF_FISHING.name) then
     SMARTBUFF_AddMsgD("Channeling "..SMARTBUFF_FISHING);
     return true;
   end
@@ -2826,8 +2840,10 @@ function SMARTBUFF_IsDebuffTexture(unit, debufftex)
   local i = 1;
   local name, icon;
   -- name,rank,icon,count,type = UnitDebuff("unit", id or "name"[,"rank"])
-  while (UnitDebuff(unit, i)) do
-    name, icon, _, _ = UnitDebuff(unit, i);
+  while (C_UnitAuras.GetDebuffDataByIndex(unit, i)) do
+    local DebuffInfo = C_UnitAuras.GetDebuffDataByIndex(unit, i);
+    name = DebuffInfo.name;
+    icon = DebuffInfo.icon;
     --SMARTBUFF_AddMsgD(i .. ". " .. name .. ", " .. icon);
     if (string.find(icon, debufftex)) then
       active = true;
@@ -3112,7 +3128,7 @@ function SMARTBUFF_Options_Init(self)
     Cosmos_RegisterButton(SMARTBUFF_TITLE, SMARTBUFF_TITLE, SMARTBUFF_TITLE, imgSB, SMARTBUFF_OptionsFrame_Toggle);
   end
 
-  if (IsAddOnLoaded("Parrot")) then
+  if (C_AddOns.IsAddOnLoaded("Parrot")) then
     isParrot = true;
   end
 
@@ -4437,7 +4453,7 @@ function SMARTBUFF_CheckMiniMapButton()
   end
 
   -- Update the FuBar icon
-  if (IsAddOnLoaded("FuBar") and IsAddOnLoaded("FuBar_SmartBuffFu") and SMARTBUFF_Fu_SetIcon ~= nil) then
+  if (C_AddOns.IsAddOnLoaded("FuBar") and C_AddOns.IsAddOnLoaded("FuBar_SmartBuffFu") and SMARTBUFF_Fu_SetIcon ~= nil) then
     SMARTBUFF_Fu_SetIcon();
   end
 
