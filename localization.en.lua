@@ -24,7 +24,7 @@ SMARTBUFF_CREDITS = "|cffffffff"
 ;
 
 -- Weapon types
-SMARTBUFF_WEAPON_STANDARD = {"Daggers", "Axes", "Swords", "Maces", "Staves", "Fist Weapons", "Polearms", "Thrown", "Crossbows", "Bows"};
+SMARTBUFF_WEAPON_STANDARD = {"Daggers", "Axes", "Swords", "Maces", "Staves", "Fist Weapons", "Polearms", "Thrown", "Crossbows", "Bows", "Shields"};
 SMARTBUFF_WEAPON_BLUNT = {"Maces", "Staves", "Fist Weapons"};
 SMARTBUFF_WEAPON_BLUNT_PATTERN = "Weightstone$";
 SMARTBUFF_WEAPON_SHARP = {"Daggers", "Axes", "Swords", "Polearms"};
