@@ -6,11 +6,11 @@
 -- Cast the most important buffs on you, tanks or party/raid members/pets.
 -------------------------------------------------------------------------------
 
-SMARTBUFF_DATE               = "111223";
+SMARTBUFF_DATE               = "010824";
 
-SMARTBUFF_VERSION            = "r25." .. SMARTBUFF_DATE;
+SMARTBUFF_VERSION            = "r26." .. SMARTBUFF_DATE;
 -- Update the NR below to force full reload of SB_Data on first login
-SMARTBUFF_VERSIONNR          = 100200;
+SMARTBUFF_VERSIONNR          = 110000;
 SMARTBUFF_TITLE              = "SmartBuff";
 SMARTBUFF_SUBTITLE           = "Supports you in casting buffs";
 SMARTBUFF_DESC               = "Cast the most important buffs on you, your tanks, party/raid members/pets";
@@ -23,7 +23,7 @@ local SmartbuffPrefix        = "Smartbuff";
 local SmartbuffSession       = true;
 local SmartbuffVerCheck      = false; -- for my use when checking guild users/testers versions  :)
 local buildInfo              = select(4, GetBuildInfo())
-local SmartbuffRevision      = 25;
+local SmartbuffRevision      = 26;
 local SmartbuffVerNotifyList = {}
 
 local SG                     = SMARTBUFF_GLOBALS;
@@ -997,7 +997,8 @@ function SMARTBUFF_GetSpellID(spellname)
   while C_SpellBook.GetSpellBookItemName(i, Enum.SpellBookSpellBank.Player) do
     spellN = C_SpellBook.GetSpellBookItemName(i, Enum.SpellBookSpellBank.Player);
     skillType, spellId = C_SpellBook.GetSpellBookItemType(i, Enum.SpellBookSpellBank.Player);
-    print(spellN .. " " .. spellId);
+--    print(spellN .. " " .. spellId);
+    print(skillType)
     if (skillType == "FLYOUT") then
       for j = 1, GetNumFlyouts() do
         local fid = GetFlyoutID(j);
@@ -1006,7 +1007,7 @@ function SMARTBUFF_GetSpellID(spellname)
           for s = 1, numSlots do
             local flySpellID, overrideSpellID, isKnown, spellN, slotSpecID = GetFlyoutSlotInfo(fid, s);
             if (isKnown and string.lower(spellN) == spellname) then
-              print(spellname .. " " .. spellN .. " " .. flySpellID);
+--              print(spellname .. " " .. spellN .. " " .. flySpellID);
               return flySpellID;
             end
           end
