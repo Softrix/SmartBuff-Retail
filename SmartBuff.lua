@@ -2453,10 +2453,11 @@ function SMARTBUFF_doCast(unit, id, spellName, levels, type)
   --SMARTBUFF_AddMsgD("Spell has range: "..spellName.." = "..ChkS(SpellHasRange(spellName)));
   if (type == SMARTBUFF_CONST_GROUP or type == SMARTBUFF_CONST_ITEMGROUP) then
     if (C_Spell.SpellHasRange(spellName)) then
-      if (not C_Spell.IsSpellInRange(spellName, unit)) then
+      if (C_Spell.IsSpellInRange(spellName, unit) == 0) then
         return 3;
       end
     else
+      -- TODO: This function is restricted to group only
       if (UnitInRange(unit) ~= 1) then
         return 3;
       end
