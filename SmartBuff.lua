@@ -2457,6 +2457,7 @@ function SMARTBUFF_doCast(unit, id, spellName, levels, type)
         return 3;
       end
     else
+      -- TODO: This function is restricted to group only
       if (UnitInRange(unit) ~= 1) then
         return 3;
       end
