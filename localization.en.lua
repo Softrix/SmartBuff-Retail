@@ -5,9 +5,9 @@
 -- Whats new info
 SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
   .."          |cffffffffDragonflight version by Codermik, additional retail\n"
-  .."          programming by Speedwaystar.\n"
+  .."          programming by Speedwaystar/MrWizard.\n"
   .."\n\n"
-  .."          Changes in r26.010824:\n\n"
+  .."          Changes in r27.030824:\n\n"
   .."             * This release is the result of very kind\n"
   .."               people dedicating their free time to fix\n"
   .."               the various issues while I was unable to\n"
