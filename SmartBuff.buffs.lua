@@ -496,7 +496,7 @@ function SMARTBUFF_InitItemList()
 
 -- TWW
   -- Consumables
-  _,SMARTBUFF_MiscItemTWW1          = C_Item.GetItemInfo(224572); --"Crystallized Augment Rune"
+  _,SMARTBUFF_TWWCrystalAugRune1          = C_Item.GetItemInfo(224572); --"Crystallized Augment Rune"
 
   -- Flasks and phials
   _,SMARTBUFF_FLASKTWW1_Q1          = C_Item.GetItemInfo(212269);  --"Flask of Tempered Aggression"
@@ -872,10 +872,10 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_BVantusRune_VotI_q2 = C_Spell.GetSpellInfo(384248); -- Vantus Rune: Vault of the Incarnates (Quality 2)
   SMARTBUFF_BVantusRune_VotI_q3 = C_Spell.GetSpellInfo(384306); -- Vantus Rune: Vault of the Incarnates (Quality 3)
   -- TWW
-  SMARTBUFF_BMiscItemTWW1 = C_Item.GetSpellInfo(453250);  -- Crystallization/Crystallized Augment Rune
+  SMARTBUFF_BTWWCrystalAugRune1 = C_Item.GetSpellInfo(453250);  -- Crystallization/Crystallized Augment Rune
 
   S.LinkSafariHat           = { SMARTBUFF_BMiscItem9, SMARTBUFF_BMiscItem10 };
-  S.LinkAugment             = { SMARTBUFF_BMiscItem14, SMARTBUFF_BMiscItem14_1, SMARTBUFF_BMiscItem14_2, SMARTBUFF_BMiscItem14_3, SMARTBUFF_BAugmentRune,  SMARTBUFF_BVieledAugment, SMARTBUFF_BDreamAugmentRune, SMARTBUFF_BDraconicRune, SMARTBUFF_MiscItemTWW1 };
+  S.LinkAugment             = { SMARTBUFF_BMiscItem14, SMARTBUFF_BMiscItem14_1, SMARTBUFF_BMiscItem14_2, SMARTBUFF_BMiscItem14_3, SMARTBUFF_BAugmentRune,  SMARTBUFF_BVieledAugment, SMARTBUFF_BDreamAugmentRune, SMARTBUFF_BDraconicRune, SMARTBUFF_TWWCrystalAugRune1 };
 
   -- Flasks & Elixirs
   SMARTBUFF_BFLASKTBC1      = C_Spell.GetSpellInfo(28520);  --"Flask of Relentless Assault"
@@ -1590,7 +1590,7 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_VantusRune_VotI_q3, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BVantusRune_VotI_q3},
 
     -- TWW
-    {SMARTBUFF_MiscItemTWW1, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BMiscItemTWW1, S.LinkAugment},
+    {SMARTBUFF_TWWCrystalAugRune1, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BTWWCrystalAugRune1, S.LinkAugment},
   };
 
   --      ItemId, SpellId, Duration [min]
