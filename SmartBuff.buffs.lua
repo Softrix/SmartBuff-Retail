@@ -32,7 +32,7 @@ local function GetItems(items)
   for _, id in pairs(items) do
     local _,name = C_Item.GetItemInfo(id);
     if (name) then
-      --print("Item found: "..id..", "..name);`
+      --print("Item found: "..id..", "..name);
       tinsert(t, name);
     end
   end
