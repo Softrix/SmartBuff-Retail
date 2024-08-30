@@ -142,6 +142,26 @@ function SMARTBUFF_InitItemList()
   _,SMARTBUFF_PrimalWhetstone_q1  = C_Item.GetItemInfo(191933); -- Primal Whestone (Quality 1)
   _,SMARTBUFF_PrimalWhetstone_q2  = C_Item.GetItemInfo(191939); -- Primal Whestone (Quality 2)
   _,SMARTBUFF_PrimalWhetstone_q3  = C_Item.GetItemInfo(191940); -- Primal Whestone (Quality 3)
+  -- The War Within
+  _,SMARTBUFF_TWWWeaponEnhance1_q1  = C_Item.GetItemInfo(222503);	--	Ironclaw Razorstone	
+  _,SMARTBUFF_TWWWeaponEnhance1_q2  = C_Item.GetItemInfo(222504);	--	Ironclaw Razorstone	
+  _,SMARTBUFF_TWWWeaponEnhance1_q3  = C_Item.GetItemInfo(222505);	--	Ironclaw Razorstone	
+  _,SMARTBUFF_TWWWeaponEnhance2_q1  = C_Item.GetItemInfo(222506);	--	Ironclaw Weightstone	
+  _,SMARTBUFF_TWWWeaponEnhance2_q2  = C_Item.GetItemInfo(222506);	--	Ironclaw Weightstone	
+  _,SMARTBUFF_TWWWeaponEnhance2_q3  = C_Item.GetItemInfo(222507);	--	Ironclaw Weightstone	
+  _,SMARTBUFF_TWWWeaponEnhance3_q1  = C_Item.GetItemInfo(222508);	--	Ironclaw Whetstone	
+  _,SMARTBUFF_TWWWeaponEnhance3_q2  = C_Item.GetItemInfo(222509);	--	Ironclaw Whetstone	
+  _,SMARTBUFF_TWWWeaponEnhance3_q3  = C_Item.GetItemInfo(222510);	--	Ironclaw Whetstone	
+  _,SMARTBUFF_TWWWeaponEnhance4_q1  = C_Item.GetItemInfo(224105);	--	Oil of Beledar's Grace	
+  _,SMARTBUFF_TWWWeaponEnhance4_q2  = C_Item.GetItemInfo(224106);	--	Oil of Beledar's Grace	
+  _,SMARTBUFF_TWWWeaponEnhance4_q3  = C_Item.GetItemInfo(224107);	--	Oil of Beledar's Grace	
+  _,SMARTBUFF_TWWWeaponEnhance5_q1  = C_Item.GetItemInfo(224108);	--	Oil of Deep Toxins	
+  _,SMARTBUFF_TWWWeaponEnhance5_q2  = C_Item.GetItemInfo(224109);	--	Oil of Deep Toxins	
+  _,SMARTBUFF_TWWWeaponEnhance5_q3  = C_Item.GetItemInfo(224109);	--	Oil of Deep Toxins	
+  _,SMARTBUFF_TWWWeaponEnhance6_q1  = C_Item.GetItemInfo(224110);	--	Algari Mana Oil	
+  _,SMARTBUFF_TWWWeaponEnhance6_q2  = C_Item.GetItemInfo(224111);	--	Algari Mana Oil	
+  _,SMARTBUFF_TWWWeaponEnhance6_q3  = C_Item.GetItemInfo(224113);	--	Algari Mana Oil	
+
 
   -- Food
 --  SMARTBUFF_KIBLERSBITS         = C_Item.GetItemInfo(33874); --"Kibler's Bits"
@@ -1347,6 +1367,26 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_PrimalWhetstone_q1, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_PrimalWhetstone_q2, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_PrimalWhetstone_q3, 120, SMARTBUFF_CONST_INV},
+    -- TWW
+    {SMARTBUFF_TWWWeaponEnhance1_q1, 60, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance1_q2, 60, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance1_q3, 60, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance2_q1, 60, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance2_q2, 60, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance2_q3, 60, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance3_q1, 60, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance3_q2, 60, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance3_q3, 60, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance4_q1, 120, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance4_q2, 120, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance4_q3, 120, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance5_q1, 120, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance5_q2, 120, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance5_q3, 120, SMARTBUFF_CONST_INV},	
+    {SMARTBUFF_TWWWeaponEnhance6_q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance6_q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance6_q3, 120, SMARTBUFF_CONST_INV},
+
   };
 
   -- Tracking
