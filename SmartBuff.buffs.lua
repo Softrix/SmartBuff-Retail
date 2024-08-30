@@ -875,7 +875,7 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_BVantusRune_VotI_q2 = C_Spell.GetSpellInfo(384248); -- Vantus Rune: Vault of the Incarnates (Quality 2)
   SMARTBUFF_BVantusRune_VotI_q3 = C_Spell.GetSpellInfo(384306); -- Vantus Rune: Vault of the Incarnates (Quality 3)
   -- TWW
-  SMARTBUFF_BTWWCrystalAugRune1 = C_Item.GetSpellInfo(453250);  -- Crystallization/Crystallized Augment Rune
+  SMARTBUFF_BTWWCrystalAugRune1 = C_Spell.GetSpellInfo(453250);  -- Crystallization/Crystallized Augment Rune
 
   S.LinkSafariHat           = { SMARTBUFF_BMiscItem9, SMARTBUFF_BMiscItem10 };
   S.LinkAugment             = { SMARTBUFF_BMiscItem14, SMARTBUFF_BMiscItem14_1, SMARTBUFF_BMiscItem14_2, SMARTBUFF_BMiscItem14_3, SMARTBUFF_BAugmentRune,  SMARTBUFF_BVieledAugment, SMARTBUFF_BDreamAugmentRune, SMARTBUFF_BDraconicRune, SMARTBUFF_TWWCrystalAugRune1 };
@@ -957,10 +957,10 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_BFLASKTWW8 =  C_Spell.GetSpellInfo(432265); -- Phial of Truesight
   SMARTBUFF_BFLASKTWW9 =  C_Spell.GetSpellInfo(432304); -- Phial of Enhanced Ambidexterity
   SMARTBUFF_BFLASKTWW10 =  C_Spell.GetSpellInfo(432286); -- Phial of Bountiful Seasons
-  SMARTBUFF_BFLASKTWWPvP_1 = C_Item.GetSpellInfo(432403);  -- Vicious Flask of Classical Spirits
-  SMARTBUFF_BFLASKTWWPvP_2 = C_Item.GetSpellInfo(432430);  -- Vicious Flask of Honor
-  SMARTBUFF_BFLASKTWWPvP_3 = C_Item.GetSpellInfo(432497);  -- Vicious Flask of Manifested Fury
-  SMARTBUFF_BFLASKTWWPvP_4 = C_Item.GetSpellInfo(432452);  -- Vicious Flask of the Wrecking Ball
+  SMARTBUFF_BFLASKTWWPvP_1 = C_Spell.GetSpellInfo(432403);  -- Vicious Flask of Classical Spirits
+  SMARTBUFF_BFLASKTWWPvP_2 = C_Spell.GetSpellInfo(432430);  -- Vicious Flask of Honor
+  SMARTBUFF_BFLASKTWWPvP_3 = C_Spell.GetSpellInfo(432497);  -- Vicious Flask of Manifested Fury
+  SMARTBUFF_BFLASKTWWPvP_4 = C_Spell.GetSpellInfo(432452);  -- Vicious Flask of the Wrecking Ball
 
   S.LinkFlaskTBC            = { SMARTBUFF_BFLASKTBC1, SMARTBUFF_BFLASKTBC2, SMARTBUFF_BFLASKTBC3, SMARTBUFF_BFLASKTBC4, SMARTBUFF_BFLASKTBC5 };
   S.LinkFlaskCT7            = { SMARTBUFF_BFLASKCT1, SMARTBUFF_BFLASKCT2, SMARTBUFF_BFLASKCT3, SMARTBUFF_BFLASKCT4, SMARTBUFF_BFLASKCT5 };
