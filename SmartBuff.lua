@@ -2792,10 +2792,10 @@ end
 
 -- IsFishing(unit)
 function SMARTBUFF_IsFishing(unit)
-  -- spell, rank, displayName, icon, startTime, endTime, isTradeSkill = UnitChannelInfo("unit")
+  -- name, displayName, textureID, startTimeMs, endTimeMs, isTradeskill, notInterruptible, spellID, isEmpowered, numEmpowerStages = UnitChannelInfo(unitToken)
   local spell = UnitChannelInfo(unit);
   if (spell ~= nil and SMARTBUFF_FISHING.name ~= nil and spell == SMARTBUFF_FISHING.name) then
-    SMARTBUFF_AddMsgD("Channeling "..SMARTBUFF_FISHING);
+    SMARTBUFF_AddMsgD("Channeling "..SMARTBUFF_FISHING.name);
     return true;
   end
   return false;
