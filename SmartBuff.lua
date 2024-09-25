@@ -901,7 +901,7 @@ function SMARTBUFF_SetTemplate()
         -- attempt to announce the addon version (if they have it)
         -- seems to be an issue with cross-realm, need to look at this later
         -- but in the meantime I am disabling it...  CM
-        --		if online then SendSmartbuffVersion(name, sRUnit) end
+        -- if online then SendSmartbuffVersion(name, sRUnit) end
       end
     end --end for
 
@@ -4533,9 +4533,9 @@ local function CreateScrollButton(name, parent, cBtn, onClick, onDragStop)
   local btn = CreateFrame("CheckButton", name, parent, "UICheckButtonTemplate");
   btn:SetWidth(ScrBtnSize);
   btn:SetHeight(ScrBtnSize);
-  --btn:RegisterForClicks("LeftButtonUp");
+  --  btn:RegisterForClicks("LeftButtonUp");
   btn:SetScript("OnClick", onClick);
-  --	btn:SetScript("OnMouseUp", onClick);
+  --  btn:SetScript("OnMouseUp", onClick);
 
   if (onDragStop ~= nil) then
     btn:SetMovable(true);
