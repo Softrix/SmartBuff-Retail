@@ -143,24 +143,24 @@ function SMARTBUFF_InitItemList()
   _,SMARTBUFF_PrimalWhetstone_q2  = C_Item.GetItemInfo(191939); -- Primal Whestone (Quality 2)
   _,SMARTBUFF_PrimalWhetstone_q3  = C_Item.GetItemInfo(191940); -- Primal Whestone (Quality 3)
   -- The War Within
-  _,SMARTBUFF_TWWWeaponEnhance1_q1  = C_Item.GetItemInfo(222503);   --  Ironclaw Razorstone 
-  _,SMARTBUFF_TWWWeaponEnhance1_q2  = C_Item.GetItemInfo(222504);   --  Ironclaw Razorstone 
-  _,SMARTBUFF_TWWWeaponEnhance1_q3  = C_Item.GetItemInfo(222505);   --  Ironclaw Razorstone 
-  _,SMARTBUFF_TWWWeaponEnhance2_q1  = C_Item.GetItemInfo(222506);   --  Ironclaw Weightstone    
-  _,SMARTBUFF_TWWWeaponEnhance2_q2  = C_Item.GetItemInfo(222506);   --  Ironclaw Weightstone    
-  _,SMARTBUFF_TWWWeaponEnhance2_q3  = C_Item.GetItemInfo(222507);   --  Ironclaw Weightstone    
-  _,SMARTBUFF_TWWWeaponEnhance3_q1  = C_Item.GetItemInfo(222508);   --  Ironclaw Whetstone  
-  _,SMARTBUFF_TWWWeaponEnhance3_q2  = C_Item.GetItemInfo(222509);   --  Ironclaw Whetstone  
-  _,SMARTBUFF_TWWWeaponEnhance3_q3  = C_Item.GetItemInfo(222510);   --  Ironclaw Whetstone  
-  _,SMARTBUFF_TWWWeaponEnhance4_q1  = C_Item.GetItemInfo(224105);   --  Oil of Beledar's Grace  
-  _,SMARTBUFF_TWWWeaponEnhance4_q2  = C_Item.GetItemInfo(224106);   --  Oil of Beledar's Grace  
-  _,SMARTBUFF_TWWWeaponEnhance4_q3  = C_Item.GetItemInfo(224107);   --  Oil of Beledar's Grace  
-  _,SMARTBUFF_TWWWeaponEnhance5_q1  = C_Item.GetItemInfo(224108);   --  Oil of Deep Toxins  
-  _,SMARTBUFF_TWWWeaponEnhance5_q2  = C_Item.GetItemInfo(224109);   --  Oil of Deep Toxins  
-  _,SMARTBUFF_TWWWeaponEnhance5_q3  = C_Item.GetItemInfo(224109);   --  Oil of Deep Toxins  
-  _,SMARTBUFF_TWWWeaponEnhance6_q1  = C_Item.GetItemInfo(224110);   --  Algari Mana Oil 
-  _,SMARTBUFF_TWWWeaponEnhance6_q2  = C_Item.GetItemInfo(224111);   --  Algari Mana Oil 
-  _,SMARTBUFF_TWWWeaponEnhance6_q3  = C_Item.GetItemInfo(224113);   --  Algari Mana Oil 
+  _,SMARTBUFF_TWWWeaponEnhance1_q1  = C_Item.GetItemInfo(222503);   --  Ironclaw Razorstone
+  _,SMARTBUFF_TWWWeaponEnhance1_q2  = C_Item.GetItemInfo(222504);   --  Ironclaw Razorstone
+  _,SMARTBUFF_TWWWeaponEnhance1_q3  = C_Item.GetItemInfo(222505);   --  Ironclaw Razorstone
+  _,SMARTBUFF_TWWWeaponEnhance2_q1  = C_Item.GetItemInfo(222506);   --  Ironclaw Weightstone
+  _,SMARTBUFF_TWWWeaponEnhance2_q2  = C_Item.GetItemInfo(222506);   --  Ironclaw Weightstone
+  _,SMARTBUFF_TWWWeaponEnhance2_q3  = C_Item.GetItemInfo(222507);   --  Ironclaw Weightstone
+  _,SMARTBUFF_TWWWeaponEnhance3_q1  = C_Item.GetItemInfo(222508);   --  Ironclaw Whetstone
+  _,SMARTBUFF_TWWWeaponEnhance3_q2  = C_Item.GetItemInfo(222509);   --  Ironclaw Whetstone
+  _,SMARTBUFF_TWWWeaponEnhance3_q3  = C_Item.GetItemInfo(222510);   --  Ironclaw Whetstone
+  _,SMARTBUFF_TWWWeaponEnhance4_q1  = C_Item.GetItemInfo(224105);   --  Oil of Beledar's Grace
+  _,SMARTBUFF_TWWWeaponEnhance4_q2  = C_Item.GetItemInfo(224106);   --  Oil of Beledar's Grace
+  _,SMARTBUFF_TWWWeaponEnhance4_q3  = C_Item.GetItemInfo(224107);   --  Oil of Beledar's Grace
+  _,SMARTBUFF_TWWWeaponEnhance5_q1  = C_Item.GetItemInfo(224108);   --  Oil of Deep Toxins
+  _,SMARTBUFF_TWWWeaponEnhance5_q2  = C_Item.GetItemInfo(224109);   --  Oil of Deep Toxins
+  _,SMARTBUFF_TWWWeaponEnhance5_q3  = C_Item.GetItemInfo(224109);   --  Oil of Deep Toxins
+  _,SMARTBUFF_TWWWeaponEnhance6_q1  = C_Item.GetItemInfo(224110);   --  Algari Mana Oil
+  _,SMARTBUFF_TWWWeaponEnhance6_q2  = C_Item.GetItemInfo(224111);   --  Algari Mana Oil
+  _,SMARTBUFF_TWWWeaponEnhance6_q3  = C_Item.GetItemInfo(224113);   --  Algari Mana Oil
 
 
   -- Food
@@ -249,7 +249,7 @@ function SMARTBUFF_InitItemList()
 
   -- Food item IDs
   S.FoodItems = GetItems({
-    -- WotLK -- Deprecating 
+    -- WotLK -- Deprecating
     -- 39691, 34125, 42779, 42997, 42998, 42999, 43000, 34767, 42995, 34769, 34754, 34758, 34766, 42994, 42996, 34756, 34768, 42993, 34755, 43001, 34757, 34752, 34751, 34750, 34749, 34764, 34765, 34763, 34762, 42942, 43268, 34748,
     -- CT -- Deprecating
     -- 62651, 62652, 62653, 62654, 62655, 62656, 62657, 62658, 62659, 62660, 62661, 62662, 62663, 62664, 62665, 62666, 62667, 62668, 62669, 62670, 62671, 62649,
@@ -258,10 +258,10 @@ function SMARTBUFF_InitItemList()
     -- WoD -- Deprecating
     -- 111431, 111432, 111433, 111434, 111435, 111436, 111437, 111438, 111439, 111440, 11441, 111442, 111443, 111444, 111445, 111446, 111447, 111448, 111449, 111450, 111451, 111452, 111453, 111454,127991, 111457, 111458, 118576,
     -- TWW almost all food items
-    222733, 222728, 222732, 222720, 222735, 222731, 222721, 222730, 225855, 222729, 225592, 222736, 222726, 222718, 222724, 222745, 222725, 222703, 222715, 222710, 222712, 222704, 
+    222733, 222728, 222732, 222720, 222735, 222731, 222721, 222730, 225855, 222729, 225592, 222736, 222726, 222718, 222724, 222745, 222725, 222703, 222715, 222710, 222712, 222704,
     222727, 222722, 222711, 222705, 222708, 222707, 223968, 222713, 222723, 222714, 222702, 222709, 222719, 222717, 222716, 222706,
     -- TWW adds hearty food version to 31 the above foods that make it persist through death
-    222781, 222766, 222776, 222780, 222778, 222768, 222783, 222779, 222751, 222773, 222753, 222774, 222752, 222758, 222770, 222775, 222777, 222759, 
+    222781, 222766, 222776, 222780, 222778, 222768, 222783, 222779, 222751, 222773, 222753, 222774, 222752, 222758, 222770, 222775, 222777, 222759,
     222760, 222765, 222763, 222769, 222761, 222772, 222757, 222762, 222754, 222755, 222756, 222767, 222750, 222764, 222771,
   });
 
@@ -511,52 +511,52 @@ function SMARTBUFF_InitItemList()
   _,SMARTBUFF_FLASKTWW2_Q1          = C_Item.GetItemInfo(212272);  --"Flask of Tempered Swiftness"
   _,SMARTBUFF_FLASKTWW2_Q2          = C_Item.GetItemInfo(212273);  --"Flask of Tempered Swiftness"
   _,SMARTBUFF_FLASKTWW2_Q3          = C_Item.GetItemInfo(212274);  --"Flask of Tempered Swiftness"
-  _,SMARTBUFF_FLASKTWW3_Q1          = C_Item.GetItemInfo(212275);  --"Flask of Tempered Versatility"    
-  _,SMARTBUFF_FLASKTWW3_Q2          = C_Item.GetItemInfo(212276);  --"Flask of Tempered Versatility"    
-  _,SMARTBUFF_FLASKTWW3_Q3          = C_Item.GetItemInfo(212277);  --"Flask of Tempered Versatility"    
-  _,SMARTBUFF_FLASKTWW4_Q1          = C_Item.GetItemInfo(212278);  --"Flask of Tempered Mastery"    
-  _,SMARTBUFF_FLASKTWW4_Q2          = C_Item.GetItemInfo(212279);  --"Flask of Tempered Mastery"    
-  _,SMARTBUFF_FLASKTWW4_Q3          = C_Item.GetItemInfo(212280);  --"Flask of Tempered Mastery"    
-  _,SMARTBUFF_FLASKTWW5_Q1          = C_Item.GetItemInfo(212281);  --"Flask of Alchemical Chaos"    
-  _,SMARTBUFF_FLASKTWW5_Q2          = C_Item.GetItemInfo(212282);  --"Flask of Alchemical Chaos"    
-  _,SMARTBUFF_FLASKTWW5_Q3          = C_Item.GetItemInfo(212283);  --"Flask of Alchemical Chaos"    
+  _,SMARTBUFF_FLASKTWW3_Q1          = C_Item.GetItemInfo(212275);  --"Flask of Tempered Versatility"
+  _,SMARTBUFF_FLASKTWW3_Q2          = C_Item.GetItemInfo(212276);  --"Flask of Tempered Versatility"
+  _,SMARTBUFF_FLASKTWW3_Q3          = C_Item.GetItemInfo(212277);  --"Flask of Tempered Versatility"
+  _,SMARTBUFF_FLASKTWW4_Q1          = C_Item.GetItemInfo(212278);  --"Flask of Tempered Mastery"
+  _,SMARTBUFF_FLASKTWW4_Q2          = C_Item.GetItemInfo(212279);  --"Flask of Tempered Mastery"
+  _,SMARTBUFF_FLASKTWW4_Q3          = C_Item.GetItemInfo(212280);  --"Flask of Tempered Mastery"
+  _,SMARTBUFF_FLASKTWW5_Q1          = C_Item.GetItemInfo(212281);  --"Flask of Alchemical Chaos"
+  _,SMARTBUFF_FLASKTWW5_Q2          = C_Item.GetItemInfo(212282);  --"Flask of Alchemical Chaos"
+  _,SMARTBUFF_FLASKTWW5_Q3          = C_Item.GetItemInfo(212283);  --"Flask of Alchemical Chaos"
   _,SMARTBUFF_FLASKTWWPvP_1         = C_Item.GetItemInfo(212289);  --"Vicious Flask of Classical Spirits"
   _,SMARTBUFF_FLASKTWWPvP_2         = C_Item.GetItemInfo(212292);  --"Vicious Flask of Honor"
   _,SMARTBUFF_FLASKTWWPvP_3         = C_Item.GetItemInfo(212295);  --"Vicious Flask of Manifested Fury"
-  _,SMARTBUFF_FLASKTWWPvP_4         = C_Item.GetItemInfo(212298);  --"Vicious Flask of the Wrecking Ball"  
+  _,SMARTBUFF_FLASKTWWPvP_4         = C_Item.GetItemInfo(212298);  --"Vicious Flask of the Wrecking Ball"
   _,SMARTBUFF_FLASKTWW6_Q1          = C_Item.GetItemInfo(212299);  --"Flask of Saving Graces"
-  _,SMARTBUFF_FLASKTWW6_Q2          = C_Item.GetItemInfo(212300);  --"Flask of Saving Graces"   
-  _,SMARTBUFF_FLASKTWW6_Q3          = C_Item.GetItemInfo(212301);  --"Flask of Saving Graces"   
+  _,SMARTBUFF_FLASKTWW6_Q2          = C_Item.GetItemInfo(212300);  --"Flask of Saving Graces"
+  _,SMARTBUFF_FLASKTWW6_Q3          = C_Item.GetItemInfo(212301);  --"Flask of Saving Graces"
   _,SMARTBUFF_FLASKTWW7_Q1          = C_Item.GetItemInfo(212305);  --"Phial of Concentrated Ingenuity"
   _,SMARTBUFF_FLASKTWW7_Q2          = C_Item.GetItemInfo(212306);  --"Phial of Concentrated Ingenuity"
   _,SMARTBUFF_FLASKTWW7_Q3          = C_Item.GetItemInfo(212307);  --"Phial of Concentrated Ingenuity"
   _,SMARTBUFF_FLASKTWW8_Q1          = C_Item.GetItemInfo(212308);  --"Phial of Truesight"
   _,SMARTBUFF_FLASKTWW8_Q2          = C_Item.GetItemInfo(212309);  --"Phial of Truesight"
   _,SMARTBUFF_FLASKTWW8_Q3          = C_Item.GetItemInfo(212310);  --"Phial of Truesight"
-  _,SMARTBUFF_FLASKTWW9_Q1          = C_Item.GetItemInfo(212311);  --"Phial of Enhanced Ambidexterity"  
-  _,SMARTBUFF_FLASKTWW9_Q2          = C_Item.GetItemInfo(212312);  --"Phial of Enhanced Ambidexterity"  
-  _,SMARTBUFF_FLASKTWW9_Q3          = C_Item.GetItemInfo(212313);  --"Phial of Enhanced Ambidexterity"  
-  _,SMARTBUFF_FLASKTWW10_Q1         = C_Item.GetItemInfo(212314);  --"Phial of Bountiful Seasons"  
-  _,SMARTBUFF_FLASKTWW10_Q2         = C_Item.GetItemInfo(212315);  --"Phial of Bountiful Seasons"  
-  _,SMARTBUFF_FLASKTWW10_Q3         = C_Item.GetItemInfo(212316);  --"Phial of Bountiful Seasons"  
-  _,SMARTBUFF_FLASKTWW11_Q1         = C_Item.GetItemInfo(212725);  --"Fleeting Flask of Tempered Aggression"   
-  _,SMARTBUFF_FLASKTWW11_Q2         = C_Item.GetItemInfo(212727);  --"Fleeting Flask of Tempered Aggression"   
-  _,SMARTBUFF_FLASKTWW11_Q3         = C_Item.GetItemInfo(212728);  --"Fleeting Flask of Tempered Aggression"   
-  _,SMARTBUFF_FLASKTWW12_Q1         = C_Item.GetItemInfo(212729);  --"Fleeting Flask of Tempered Swiftness"    
-  _,SMARTBUFF_FLASKTWW12_Q2         = C_Item.GetItemInfo(212730);  --"Fleeting Flask of Tempered Swiftness"    
-  _,SMARTBUFF_FLASKTWW12_Q3         = C_Item.GetItemInfo(212731);  --"Fleeting Flask of Tempered Swiftness"    
-  _,SMARTBUFF_FLASKTWW13_Q1         = C_Item.GetItemInfo(212732);  --"Fleeting Flask of Tempered Versatility"  
-  _,SMARTBUFF_FLASKTWW13_Q2         = C_Item.GetItemInfo(212733);  --"Fleeting Flask of Tempered Versatility"  
-  _,SMARTBUFF_FLASKTWW13_Q3         = C_Item.GetItemInfo(212734);  --"Fleeting Flask of Tempered Versatility"  
-  _,SMARTBUFF_FLASKTWW14_Q1         = C_Item.GetItemInfo(212735);  --"Fleeting Flask of Tempered Mastery"  
-  _,SMARTBUFF_FLASKTWW14_Q2         = C_Item.GetItemInfo(212736);  --"Fleeting Flask of Tempered Mastery"  
-  _,SMARTBUFF_FLASKTWW14_Q3         = C_Item.GetItemInfo(212738);  --"Fleeting Flask of Tempered Mastery"  
-  _,SMARTBUFF_FLASKTWW15_Q1         = C_Item.GetItemInfo(212739);  --"Fleeting Flask of Alchemical Chaos"  
-  _,SMARTBUFF_FLASKTWW15_Q2         = C_Item.GetItemInfo(212740);  --"Fleeting Flask of Alchemical Chaos"  
-  _,SMARTBUFF_FLASKTWW15_Q3         = C_Item.GetItemInfo(212741);  --"Fleeting Flask of Alchemical Chaos"  
-  _,SMARTBUFF_FLASKTWW16_Q1         = C_Item.GetItemInfo(212745);  --"Fleeting Flask of Saving Graces" 
-  _,SMARTBUFF_FLASKTWW16_Q2         = C_Item.GetItemInfo(212746);  --"Fleeting Flask of Saving Graces" 
-  _,SMARTBUFF_FLASKTWW16_Q3         = C_Item.GetItemInfo(212747);  --"Fleeting Flask of Saving Graces" 
+  _,SMARTBUFF_FLASKTWW9_Q1          = C_Item.GetItemInfo(212311);  --"Phial of Enhanced Ambidexterity"
+  _,SMARTBUFF_FLASKTWW9_Q2          = C_Item.GetItemInfo(212312);  --"Phial of Enhanced Ambidexterity"
+  _,SMARTBUFF_FLASKTWW9_Q3          = C_Item.GetItemInfo(212313);  --"Phial of Enhanced Ambidexterity"
+  _,SMARTBUFF_FLASKTWW10_Q1         = C_Item.GetItemInfo(212314);  --"Phial of Bountiful Seasons"
+  _,SMARTBUFF_FLASKTWW10_Q2         = C_Item.GetItemInfo(212315);  --"Phial of Bountiful Seasons"
+  _,SMARTBUFF_FLASKTWW10_Q3         = C_Item.GetItemInfo(212316);  --"Phial of Bountiful Seasons"
+  _,SMARTBUFF_FLASKTWW11_Q1         = C_Item.GetItemInfo(212725);  --"Fleeting Flask of Tempered Aggression"
+  _,SMARTBUFF_FLASKTWW11_Q2         = C_Item.GetItemInfo(212727);  --"Fleeting Flask of Tempered Aggression"
+  _,SMARTBUFF_FLASKTWW11_Q3         = C_Item.GetItemInfo(212728);  --"Fleeting Flask of Tempered Aggression"
+  _,SMARTBUFF_FLASKTWW12_Q1         = C_Item.GetItemInfo(212729);  --"Fleeting Flask of Tempered Swiftness"
+  _,SMARTBUFF_FLASKTWW12_Q2         = C_Item.GetItemInfo(212730);  --"Fleeting Flask of Tempered Swiftness"
+  _,SMARTBUFF_FLASKTWW12_Q3         = C_Item.GetItemInfo(212731);  --"Fleeting Flask of Tempered Swiftness"
+  _,SMARTBUFF_FLASKTWW13_Q1         = C_Item.GetItemInfo(212732);  --"Fleeting Flask of Tempered Versatility"
+  _,SMARTBUFF_FLASKTWW13_Q2         = C_Item.GetItemInfo(212733);  --"Fleeting Flask of Tempered Versatility"
+  _,SMARTBUFF_FLASKTWW13_Q3         = C_Item.GetItemInfo(212734);  --"Fleeting Flask of Tempered Versatility"
+  _,SMARTBUFF_FLASKTWW14_Q1         = C_Item.GetItemInfo(212735);  --"Fleeting Flask of Tempered Mastery"
+  _,SMARTBUFF_FLASKTWW14_Q2         = C_Item.GetItemInfo(212736);  --"Fleeting Flask of Tempered Mastery"
+  _,SMARTBUFF_FLASKTWW14_Q3         = C_Item.GetItemInfo(212738);  --"Fleeting Flask of Tempered Mastery"
+  _,SMARTBUFF_FLASKTWW15_Q1         = C_Item.GetItemInfo(212739);  --"Fleeting Flask of Alchemical Chaos"
+  _,SMARTBUFF_FLASKTWW15_Q2         = C_Item.GetItemInfo(212740);  --"Fleeting Flask of Alchemical Chaos"
+  _,SMARTBUFF_FLASKTWW15_Q3         = C_Item.GetItemInfo(212741);  --"Fleeting Flask of Alchemical Chaos"
+  _,SMARTBUFF_FLASKTWW16_Q1         = C_Item.GetItemInfo(212745);  --"Fleeting Flask of Saving Graces"
+  _,SMARTBUFF_FLASKTWW16_Q2         = C_Item.GetItemInfo(212746);  --"Fleeting Flask of Saving Graces"
+  _,SMARTBUFF_FLASKTWW16_Q3         = C_Item.GetItemInfo(212747);  --"Fleeting Flask of Saving Graces"
 
   -- Draught of Ten Lands
   _,SMARTBUFF_EXP_POTION          = C_Item.GetItemInfo(166750); --"Draught of Ten Lands"
@@ -1374,21 +1374,21 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_PrimalWhetstone_q2, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_PrimalWhetstone_q3, 120, SMARTBUFF_CONST_INV},
     -- TWW
-    {SMARTBUFF_TWWWeaponEnhance1_q1, 60, SMARTBUFF_CONST_INV},  
-    {SMARTBUFF_TWWWeaponEnhance1_q2, 60, SMARTBUFF_CONST_INV},  
-    {SMARTBUFF_TWWWeaponEnhance1_q3, 60, SMARTBUFF_CONST_INV},  
-    {SMARTBUFF_TWWWeaponEnhance2_q1, 60, SMARTBUFF_CONST_INV},  
-    {SMARTBUFF_TWWWeaponEnhance2_q2, 60, SMARTBUFF_CONST_INV},  
-    {SMARTBUFF_TWWWeaponEnhance2_q3, 60, SMARTBUFF_CONST_INV},  
-    {SMARTBUFF_TWWWeaponEnhance3_q1, 60, SMARTBUFF_CONST_INV},  
-    {SMARTBUFF_TWWWeaponEnhance3_q2, 60, SMARTBUFF_CONST_INV},  
-    {SMARTBUFF_TWWWeaponEnhance3_q3, 60, SMARTBUFF_CONST_INV},  
-    {SMARTBUFF_TWWWeaponEnhance4_q1, 120, SMARTBUFF_CONST_INV}, 
-    {SMARTBUFF_TWWWeaponEnhance4_q2, 120, SMARTBUFF_CONST_INV}, 
-    {SMARTBUFF_TWWWeaponEnhance4_q3, 120, SMARTBUFF_CONST_INV}, 
-    {SMARTBUFF_TWWWeaponEnhance5_q1, 120, SMARTBUFF_CONST_INV}, 
-    {SMARTBUFF_TWWWeaponEnhance5_q2, 120, SMARTBUFF_CONST_INV}, 
-    {SMARTBUFF_TWWWeaponEnhance5_q3, 120, SMARTBUFF_CONST_INV}, 
+    {SMARTBUFF_TWWWeaponEnhance1_q1, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance1_q2, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance1_q3, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance2_q1, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance2_q2, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance2_q3, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance3_q1, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance3_q2, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance3_q3, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance4_q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance4_q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance4_q3, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance5_q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance5_q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance5_q3, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance6_q1, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance6_q2, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance6_q3, 120, SMARTBUFF_CONST_INV},
@@ -1696,7 +1696,7 @@ function SMARTBUFF_InitSpellList()
   AddItem(198857, 385941,  30); -- Lucky Duck
 
 
-  -- Potions... but really it's flasks :) 
+  -- Potions... but really it's flasks :)
   SMARTBUFF_POTION = {
     {SMARTBUFF_ELIXIRTBC1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIRTBC1},
     {SMARTBUFF_ELIXIRTBC2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIRTBC2},
@@ -1851,7 +1851,7 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_FlaskDF14_q1, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFlaskDF14, S.LinkFlaskDF},
     {SMARTBUFF_FlaskDF14_q2, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFlaskDF14, S.LinkFlaskDF},
     {SMARTBUFF_FlaskDF14_q3, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFlaskDF14, S.LinkFlaskDF},
-    -- The War Within 
+    -- The War Within
     -- Default duration seems to be 60 and consuming more adds 60
     -- Fleeting ones do same buff
     {SMARTBUFF_FLASKTWW1_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW1, S.LinkFlaskTWW},
@@ -1874,7 +1874,7 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_FLASKTWW13_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW3, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW13_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW3, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW13_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW3, S.LinkFlaskTWW},
-    
+
     {SMARTBUFF_FLASKTWW4_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW4, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW4_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW4, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW4_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW4, S.LinkFlaskTWW},
@@ -1899,15 +1899,15 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_FLASKTWW7_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW7, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW7_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW7, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW7_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW7, S.LinkFlaskTWW},
-    
+
     {SMARTBUFF_FLASKTWW8_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW8, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW8_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW8, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW8_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW8, S.LinkFlaskTWW},
-    
+
     {SMARTBUFF_FLASKTWW9_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW9, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW9_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW9, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW9_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW9, S.LinkFlaskTWW},
-    
+
     {SMARTBUFF_FLASKTWW10_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW10, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW10_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW10, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWW10_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWW10, S.LinkFlaskTWW},

@@ -1042,7 +1042,7 @@ function SMARTBUFF_SetBuffs()
   if (B[CS()] == nil) then
     B[CS()] = {};
   end
-  
+
   SMARTBUFF_InitSpellIDs();
   SMARTBUFF_InitItemList();
   SMARTBUFF_InitSpellList();
@@ -2115,7 +2115,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                 --isShapeshifted = true;
                 if (isShapeshifted) then
                   -- Buff linked to shapeshift form... or not
-                  -- Params is buff[5] in buffs 
+                  -- Params is buff[5] in buffs
                   if (cBuff.Params == sShapename) then
                     --SMARTBUFF_AddMsgD("Cast " .. buff .. " while shapeshifted");
                   else
