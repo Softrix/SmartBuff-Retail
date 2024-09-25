@@ -7,9 +7,9 @@ if (GetLocale() == "esES") then
 
   -- credits
   SMARTBUFF_CREDITS = "|cffffffff"
-    .."Versión de Shadowlands por Codermik. Informe cualquier problema en CurseForge o mi discordia en:\n\n"
+    .."VersiÃ³n de Shadowlands por Codermik. Informe cualquier problema en CurseForge o mi discordia en:\n\n"
     .."|cff00e0ffhttps://discord.gg/R6EkZ94TKK\n\n"
-    .."|cffffffffSi aprecia la cantidad de trabajo involucrado y el tiempo que se tomó para brindarle estos diversos complementos, considere apoyarme de la siguiente manera:\n\n"
+    .."|cffffffffSi aprecia la cantidad de trabajo involucrado y el tiempo que se tomÃ³ para brindarle estos diversos complementos, considere apoyarme de la siguiente manera:\n\n"
     .."|cffffffffTwitch: |cff00e0ffhttps://www.twitch.tv/codermik\n"
     .."|cffffffffPayPal.Me: |cff00e0ffhttps://paypal.me/codermik\n\n"
   ;
@@ -48,7 +48,7 @@ if (GetLocale() == "esES") then
   -- Options Frame Text
   
   -- experimental feature - for testing.
-  SMARTBUFF_OFT_FIXBUFF      = "Corregir fundición"
+  SMARTBUFF_OFT_FIXBUFF      = "Corregir fundiciÃ³n"
   SMARTBUFF_OFTT_FIXBUFF         = "Marque si Smartbuff falla al lanzar beneficios."
   
   SMARTBUFF_OFT                = "SmartBuff On/Off";
@@ -105,8 +105,8 @@ if (GetLocale() == "esES") then
   SMARTBUFF_OFT_YES            = "Yes";
   SMARTBUFF_OFT_NO             = "No";
   SMARTBUFF_OFT_OKAY             = "Continuar"
-  SMARTBUFF_OFT_PURGE_DATA     = "?Está seguro de que desea restablecer TODOS los datos de SmartBuff?\n?Esta acción forzará una recarga de la interfaz de usuario!";
-  SMARTBUFF_OFT_REQ_RELOAD     = "Las nuevas versiones requieren una recarga de la GUI\nHaga clic en Continuar cuando esté lista.";
+  SMARTBUFF_OFT_PURGE_DATA     = "Â¿EstÃ¡ seguro de que desea restablecer TODOS los datos de SmartBuff?\nÂ¡Esta acciÃ³n forzarÃ¡ una recarga de la interfaz de usuario!";
+  SMARTBUFF_OFT_REQ_RELOAD     = "Las nuevas versiones requieren una recarga de la GUI\nHaga clic en Continuar cuando estÃ© lista.";
   
   -- Options Frame Tooltip Text
   SMARTBUFF_OFTT               = "Alterna SmartBuff On/Off";
@@ -179,9 +179,9 @@ if (GetLocale() == "esES") then
   
   -- Messages
   SMARTBUFF_MSG_LOADED         = "cargado";
-  SMARTBUFF_MSG_NEWVER1        = "|cff00e0ffSmartbuff : |cffffffff Hay una nueva versión disponible, estás usando |cffFFFF00";
+  SMARTBUFF_MSG_NEWVER1        = "|cff00e0ffSmartbuff : |cffffffff Hay una nueva versiÃ³n disponible, estÃ¡s usando |cffFFFF00";
   SMARTBUFF_MSG_NEWVER2        = "|cffffffff y construir |cffFFFF00r"
-  SMARTBUFF_MSG_NEWVER3        = "|cffffffff está actualmente disponible para su descarga. Únase a Discord para obtener la información más reciente en https://discord.gg/R6EkZ94TKK.";
+  SMARTBUFF_MSG_NEWVER3        = "|cffffffff estÃ¡ actualmente disponible para su descarga. Ãšnase a Discord para obtener la informaciÃ³n mÃ¡s reciente en https://discord.gg/R6EkZ94TKK.";
   SMARTBUFF_MSG_DISABLED       = "SmartBuff est\195\161 deshabilitado!";
   SMARTBUFF_MSG_SUBGROUP       = "Te has unido a un nuevo subgrupo, por favor comprueba las opciones!";
   SMARTBUFF_MSG_NOTHINGTODO    = "Nada que hacer";
@@ -202,7 +202,7 @@ if (GetLocale() == "esES") then
   SMARTBUFF_MSG_LEFT           = "tiempo restante";
   SMARTBUFF_MSG_CLASS          = "Clase";
   SMARTBUFF_MSG_CHARGES        = "cargas";
-  SMARTBUFF_MSG_SOUNDS         = "Selección de sonido: "
+  SMARTBUFF_MSG_SOUNDS         = "SelecciÃ³n de sonido: "
   SMARTBUFF_MSG_SPECCHANGED    = "Spec changed (%s), loading buff templates...";
   
   -- Support
