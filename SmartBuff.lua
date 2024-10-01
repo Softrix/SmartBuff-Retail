@@ -703,7 +703,10 @@ function SMARTBUFF_OnEvent(self, event, ...)
     end
   end
 
-  if event == "ZONE_CHANGED_NEW_AREA" or event == "GROUP_ROSTER_UPDATE" then
+  -- TODO: This is a blizzard bug workaround that spams GROUP_ROSTER_UPDATE during delves
+  local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID =
+  GetInstanceInfo()
+  if event == "ZONE_CHANGED_NEW_AREA" or (event == "GROUP_ROSTER_UPDATE" and instanceType ~= "scenario") then
     SMARTBUFF_SetTemplate()
   end
 end
