@@ -706,7 +706,7 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_EVERLIVINGW     = getSpellBookItemByName(382021); --"Everliving Weapon"
   SMARTBUFF_SKYFURY         = getSpellBookItemByName(462854); --"Skyfury"
   SMARTBUFF_TSWARD          = getSpellBookItemByName(462742); --"Thunderstrike Ward" -- Shield
-  SMARTBUFF_TIDEGUARD       = getSpellBookItemByName(445033); --"Tidecaller's Guard" -- Shield. Replaces Flametongue Weapon
+  SMARTBUFF_TIDEGUARD       = getSpellBookItemByName(457481); --"Tidecaller's Guard" -- Shield. Replaces Flametongue Weapon
 
   -- Shaman buff links
   S.ChainShamanShield = { SMARTBUFF_LIGHTNINGSHIELD, SMARTBUFF_WATERSHIELD, SMARTBUFF_EARTHSHIELD };
