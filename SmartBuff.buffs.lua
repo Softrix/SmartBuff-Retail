@@ -1702,6 +1702,8 @@ function SMARTBUFF_InitSpellList()
   AddItem(199902, 388275,  30); -- Wayfarer's Compass
   AddItem(202019, 396172,  30); -- Golden Dragon Goblet
   AddItem(198857, 385941,  30); -- Lucky Duck
+  -- TWW
+  AddItem(212518, 431709, 60);  -- Vial of Endless Draconic Scales
 
 
   -- Potions... but really it's flasks :)
