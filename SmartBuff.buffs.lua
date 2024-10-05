@@ -768,6 +768,8 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_DEVOTIONAURA          = getSpellBookItemByName(465); --"Devotion Aura"
   SMARTBUFF_RETRIBUTIONAURA       = getSpellBookItemByName(183435); --"Retribution Aura"
   SMARTBUFF_CONCENTRATIONAURA     = getSpellBookItemByName(317920); --"Concentration Aura"
+  SMARTBUFF_RITEOFSANTIFICATION   = getSpellBookItemByName(433568); --"Right of Sanctification, Hero"
+  SMARTBUFF_RITEOFADJURATION      = getSpellBookItemByName(433584); --"Right of Adjuration, Hero"
   -- Paladin buff links
   S.ChainPaladinAura     = { SMARTBUFF_DEVOTIONAURA, SMARTBUFF_RETRIBUTIONAURA, SMARTBUFF_CONCENTRATIONAURA };
   S.ChainPaladinSeal     = { SMARTBUFF_SOCOMMAND, SMARTBUFF_SOTRUTH, SMARTBUFF_SOJUSTICE, SMARTBUFF_SOINSIGHT, SMARTBUFF_SORIGHTEOUSNESS };
@@ -1273,7 +1275,9 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_SORIGHTEOUSNESS, -1, SMARTBUFF_CONST_STANCE, nil, nil, nil, S.ChainPaladinSeal},
       {SMARTBUFF_SOJUSTICE, -1, SMARTBUFF_CONST_STANCE, nil, nil, nil, S.ChainPaladinSeal},
       {SMARTBUFF_SOINSIGHT, -1, SMARTBUFF_CONST_STANCE, nil, nil, nil, S.ChainPaladinSeal},
-      {SMARTBUFF_SOCOMMAND, -1, SMARTBUFF_CONST_STANCE, nil, nil, nil, S.ChainPaladinSeal}
+      {SMARTBUFF_SOCOMMAND, -1, SMARTBUFF_CONST_STANCE, nil, nil, nil, S.ChainPaladinSeal},
+      {SMARTBUFF_RITEOFADJURATION, 60, SMARTBUFF_CONST_WEAPON},
+      {SMARTBUFF_RITEOFSANTIFICATION, 60, SMARTBUFF_CONST_WEAPON},
     };
   end
 
@@ -1698,6 +1702,8 @@ function SMARTBUFF_InitSpellList()
   AddItem(199902, 388275,  30); -- Wayfarer's Compass
   AddItem(202019, 396172,  30); -- Golden Dragon Goblet
   AddItem(198857, 385941,  30); -- Lucky Duck
+  -- TWW
+  AddItem(212518, 431709, 60);  -- Vial of Endless Draconic Scales
 
 
   -- Potions... but really it's flasks :)
