@@ -15,7 +15,7 @@ SMARTBUFF_CREDITS = "|cffffffff"
 ;
 
 -- Weapon types
-SMARTBUFF_WEAPON_STANDARD = {"Dagas", "Hachas", "Espadas", "Mazas", "Bastones", "Armas de pu\195\177o", "Lanzas", "Arma arrojadiza"};
+SMARTBUFF_WEAPON_STANDARD = {"Dagas", "Hachas", "Espadas", "Mazas", "Bastones", "Armas de pu\195\177o", "Lanzas", "Arma arrojadiza", "Escudo"};
 SMARTBUFF_WEAPON_BLUNT = {"Mazas", "Bastones", "Armas de pu\195\177o"};
 SMARTBUFF_WEAPON_BLUNT_PATTERN = "^Contrapeso %a+";
 SMARTBUFF_WEAPON_SHARP = {"Dagas", "Hachas", "Espadas", "Lanzas"};

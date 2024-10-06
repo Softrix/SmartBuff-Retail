@@ -14,7 +14,7 @@ SMARTBUFF_CREDITS = "|cffffffff"
 ;
 
 -- Weapon types
-SMARTBUFF_WEAPON_STANDARD = {"Кинжалы", "топоры", "мечи", "дробящее", "Посохи", "Кистевое", "Древковое", "Метательное"};
+SMARTBUFF_WEAPON_STANDARD = {"Кинжалы", "топоры", "мечи", "дробящее", "Посохи", "Кистевое", "Древковое", "Метательное", "Щит"};
 SMARTBUFF_WEAPON_BLUNT = {"дробящее", "Посохи", "Кистевое"};
 SMARTBUFF_WEAPON_BLUNT_PATTERN = "грузик$";
 SMARTBUFF_WEAPON_SHARP = {"Кинжалы", "топоры", "мечи", "Древковое"};

@@ -15,7 +15,7 @@ SMARTBUFF_CREDITS = "|cffffffff"
 ;
 
 -- Weapon types
-SMARTBUFF_WEAPON_STANDARD = {"匕首", "斧", "劍", "錘", "法杖", "拳套", "長柄武器", "投擲武器"};
+SMARTBUFF_WEAPON_STANDARD = {"匕首", "斧", "劍", "錘", "法杖", "拳套", "長柄武器", "投擲武器", "護盾"};
 SMARTBUFF_WEAPON_BLUNT = {"錘", "法杖", "拳套"};
 SMARTBUFF_WEAPON_BLUNT_PATTERN = "平衡石$";
 SMARTBUFF_WEAPON_SHARP = {"匕首", "斧", "劍", "長柄武器"};

@@ -16,7 +16,7 @@ SMARTBUFF_CREDITS = "|cffffffff"
 ;
 
 -- Weapon types
-SMARTBUFF_WEAPON_STANDARD = {"Dagues", "Haches", "Ep\195\169es", "Masses", "B\195\162tons", "Armes de pugilat", "Armes d\'hast", "Armes de jet"};
+SMARTBUFF_WEAPON_STANDARD = {"Dagues", "Haches", "Ep\195\169es", "Masses", "B\195\162tons", "Armes de pugilat", "Armes d\'hast", "Armes de jet", "Bouclier"};
 SMARTBUFF_WEAPON_BLUNT = {"Masses", "B\195\162tons", "Armes de pugilat"};
 SMARTBUFF_WEAPON_BLUNT_PATTERN = "^Pierre de lest ";
 SMARTBUFF_WEAPON_SHARP = {"Dagues", "Haches", "Ep\195\169es", "Armes d\'hast"};

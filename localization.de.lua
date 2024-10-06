@@ -14,7 +14,7 @@ SMARTBUFF_CREDITS = "|cffffffff"
 ;
 
 -- Weapon types
-SMARTBUFF_WEAPON_STANDARD = {"Dolche", "äxte", "schwerter", "streitkolben", "Stäbe", "Faustwaffen", "Stangenwaffen", "Wurfwaffe"};
+SMARTBUFF_WEAPON_STANDARD = {"Dolche", "äxte", "schwerter", "streitkolben", "Stäbe", "Faustwaffen", "Stangenwaffen", "Wurfwaffe", "Schild"};
 SMARTBUFF_WEAPON_BLUNT = {"streitkolben", "Faustwaffen", "Stäbe"};
 SMARTBUFF_WEAPON_BLUNT_PATTERN = "ewichtsstein$";
 SMARTBUFF_WEAPON_SHARP = {"Dolche", "äxte", "schwerter", "Stangenwaffen"};
