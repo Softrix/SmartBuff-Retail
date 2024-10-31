@@ -6,11 +6,16 @@
 -- Cast the most important buffs on you, tanks or party/raid members/pets.
 -------------------------------------------------------------------------------
 
-SMARTBUFF_DATE               = "011124"; -- EU Date
+-- Version/Release info, bump these as needed:
+-- Bump .toc file and optionally update notes in localization.en.lua
 
+SMARTBUFF_DATE               = "011124"; -- EU Date
 SMARTBUFF_VERSION            = "r31." .. SMARTBUFF_DATE;
 -- Update the NR below to force full reload of SB_Data on first login
+-- Bump on major logic or buff changes only
 SMARTBUFF_VERSIONNR          = 110005;
+-- End of version info
+
 SMARTBUFF_TITLE              = "SmartBuff";
 SMARTBUFF_SUBTITLE           = "Supports you in casting buffs";
 SMARTBUFF_DESC               = "Cast the most important buffs on you, your tanks, party/raid members/pets";
@@ -23,7 +28,6 @@ local SmartbuffPrefix        = "Smartbuff";
 local SmartbuffSession       = true;
 local SmartbuffVerCheck      = false; -- for my use when checking guild users/testers versions  :)
 local buildInfo              = select(4, GetBuildInfo())
-local SmartbuffRevision      = 30;
 local SmartbuffVerNotifyList = {}
 
 local SG                     = SMARTBUFF_GLOBALS;
@@ -31,9 +35,6 @@ local OG                     = nil; -- Options global
 local O                      = nil; -- Options local
 local B                      = nil; -- Buff settings local
 local _;
-
-BINDING_HEADER_SMARTBUFF     = "SmartBuff";
-SMARTBUFF_BOOK_TYPE_SPELL    = "spell";
 
 local GlobalCd               = 1.5;
 local maxSkipCoolDown        = 3;
@@ -430,7 +431,7 @@ local function SendSmartbuffVersion(player, unit)
   end
   -- not announced, add the player and announce.
   tinsert(SmartbuffVerNotifyList, { player, unit, GetTime() })
-  C_ChatInfo.SendAddonMessage(SmartbuffPrefix, SmartbuffRevision, "WHISPER", player)
+  C_ChatInfo.SendAddonMessage(SmartbuffPrefix, SMARTBUFF_VERSION, "WHISPER", player)
   SMARTBUFF_AddMsgD(string.format("%s was sent version information.", player))
 end
 
@@ -507,7 +508,7 @@ function SMARTBUFF_OnEvent(self, event, ...)
 
   if ((event == "UNIT_NAME_UPDATE" and arg1 == "player") or event == "PLAYER_ENTERING_WORLD") then
     if IsPlayerInGuild() and event == "PLAYER_ENTERING_WORLD" then
-      C_ChatInfo.SendAddonMessage(SmartbuffPrefix, SmartbuffRevision, "GUILD")
+      C_ChatInfo.SendAddonMessage(SmartbuffPrefix, SMARTBUFF_VERSION, "GUILD")
     end
     isPlayer = true;
     if (event == "PLAYER_ENTERING_WORLD" and isInit and O.Toggle) then
@@ -531,8 +532,7 @@ function SMARTBUFF_OnEvent(self, event, ...)
     if arg1 == SmartbuffPrefix then
       -- its us.
       if arg2 then
-        arg2 = tonumber(arg2)
-        if arg2 > SmartbuffRevision and SmartbuffSession then
+        if arg2 > SMARTBUFF_VERSION and SmartbuffSession then
           DEFAULT_CHAT_FRAME:AddMessage(SMARTBUFF_MSG_NEWVER1 ..
           SMARTBUFF_VERSION .. SMARTBUFF_MSG_NEWVER2 .. arg2 .. SMARTBUFF_MSG_NEWVER3)
           SmartbuffSession = false
