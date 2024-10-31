@@ -804,7 +804,6 @@ function SMARTBUFF_InitSpellIDs()
 
   -- Evoker
   SMARTBUFF_BRONZEBLESSING  = getSpellBookItemByName(364342);   --"Blessing of the Bronze"
-  SMARTBUFF_Visage          = getSpellBookItemByName(351239);   --"Visage"
   SMARTBUFF_SENSEPOWER      = getSpellBookItemByName(361021);   --"Sense Power"
   SMARTBUFF_SourceOfMagic   = getSpellBookItemByName(369459);   --"Source of Magic"
   SMARTBUFF_EbonMight       = getSpellBookItemByName(395152);   --"Ebon Might"
@@ -836,6 +835,7 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_BERSERKING      = getSpellBookItemByName(26297); --"Berserking"
   SMARTBUFF_WOTFORSAKEN     = getSpellBookItemByName(7744);  --"Will of the Forsaken"
   SMARTBUFF_WarStomp        = getSpellBookItemByName(20549); --"War Stomp"
+  SMARTBUFF_Visage          = getSpellBookItemByName(351239); --"Evoker Visage"
 
   -- Food
   SMARTBUFF_FOOD_AURA       = C_Spell.GetSpellInfo(46899); --"Well Fed"
@@ -1318,7 +1318,6 @@ function SMARTBUFF_InitSpellList()
   -- Evoker
   if (SMARTBUFF_PLAYERCLASS == "EVOKER") then
     SMARTBUFF_BUFFLIST = {
-      {SMARTBUFF_Visage, -1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_SENSEPOWER, -1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_BRONZEBLESSING, 60, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_Timelessness, 30, SMARTBUFF_CONST_GROUP, {1}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER"},
@@ -1420,12 +1419,13 @@ function SMARTBUFF_InitSpellList()
 
   -- Racial
   SMARTBUFF_RACIAL = {
-    {SMARTBUFF_STONEFORM, 0.133, SMARTBUFF_CONST_SELF},  -- Dwarv
+    {SMARTBUFF_STONEFORM, 0.133, SMARTBUFF_CONST_SELF},  -- Dwarf
     --{SMARTBUFF_PRECEPTION, 0.333, SMARTBUFF_CONST_SELF}, -- Human
     {SMARTBUFF_BLOODFURY, 0.416, SMARTBUFF_CONST_SELF},  -- Orc
     {SMARTBUFF_BERSERKING, 0.166, SMARTBUFF_CONST_SELF}, -- Troll
     {SMARTBUFF_WOTFORSAKEN, 0.083, SMARTBUFF_CONST_SELF}, -- Undead
-    {SMARTBUFF_WarStomp, 0.033, SMARTBUFF_CONST_SELF} -- Tauer
+    {SMARTBUFF_WarStomp, 0.033, SMARTBUFF_CONST_SELF}, -- Tauren
+    {SMARTBUFF_Visage, -1, SMARTBUFF_CONST_SELF} -- Evoker
   };
 
   -- FOOD

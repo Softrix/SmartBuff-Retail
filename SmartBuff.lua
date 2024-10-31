@@ -6,11 +6,11 @@
 -- Cast the most important buffs on you, tanks or party/raid members/pets.
 -------------------------------------------------------------------------------
 
-SMARTBUFF_DATE               = "011024"; -- EU Date
+SMARTBUFF_DATE               = "011124"; -- EU Date
 
-SMARTBUFF_VERSION            = "r30." .. SMARTBUFF_DATE;
+SMARTBUFF_VERSION            = "r31." .. SMARTBUFF_DATE;
 -- Update the NR below to force full reload of SB_Data on first login
-SMARTBUFF_VERSIONNR          = 110002;
+SMARTBUFF_VERSIONNR          = 110005;
 SMARTBUFF_TITLE              = "SmartBuff";
 SMARTBUFF_SUBTITLE           = "Supports you in casting buffs";
 SMARTBUFF_DESC               = "Cast the most important buffs on you, your tanks, party/raid members/pets";
