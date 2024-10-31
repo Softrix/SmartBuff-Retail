@@ -472,6 +472,7 @@ function SMARTBUFF_OnLoad(self)
   self:RegisterEvent("UNIT_SPELLCAST_FAILED");
   self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
   self:RegisterEvent("PLAYER_LEVEL_UP");
+  self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED");
   --auto template events
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -708,7 +709,8 @@ function SMARTBUFF_OnEvent(self, event, ...)
   local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID =
   GetInstanceInfo()
   -- Any other event here
-  if event == "ZONE_CHANGED_NEW_AREA" or (event == "GROUP_ROSTER_UPDATE" and instanceType ~= "scenario") or event == PLAYER_LEVEL_UP then
+  if event == "ZONE_CHANGED_NEW_AREA" or (event == "GROUP_ROSTER_UPDATE" and instanceType ~= "scenario") or
+    event == PLAYER_LEVEL_UP or event == PLAYER_SPECIALIZATION_CHANGED then
     SMARTBUFF_SetTemplate()
   end
 end
