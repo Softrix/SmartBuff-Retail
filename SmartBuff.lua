@@ -349,7 +349,7 @@ local function InitBuffSettings(cBI, reset)
     cBuff.ManaLimit = 0;
     if (cBI.Type == SMARTBUFF_CONST_GROUP or cBI.Type == SMARTBUFF_CONST_ITEMGROUP) then
       for n in pairs(cClasses) do
-        if (cBI.Type == SMARTBUFF_CONST_GROUP and n <= 13 and not string.find(cBI.Params, cClasses[n])) then
+        if (cBI.Type == SMARTBUFF_CONST_GROUP and not string.find(cBI.Params, cClasses[n])) then
           cBuff[cClasses[n]] = true;
         else
           cBuff[cClasses[n]] = false;
