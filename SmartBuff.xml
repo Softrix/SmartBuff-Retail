@@ -933,37 +933,6 @@
                     </OnLeave>
                 </Scripts>
             </CheckButton>
-            <CheckButton name="SmartBuffOptionsFrame_cbAntiDaze" inherits="UICheckButtonTemplate">
-                <Size>
-                    <AbsDimension x="24" y="24" />
-                </Size>
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="SmartBuffOptionsFrame_cbAutoSwitchTmp" relativePoint="TOPLEFT">
-                        <Offset>
-                            <AbsDimension x="0" y="-20" />
-                        </Offset>
-                    </Anchor>
-                </Anchors>
-                <HitRectInsets>
-                    <AbsInset left="0" right="0" top="0" bottom="0" />
-                </HitRectInsets>
-                <Scripts>
-                    <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_ANTIDAZE);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
-                    </OnLoad>
-                    <OnClick>
-                        SMARTBUFF_OAntiDaze();
-                    </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_ANTIDAZE, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
-            </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbLinkSelfBuffCheck" inherits="UICheckButtonTemplate" hidden="true">
                 <Size>
                     <AbsDimension x="24" y="24" />
