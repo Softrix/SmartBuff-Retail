@@ -7,9 +7,10 @@ SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
   .."          |cffffffffDragonflight version by Codermik, additional retail\n"
   .."          programming by Speedwaystar/MrWizard.\n"
   .."\n\n"
-  .."          Changes in r30.011024:\n\n"
-  .."             * Delve performance bug fix.\n"
-  .."             * Adding hearty food missing items\n"
+  .."          Changes in r32.151124:\n\n"
+  .."             * Purge buffs, not options on new release\n"
+  .."             * No forced UI reloads, less disruptions\n"
+  .."             * Bunch of minor bug fixes\n"
   .."\n\n"
   .."          |c0000FF96Many thanks to Chris S., Samantha R. and\n"
   .."          Twilight's Sundries for their kind donations.\n"
@@ -109,6 +110,8 @@ SMARTBUFF_OFT_LINKGRPBUFFCHECK  = "Grp link";
 SMARTBUFF_OFT_LINKSELFBUFFCHECK = "Self link";
 SMARTBUFF_OFT_RESETALL       = "Reset All";
 SMARTBUFF_OFT_RESETLIST      = "Reset List";
+SMARTBUFF_OFT_RESETBUFFS     = "Reset Buffs";
+SMARTBUFF_OFT_PURGE_BUFFS    = "New Version, reset ALL SmartBuff buff data?\nThis will reset all buff profiles!";
 SMARTBUFF_OFT_YES            = "Yes";
 SMARTBUFF_OFT_NO             = "No";
 SMARTBUFF_OFT_OKAY           = "Continue"

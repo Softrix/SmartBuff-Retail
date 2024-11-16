@@ -1509,13 +1509,29 @@
                     </OnClick>
                 </Scripts>
             </Button>
-            <Button name="SmartBuffOptionsFrameResetOrder" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RESETLIST">
+            <Button name="SmartBuffOptionsFrameResetBuffs" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RESETBUFFS">
                 <Size>
                     <AbsDimension x="88" y="33" />
                 </Size>
                 <Anchors>
                     <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
                         <Offset x="212" y="27" />
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        SMARTBUFF_OptionsFrame_Toggle();
+                        StaticPopup_Show("SMARTBUFF_BUFFS_PURGE");
+                    </OnClick>
+                </Scripts>
+            </Button>
+            <Button name="SmartBuffOptionsFrameResetOrder" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RESETLIST">
+                <Size>
+                    <AbsDimension x="88" y="33" />
+                </Size>
+                <Anchors>
+                    <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
+                        <Offset x="306" y="27" />
                     </Anchor>
                 </Anchors>
                 <Scripts>

@@ -9,11 +9,10 @@
 -- Version/Release info, bump these as needed:
 -- Bump .toc file and optionally update notes in localization.en.lua
 
-SMARTBUFF_DATE               = "011124"; -- EU Date
-SMARTBUFF_VERSION            = "r31." .. SMARTBUFF_DATE;
--- Update the NR below to force full reload of SB_Data on first login
--- Bump on major logic or buff changes only
-SMARTBUFF_VERSIONNR          = 110005;
+SMARTBUFF_DATE               = "151124"; -- EU Date
+SMARTBUFF_VERSION            = "r32." .. SMARTBUFF_DATE;
+-- Update the NR below to force  reload of SB_Buffs on first login
+SMARTBUFF_VERSIONNR          = 110006;
 -- End of version info
 
 SMARTBUFF_TITLE              = "SmartBuff";
@@ -181,12 +180,23 @@ local sounds = sharedMedia:HashTable("sound")
 
 local DebugChatFrame = DEFAULT_CHAT_FRAME;
 
--- Popup
+-- Popup reset all data
 StaticPopupDialogs["SMARTBUFF_DATA_PURGE"] = {
   text = SMARTBUFF_OFT_PURGE_DATA,
   button1 = SMARTBUFF_OFT_YES,
   button2 = SMARTBUFF_OFT_NO,
   OnAccept = function() SMARTBUFF_ResetAll() end,
+  timeout = 0,
+  whileDead = 1,
+  hideOnEscape = 1
+}
+
+-- Popup reset buffs
+StaticPopupDialogs["SMARTBUFF_BUFFS_PURGE"] = {
+  text = SMARTBUFF_OFT_PURGE_BUFFS,
+  button1 = SMARTBUFF_OFT_YES,
+  button2 = SMARTBUFF_OFT_NO,
+  OnAccept = function() SMARTBUFF_ResetBuffs() end,
   timeout = 0,
   whileDead = 1,
   hideOnEscape = 1
@@ -1541,9 +1551,11 @@ function SMARTBUFF_SyncBuffTimers()
             buffS = cBuffs[i].BuffS;
 
             -- TOCHECK
-            rbTime = B[CS()][ct][buffS].RBTime;
-            if (rbTime <= 0) then
-              rbTime = O.RebuffTimer;
+            if B[CS()][ct][buffS].RBTime then
+              rbTime = B[CS()][ct][buffS].RBTime;
+              if (rbTime <= 0) then
+                rbTime = O.RebuffTimer;
+              end
             end
 
             if (buffS and B[CS()][ct][buffS].EnableS and cBuffs[i].IDS ~= nil and cBuffs[i].DurationS > 0) then
@@ -3180,15 +3192,16 @@ function SMARTBUFF_Options_Init(self)
     end
   end
 
-  -- major version changes are backwards incompatible by definition, so trigger a RESET ALL
+  -- Do a reset of buff data on changes
   O.VersionNr = O.VersionNr or SMARTBUFF_VERSIONNR -- don't reset if O.VersionNr == nil
-  if O.VersionNr < SMARTBUFF_VERSIONNR then
+  if (O.VersionNr ~= SMARTBUFF_VERSIONNR) then
     O.VersionNr = SMARTBUFF_VERSIONNR;
-    StaticPopup_Show("SMARTBUFF_DATA_PURGE");
-    SMARTBUFF_SetBuffs();
+    StaticPopup_Show("SMARTBUFF_BUFFS_PURGE");
+    SMARTBUFF_SetTemplate()
     InitBuffOrder(true);
+    SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION, true);
   end
-  SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION);
+  -- TODO: Bring back major reset of everything but also there's a UI button still to do it
 
   if (SMARTBUFF_OptionsGlobal == nil) then
     SMARTBUFF_OptionsGlobal = {};
@@ -3203,6 +3216,7 @@ function SMARTBUFF_Options_Init(self)
 
   if (OG.FirstStart ~= SMARTBUFF_VERSION) then
     SMARTBUFF_OptionsFrame_Open(true);
+    OG.FirstStart = SMARTBUFF_VERSION;
     if (OG.Tutorial == nil) then
       OG.Tutorial = SMARTBUFF_VERSIONNR;
       SMARTBUFF_ToggleTutorial();
@@ -3239,10 +3253,20 @@ function SMARTBUFF_InitActionButtonPos()
   --print(format("x = %.0f, y = %.0f", O.ActionBtnX, O.ActionBtnY));
 end
 
+-- Reset all options, buffs and window position
 function SMARTBUFF_ResetAll()
   wipe(SMARTBUFF_Buffs);
   wipe(SMARTBUFF_Options);
   ReloadUI();
+end
+
+-- Reset only buffs. Useful for upgrades, keep UI options
+-- Don't reload UI. Since buffs are after reset
+function SMARTBUFF_ResetBuffs()
+  wipe(SMARTBUFF_Buffs);
+  SMARTBUFF_SetTemplate()
+  InitBuffOrder(true);
+  SMARTBUFF_OptionsFrame_Close(true)
 end
 
 function SMARTBUFF_SetButtonPos(self)
@@ -3568,11 +3592,6 @@ function SMARTBUFF_OptionsFrame_Toggle()
       SmartBuff_PlayerSetup:Hide();
     end
     SmartBuffOptionsFrame:Hide();
-    -- if we were a new build then request a reloadui.
-    if (OG.FirstStart ~= SMARTBUFF_VERSION) then
-      OG.FirstStart = SMARTBUFF_VERSION;
-      StaticPopup_Show("SMARTBUFF_GUI_RELOAD");
-    end
   else
     SmartBuffOptionsCredits_lblText:SetText(SMARTBUFF_CREDITS);
     SmartBuffOptionsFrame:Show();
@@ -3586,6 +3605,13 @@ function SMARTBUFF_OptionsFrame_Open(force)
   if (not isInit) then return; end
   if (not SmartBuffOptionsFrame:IsVisible() or force) then
     SmartBuffOptionsFrame:Show();
+  end
+end
+
+function SMARTBUFF_OptionsFrame_Close(force)
+  if (not isInit) then return; end
+  if (SmartBuffOptionsFrame:IsVisible() or force) then
+    SmartBuffOptionsFrame:Hide();
   end
 end
 
