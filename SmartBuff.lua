@@ -9,11 +9,10 @@
 -- Version/Release info, bump these as needed:
 -- Bump .toc file and optionally update notes in localization.en.lua
 
-SMARTBUFF_DATE               = "011124"; -- EU Date
-SMARTBUFF_VERSION            = "r31." .. SMARTBUFF_DATE;
--- Update the NR below to force full reload of SB_Data on first login
--- Bump on major logic or buff changes only
-SMARTBUFF_VERSIONNR          = 110005;
+SMARTBUFF_DATE               = "151124"; -- EU Date
+SMARTBUFF_VERSION            = "r32." .. SMARTBUFF_DATE;
+-- Update the NR below to force  reload of SB_Buffs on first login
+SMARTBUFF_VERSIONNR          = 110006;
 -- End of version info
 
 SMARTBUFF_TITLE              = "SmartBuff";
@@ -181,12 +180,23 @@ local sounds = sharedMedia:HashTable("sound")
 
 local DebugChatFrame = DEFAULT_CHAT_FRAME;
 
--- Popup
+-- Popup reset all data
 StaticPopupDialogs["SMARTBUFF_DATA_PURGE"] = {
   text = SMARTBUFF_OFT_PURGE_DATA,
   button1 = SMARTBUFF_OFT_YES,
   button2 = SMARTBUFF_OFT_NO,
   OnAccept = function() SMARTBUFF_ResetAll() end,
+  timeout = 0,
+  whileDead = 1,
+  hideOnEscape = 1
+}
+
+-- Popup reset buffs
+StaticPopupDialogs["SMARTBUFF_BUFFS_PURGE"] = {
+  text = SMARTBUFF_OFT_PURGE_BUFFS,
+  button1 = SMARTBUFF_OFT_YES,
+  button2 = SMARTBUFF_OFT_NO,
+  OnAccept = function() SMARTBUFF_ResetBuffs() end,
   timeout = 0,
   whileDead = 1,
   hideOnEscape = 1
@@ -514,9 +524,9 @@ function SMARTBUFF_OnEvent(self, event, ...)
     if (event == "PLAYER_ENTERING_WORLD" and isInit and O.Toggle) then
       isSetZone = true;
       tStartZone = GetTime();
-
-      --    elseif (event == "PLAYER_ENTERING_WORLD" and isLoaded and isPlayer and not isInit and not InCombatLockdown()) then
-      --        SMARTBUFF_Options_Init(self);
+    end
+    if (event == "PLAYER_ENTERING_WORLD" and isLoaded and isPlayer and not isInit and not InCombatLockdown()) then
+      SMARTBUFF_Options_Init(self);
     end
   elseif (event == "ADDON_LOADED" and arg1 == SMARTBUFF_TITLE) then
     isLoaded = true;
@@ -622,30 +632,6 @@ function SMARTBUFF_OnEvent(self, event, ...)
   if (event == "UNIT_AURA") then
     if (UnitAffectingCombat("player") and (arg1 == "player" or string.find(arg1, "^party") or string.find(arg1, "^raid"))) then
       isSyncReq = true;
-    end
-
-    -- checks if aspect of cheetah or pack is active and cancel it if someone gets dazed
-    if (sPlayerClass == "HUNTER" and O.AntiDaze and (arg1 == "player" or string.find(arg1, "^party") or string.find(arg1, "^raid") or string.find(arg1, "pet"))) then
-      local _, stuntex = C_Spell.GetSpellTexture(1604); --get Dazed icon
-      if (SMARTBUFF_IsDebuffTexture(arg1, stuntex)) then
-        buff = nil;
-        if (arg1 == "player" and SMARTBUFF_CheckBuff(arg1, SMARTBUFF_AOTC)) then
-          buff = SMARTBUFF_AOTC;
-        elseif (SMARTBUFF_CheckBuff(arg1, SMARTBUFF_AOTP, true)) then
-          buff = SMARTBUFF_AOTP;
-        end
-        if (buff) then
-          if (O.ToggleAutoSplash and not SmartBuffOptionsFrame:IsVisible()) then
-            SmartBuffSplashFrame:Clear();
-            SmartBuffSplashFrame:SetTimeVisible(1);
-            SmartBuffSplashFrame:AddMessage("!!! CANCEL " .. buff .. " !!!", O.ColSplashFont.r, O.ColSplashFont.g,
-              O.ColSplashFont.b, 1.0);
-          end
-          if (O.ToggleAutoChat) then
-            SMARTBUFF_AddMsgWarn("!!! CANCEL " .. buff .. " !!!", true);
-          end
-        end
-      end
     end
   end
 
@@ -1040,6 +1026,7 @@ end
 
 -- Set the buff array
 function SMARTBUFF_SetBuffs()
+  if (InCombatLockdown()) then return end
   if (B == nil) then return; end
 
   local n = 1;
@@ -1540,13 +1527,15 @@ function SMARTBUFF_SyncBuffTimers()
             rbTime = 0;
             buffS = cBuffs[i].BuffS;
 
-            -- TOCHECK
-            rbTime = B[CS()][ct][buffS].RBTime;
-            if (rbTime <= 0) then
-              rbTime = O.RebuffTimer;
+            -- CHECK FOR NOT NIL; possible overkill with double check
+            if (B[CS()][ct][buffS] ~= nil) and (B[CS()][ct][buffS].RBTime ~= nil) then
+              rbTime = B[CS()][ct][buffS].RBTime;
+              if (rbTime <= 0) then
+                rbTime = O.RebuffTimer;
+              end
             end
 
-            if (buffS and B[CS()][ct][buffS].EnableS and cBuffs[i].IDS ~= nil and cBuffs[i].DurationS > 0) then
+            if (buffS and (B[CS()][ct][buffS] ~= nil) and B[CS()][ct][buffS].EnableS and cBuffs[i].IDS ~= nil and cBuffs[i].DurationS > 0) then
               if (cBuffs[i].Type ~= SMARTBUFF_CONST_SELF or (cBuffs[i].Type == SMARTBUFF_CONST_SELF and SMARTBUFF_IsPlayer(unit))) then
                 SMARTBUFF_SyncBuffTimer(unit, unit, cBuffs[i]);
               end
@@ -3050,7 +3039,6 @@ function SMARTBUFF_Options_Init(self)
   if (O.BuffInCities == nil) then O.BuffInCities = true; end
   if (O.LinkSelfBuffCheck == nil) then O.LinkSelfBuffCheck = true; end
   if (O.LinkGrpBuffCheck == nil) then O.LinkGrpBuffCheck = true; end
-  if (O.AntiDaze == nil) then O.AntiDaze = true; end
 
   if (O.ScrollWheel ~= nil and O.ScrollWheelUp == nil) then O.ScrollWheelUp = O.ScrollWheel; end
   if (O.ScrollWheel ~= nil and O.ScrollWheelDown == nil) then O.ScrollWheelDown = O.ScrollWheel; end
@@ -3180,15 +3168,16 @@ function SMARTBUFF_Options_Init(self)
     end
   end
 
-  -- major version changes are backwards incompatible by definition, so trigger a RESET ALL
+  -- Do a reset of buff data on changes
   O.VersionNr = O.VersionNr or SMARTBUFF_VERSIONNR -- don't reset if O.VersionNr == nil
-  if O.VersionNr < SMARTBUFF_VERSIONNR then
+  if (O.VersionNr ~= SMARTBUFF_VERSIONNR) then
     O.VersionNr = SMARTBUFF_VERSIONNR;
-    StaticPopup_Show("SMARTBUFF_DATA_PURGE");
-    SMARTBUFF_SetBuffs();
+    StaticPopup_Show("SMARTBUFF_BUFFS_PURGE");
+    SMARTBUFF_SetTemplate()
     InitBuffOrder(true);
+    SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION, true);
   end
-  SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION);
+  -- TODO: Bring back major reset of everything but also there's a UI button still to do it
 
   if (SMARTBUFF_OptionsGlobal == nil) then
     SMARTBUFF_OptionsGlobal = {};
@@ -3203,6 +3192,7 @@ function SMARTBUFF_Options_Init(self)
 
   if (OG.FirstStart ~= SMARTBUFF_VERSION) then
     SMARTBUFF_OptionsFrame_Open(true);
+    OG.FirstStart = SMARTBUFF_VERSION;
     if (OG.Tutorial == nil) then
       OG.Tutorial = SMARTBUFF_VERSIONNR;
       SMARTBUFF_ToggleTutorial();
@@ -3239,10 +3229,20 @@ function SMARTBUFF_InitActionButtonPos()
   --print(format("x = %.0f, y = %.0f", O.ActionBtnX, O.ActionBtnY));
 end
 
+-- Reset all options, buffs and window position
 function SMARTBUFF_ResetAll()
   wipe(SMARTBUFF_Buffs);
   wipe(SMARTBUFF_Options);
   ReloadUI();
+end
+
+-- Reset only buffs. Useful for upgrades, keep UI options
+-- Don't reload UI. Since buffs are after reset
+function SMARTBUFF_ResetBuffs()
+  wipe(SMARTBUFF_Buffs);
+  SMARTBUFF_SetTemplate()
+  InitBuffOrder(true);
+  SMARTBUFF_OptionsFrame_Close(true)
 end
 
 function SMARTBUFF_SetButtonPos(self)
@@ -3472,10 +3472,6 @@ function SMARTBUFF_OLinkGrpBuffCheck()
   O.LinkGrpBuffCheck = not O.LinkGrpBuffCheck;
 end
 
-function SMARTBUFF_OAntiDaze()
-  O.AntiDaze = not O.AntiDaze;
-end
-
 function SMARTBUFF_OScrollWheelUp()
   O.ScrollWheelUp = not O.ScrollWheelUp;
   isKeyUpChanged = true;
@@ -3527,6 +3523,9 @@ function SMARTBUFF_OSelfFirst()
 end
 
 function SMARTBUFF_OToggleBuff(s, i)
+  if (cBuffs[i] == nil) then
+    return
+  end
   local bs = GetBuffSettings(cBuffs[i].BuffS);
   if (bs == nil) then
     return;
@@ -3568,11 +3567,6 @@ function SMARTBUFF_OptionsFrame_Toggle()
       SmartBuff_PlayerSetup:Hide();
     end
     SmartBuffOptionsFrame:Hide();
-    -- if we were a new build then request a reloadui.
-    if (OG.FirstStart ~= SMARTBUFF_VERSION) then
-      OG.FirstStart = SMARTBUFF_VERSION;
-      StaticPopup_Show("SMARTBUFF_GUI_RELOAD");
-    end
   else
     SmartBuffOptionsCredits_lblText:SetText(SMARTBUFF_CREDITS);
     SmartBuffOptionsFrame:Show();
@@ -3586,6 +3580,13 @@ function SMARTBUFF_OptionsFrame_Open(force)
   if (not isInit) then return; end
   if (not SmartBuffOptionsFrame:IsVisible() or force) then
     SmartBuffOptionsFrame:Show();
+  end
+end
+
+function SMARTBUFF_OptionsFrame_Close(force)
+  if (not isInit) then return; end
+  if (SmartBuffOptionsFrame:IsVisible() or force) then
+    SmartBuffOptionsFrame:Hide();
   end
 end
 
@@ -3848,7 +3849,6 @@ function SMARTBUFF_Options_OnShow()
   SmartBuffOptionsFrame_cbInShapeshift:SetChecked(O.InShapeshift);
   SmartBuffOptionsFrame_cbFixBuffIssue:SetChecked(O.SBButtonFix);
 
-  SmartBuffOptionsFrame_cbAntiDaze:SetChecked(O.AntiDaze);
   SmartBuffOptionsFrame_cbLinkGrpBuffCheck:SetChecked(O.LinkGrpBuffCheck);
   SmartBuffOptionsFrame_cbLinkSelfBuffCheck:SetChecked(O.LinkSelfBuffCheck);
 
@@ -3977,16 +3977,6 @@ function SMARTBUFF_SetCheckButtonBuffs(mode)
     SMARTBUFF_SetBuffs();
   end
 
-  SmartBuffOptionsFrame_cbAntiDaze:Hide();
-
-  if (sPlayerClass == "HUNTER" or sPlayerClass == "ROGUE" or sPlayerClass == "WARRIOR") then
-    SmartBuffOptionsFrameBLDuration:Hide();
-    if (sPlayerClass == "HUNTER") then
-      SmartBuffOptionsFrame_cbLinkGrpBuffCheck:Hide();
-      SmartBuffOptionsFrame_cbAntiDaze:Show();
-    end
-  end
-
   if (sPlayerClass == "DRUID" or sPlayerClass == "SHAMAN") then
     SmartBuffOptionsFrame_cbInShapeshift:Show();
   else
@@ -4030,6 +4020,7 @@ function SMARTBUFF_DropDownTemplate_OnClick(self)
   UIDropDownMenu_SetSelectedValue(SmartBuffOptionsFrame_ddTemplates, i);
   tmp = SMARTBUFF_TEMPLATES[i];
   --SMARTBUFF_AddMsgD("Selected/Current Buff-Template: " .. tmp .. "/" .. currentTemplate);
+  SMARTBUFF_SetBuffs()
   if (currentTemplate ~= tmp) then
     SmartBuff_BuffSetup:Hide();
     iLastBuffSetup = -1;
@@ -4617,7 +4608,9 @@ local function OnScroll(self, cData, sBtnName)
         btn:SetNormalFontObject("GameFontNormalSmall");
         btn:SetHighlightFontObject("GameFontHighlightSmall");
         btn:SetText(cData[n]);
-        btn:SetChecked(t[cData[n]].EnableS);
+        if (t[cData[n]] ~= nil) then
+          btn:SetChecked(t[cData[n]].EnableS);
+        end
         btn:Show();
       else
         btn:Hide();
