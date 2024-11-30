@@ -1026,7 +1026,8 @@ end
 
 -- Set the buff array
 function SMARTBUFF_SetBuffs()
-  if (InCombatLockdown()) then return end
+  -- Don't init things when mounted or in combat
+  if (InCombatLockdown() or IsMounted() or IsFlying()) then return end
   if (B == nil) then return; end
 
   local n = 1;
