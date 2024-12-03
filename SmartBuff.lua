@@ -793,7 +793,8 @@ Enum.SmartBuffGroup = {
 
 -- Set the current template and create an array of units
 function SMARTBUFF_SetTemplate()
-  if (InCombatLockdown()) then return end
+    -- Don't init things when mounted or in combat
+  if (InCombatLockdown() or IsMounted() or IsFlying()) then return end
   if (SmartBuffOptionsFrame:IsVisible()) then return end
 
   local newTemplate = currentTemplate -- default to old template
@@ -1026,8 +1027,7 @@ end
 
 -- Set the buff array
 function SMARTBUFF_SetBuffs()
-  -- Don't init things when mounted or in combat
-  if (InCombatLockdown() or IsMounted() or IsFlying()) then return end
+  if (InCombatLockdown()) then return end
   if (B == nil) then return; end
 
   local n = 1;
