@@ -520,6 +520,8 @@ function SMARTBUFF_OnLoad(self)
   SLASH_SmartReloadUI1 = "/rui";
 
   SMARTBUFF_InitSpellIDs();
+  SMARTBUFF_InitItemList();
+  SMARTBUFF_InitSpellList();
 
   --DEFAULT_CHAT_FRAME:AddMessage("SB OnLoad");
 end
@@ -807,9 +809,9 @@ Enum.SmartBuffGroup = {
 }
 
 -- Set the current template and create an array of units
-function SMARTBUFF_SetTemplate()
+function SMARTBUFF_SetTemplate(force)
   -- Don't init things when mounted or in combat
-  if (InCombatLockdown() or IsMounted() or IsFlying()) then return end
+  if (not force and (InCombatLockdown() or IsMounted() or IsFlying())) then return end
   if (SmartBuffOptionsFrame:IsVisible()) then return end
 
   local newTemplate = currentTemplate -- default to old template
@@ -1616,6 +1618,7 @@ end
 
 local IsChecking = false;
 function SMARTBUFF_Check(mode, force)
+  -- print("precheck "..tostring(SMARTBUFF_PreCheck(mode, force)))
   if (IsChecking or not SMARTBUFF_PreCheck(mode, force)) then return; end
   IsChecking = true;
 
@@ -3225,7 +3228,7 @@ function SMARTBUFF_Options_Init(self)
     SmartBuff_KeyButton:SetPoint("CENTER", UIParent, "CENTER", 0, 100);
   end
 
-  SMARTBUFF_SetTemplate();
+  SMARTBUFF_SetTemplate(true);
   SMARTBUFF_RebindKeys();
   isSyncReq = true;
 end
