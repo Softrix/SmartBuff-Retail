@@ -9,11 +9,11 @@
 -- Version/Release info, bump these as needed:
 -- Bump .toc file and optionally update notes in localization.en.lua
 
-SMARTBUFF_DATE               = "300125"; -- EU Date
-SMARTBUFF_VERSION            = "r33." .. SMARTBUFF_DATE;
+SMARTBUFF_DATE               = "220425"; -- EU Date
+SMARTBUFF_VERSION            = "r34." .. SMARTBUFF_DATE;
 -- Update the NR below to force  reload of SB_Buffs on first login
 -- This is needed for buff changes or major patches
-SMARTBUFF_VERSIONNR          = 110007;
+SMARTBUFF_VERSIONNR          = 110105;
 -- End of version info
 
 SMARTBUFF_TITLE              = "SmartBuff";
@@ -4700,15 +4700,15 @@ function SMARTBUFF_ToggleTutorial(close)
   local helpPlate = HelpPlateList;
   if (not helpPlate) then return end;
 
-  local b = HelpPlate_IsShowing(helpPlate);
+  local b = HelpPlate.IsShowingHelpInfo(helpPlate);
   if (close) then
-    HelpPlate_Hide(false);
+    HelpPlate.Hide(false);
     return;
   end
 
   if (not b) then
-    HelpPlate_Show(helpPlate, SmartBuffOptionsFrame, SmartBuffOptionsFrame_TutorialButton, true);
+    HelpPlate.Show(helpPlate, SmartBuffOptionsFrame, SmartBuffOptionsFrame_TutorialButton, true);
   else
-    HelpPlate_Hide(true);
+    HelpPlate.Hide(true);
   end
 end
