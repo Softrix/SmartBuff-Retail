@@ -9,7 +9,7 @@
 -- Version/Release info, bump these as needed:
 -- Bump .toc file and optionally update notes in localization.en.lua
 
-SMARTBUFF_DATE               = "220425"; -- EU Date
+SMARTBUFF_DATE               = "250425"; -- EU Date
 SMARTBUFF_VERSION            = "r34." .. SMARTBUFF_DATE;
 -- Update the NR below to force  reload of SB_Buffs on first login
 -- This is needed for buff changes or major patches
@@ -2409,7 +2409,7 @@ function SMARTBUFF_CanApplyWeaponBuff(buff, slot)
   end
 
   local itemLink = GetInventoryItemLink("player", slot);
-  local _, _, itemCode = string.find(itemLink, "(%d+):");
+  local _, _, itemCode = string.find(itemLink, "item:(%d+):");
   local _, _, _, _, _, itemType, itemSubType = C_Item.GetItemInfo(itemCode);
 
   --if (itemType and itemSubType) then
