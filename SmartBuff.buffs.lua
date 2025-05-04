@@ -14,6 +14,7 @@ SMARTBUFF_CONST_TRACK     = "TRACK";
 SMARTBUFF_CONST_WEAPON    = "WEAPON";
 SMARTBUFF_CONST_INV       = "INVENTORY";
 SMARTBUFF_CONST_FOOD      = "FOOD";
+SMARTBUFF_CONST_HEARTY    = "HEARTY";
 SMARTBUFF_CONST_SCROLL    = "SCROLL";
 SMARTBUFF_CONST_POTION    = "POTION";
 SMARTBUFF_CONST_STANCE    = "STANCE";
@@ -260,9 +261,12 @@ function SMARTBUFF_InitItemList()
     -- TWW almost all food items
     222733, 222728, 222732, 222720, 222735, 222731, 222721, 222730, 225855, 222729, 225592, 222736, 222726, 222718, 222724, 222745, 222725, 222703, 222715, 222710, 222712, 222704,
     222727, 222722, 222711, 222705, 222708, 222707, 223968, 222713, 222723, 222714, 222702, 222709, 222719, 222717, 222716, 222706,
+  });
+
+  S.HeartyFoodItems = GetItems({
     -- TWW adds hearty food version to 31 the above foods that make it persist through death
     222781, 222766, 222776, 222780, 222778, 222768, 222783, 222779, 222751, 222773, 222753, 222774, 222752, 222758, 222770, 222775, 222777, 222759,
-    222760, 222765, 222763, 222769, 222761, 222772, 222757, 222762, 222754, 222755, 222756, 222767, 222750, 222764, 222771,
+    222760, 222765, 222763, 222769, 222761, 222772, 222757, 222762, 222754, 222755, 222756, 222767, 222750, 222764, 222771
   });
 
   -- Warlock healthstones
@@ -840,6 +844,7 @@ function SMARTBUFF_InitSpellIDs()
 
   -- Food
   SMARTBUFF_FOOD_AURA       = C_Spell.GetSpellInfo(46899); --"Well Fed"
+  SMARTBUFF_HEARTY_AURA     = C_Spell.GetSpellInfo(462181); --"Hearty Well Fed"
   SMARTBUFF_FOOD_SPELL      = C_Spell.GetSpellInfo(433);   --"Food"
   SMARTBUFF_DRINK_SPELL     = C_Spell.GetSpellInfo(430);   --"Drink"
 
@@ -1517,6 +1522,13 @@ function SMARTBUFF_InitSpellList()
     if (name) then
       --print("Adding: "..n..". "..name);
       tinsert(SMARTBUFF_FOOD, 1, {name, 60, SMARTBUFF_CONST_FOOD});
+    end
+  end
+
+  for n, name in pairs(S.HeartyFoodItems) do
+    if (name) then
+      --print("Adding: "..n..". "..name);
+      tinsert(SMARTBUFF_FOOD, 1, {name, 60, SMARTBUFF_CONST_HEARTY});
     end
   end
 

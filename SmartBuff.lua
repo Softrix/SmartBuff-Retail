@@ -1914,7 +1914,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                 end
 
                 -- Food, Scroll, Potion or conjured items ------------------------------------------------------------------------
-              elseif (cBuff.Type == SMARTBUFF_CONST_FOOD or cBuff.Type == SMARTBUFF_CONST_SCROLL or cBuff.Type == SMARTBUFF_CONST_POTION or cBuff.Type == SMARTBUFF_CONST_ITEM or
+              elseif (cBuff.Type == SMARTBUFF_CONST_FOOD or cBuff.Type == SMARTBUFF_CONST_HEARTY or cBuff.Type == SMARTBUFF_CONST_SCROLL or cBuff.Type == SMARTBUFF_CONST_POTION or cBuff.Type == SMARTBUFF_CONST_ITEM or
                     cBuff.Type == SMARTBUFF_CONST_ITEMGROUP) then
                 if (cBuff.Type == SMARTBUFF_CONST_ITEM) then
                   bt = nil;
@@ -1930,8 +1930,11 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   -- dont attempt to use food while moving or we will waste them.
                 elseif (cBuff.Type == SMARTBUFF_CONST_FOOD and isPlayerMoving == false) then
                   if (not SMARTBUFF_IsPicnic(unit)) then
-                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_FOOD_AURA, cBuff.Type,
-                      cBuff.Links, cBuff.Chain);
+                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_FOOD_AURA, cBuff.Type, cBuff.Links, cBuff.Chain);
+                  end
+                elseif (cBuff.Type == SMARTBUFF_CONST_HEARTY and isPlayerMoving == false) then
+                  if (not SMARTBUFF_IsPicnic(unit)) then
+                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_HEARTY_AURA, cBuff.Type, cBuff.Links, cBuff.Chain);
                   end
                 else
                   if (cBuff.Params ~= SG.NIL) then
@@ -2176,7 +2179,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                     r = 50;
 
                     -- eat food or use scroll or potion
-                  elseif (cBuff.Type == SMARTBUFF_CONST_FOOD or cBuff.Type == SMARTBUFF_CONST_SCROLL or cBuff.Type == SMARTBUFF_CONST_POTION) then
+                  elseif (cBuff.Type == SMARTBUFF_CONST_FOOD or cBuff.Type == SMARTBUFF_CONST_HEARTY or cBuff.Type == SMARTBUFF_CONST_SCROLL or cBuff.Type == SMARTBUFF_CONST_POTION) then
                     local bag, slot, count = SMARTBUFF_FindItem(buffnS, cBuff.Chain);
                     if (count > 0 or bExpire) then
                       sMsgWarning = "";
@@ -2521,6 +2524,12 @@ function UnitBuffByBuffName(target, buffname, filter)
 end
 
 -- Will return the name of the buff to cast
+---@param unit any target unit
+---@param buffN any buff name
+---@param buffT any buff type
+---@param buffL any buff links
+---@param buffC any buff chain
+---@return string buff name, number index, string buff name, number time left, number count
 function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
   if (not unit or (not buffN and not buffL)) then return end
 
@@ -2795,8 +2804,9 @@ end
 
 
 -- IsPicnic(unit)
+-- returns true if the unit is eating or drinking
 function SMARTBUFF_IsPicnic(unit)
-  if (not SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_FOOD_SPELL, SMARTBUFF_CONST_FOOD, { SMARTBUFF_FOOD_SPELL, SMARTBUFF_DRINK_SPELL })) then
+  if not SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_FOOD_SPELL, SMARTBUFF_CONST_FOOD, { SMARTBUFF_FOOD_SPELL, SMARTBUFF_DRINK_SPELL }) and not SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_FOOD_SPELL, SMARTBUFF_CONST_HEARTY, { SMARTBUFF_FOOD_SPELL, SMARTBUFF_DRINK_SPELL }) then
     return true;
   end
   return false;
@@ -2844,7 +2854,7 @@ end
 
 -- SMARTBUFF_IsItem(sType)
 function SMARTBUFF_IsItem(sType)
-  return sType == SMARTBUFF_CONST_INV or sType == SMARTBUFF_CONST_FOOD or sType == SMARTBUFF_CONST_SCROLL or
+  return sType == SMARTBUFF_CONST_INV or sType == SMARTBUFF_CONST_FOOD or sType == SMARTBUFF_CONST_HEARTY or sType == SMARTBUFF_CONST_SCROLL or
   sType == SMARTBUFF_CONST_POTION or sType == SMARTBUFF_CONST_ITEMGROUP;
 end
 
@@ -3703,7 +3713,7 @@ function SmartBuff_BuffSetup_Show(i)
       SmartBuff_BuffSetup_cbMH:Hide();
       SmartBuff_BuffSetup_cbOH:Hide();
       SmartBuff_BuffSetup_cbRH:Hide();
-      if (cBuffs[i].Type ~= SMARTBUFF_CONST_FOOD and cBuffs[i].Type ~= SMARTBUFF_CONST_SCROLL and cBuffs[i].Type ~= SMARTBUFF_CONST_POTION) then
+      if (cBuffs[i].Type ~= SMARTBUFF_CONST_FOOD and cBuffs[i].Type ~= SMARTBUFF_CONST_HEARTY and cBuffs[i].Type ~= SMARTBUFF_CONST_SCROLL and cBuffs[i].Type ~= SMARTBUFF_CONST_POTION) then
         SmartBuff_BuffSetup_txtManaLimit:Show();
         --SMARTBUFF_AddMsgD("Show ManaLimit");
       end
