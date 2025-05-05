@@ -1928,10 +1928,13 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   end
 
                   -- dont attempt to use food while moving or we will waste them.
-                elseif (cBuff.Type == SMARTBUFF_CONST_FOOD and isPlayerMoving == false) then
-                  if (not SMARTBUFF_IsPicnic(unit)) then
-                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_FOOD_AURA, cBuff.Type,
-                      cBuff.Links, cBuff.Chain);
+                elseif (cBuff.Type == SMARTBUFF_CONST_FOOD and isPlayerMoving == false and not SMARTBUFF_IsPicnic(unit)) then
+                  -- unpleasant kludge for hearty buff food, which gives SMARTBUFF_HeartyFedAura
+                  if string.find(cBuff.BuffS, SMARTBUFF_LOC_HEARTY) then
+                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_HeartyFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
+                  else
+                  -- normal buff food, which givevs SMARTBUFF_WellFedAura
+                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_WellFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
                   end
                 else
                   if (cBuff.Params ~= SG.NIL) then
@@ -2793,17 +2796,30 @@ end
 
 -- END SMARTBUFF_IsFeignDeath
 
-
--- IsPicnic(unit)
+---Scan localized aura names for "food", "drink" or "food & drink"
+---@param unit? string default: "player"
+---@return boolean returns `true` if the player is eating or drinking, `false` otherwise
 function SMARTBUFF_IsPicnic(unit)
-  if (not SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_FOOD_SPELL, SMARTBUFF_CONST_FOOD, { SMARTBUFF_FOOD_SPELL, SMARTBUFF_DRINK_SPELL })) then
-    return true;
+  if not unit then unit = "player" end
+  if AuraUtil.FindAuraByName( SMARTBUFF_EatingAura.name, unit) or
+      AuraUtil.FindAuraByName( SMARTBUFF_DrinkingAura.name, unit) or
+      AuraUtil.FindAuraByName( SMARTBUFF_FoodDrinkAura.name, unit) then
+    return true
   end
-  return false;
+  return false
 end
 
--- END SMARTBUFF_IsPicnic
-
+---Scan localized aura names for "well fed" or "hearty well fed"
+---@param unit? string default: "player"
+---@return boolean returns `true` if the player is well fed, `false` otherwise
+function SMARTBUFF_IsWellFed(unit)
+  if not unit then unit = "player" end
+  if AuraUtil.FindAuraByName( SMARTBUFF_WellFedAura.name, unit) or
+      AuraUtil.FindAuraByName( SMARTBUFF_HeartyFedAura.name, unit) then
+    return true
+  end
+  return false
+end
 
 -- IsFishing(unit)
 function SMARTBUFF_IsFishing(unit)

@@ -222,6 +222,9 @@ SMARTBUFF_FUBAR_TT           = "\nLeft Click: Open options\nShift-Left Click: On
 
 SMARTBUFF_DEBUFF_TT          = "Shift-Left drag: Move frame\n|cff20d2ff- S button -|r\nLeft click: Show by classes\nShift-Left click: Class colors\nAlt-Left click: Highlight L/R\n|cff20d2ff- P button -|r\nLeft click: Hide pets on/off";
 
+-- Misc
+SMARTBUFF_LOC_HEARTY         = "Hearty"
+
 
 -- Code table
 -- à : \195\160    è : \195\168    ì : \195\172    ò : \195\178    ù : \195\185
