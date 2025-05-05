@@ -265,6 +265,7 @@ function SMARTBUFF_InitItemList()
     222760, 222765, 222763, 222769, 222761, 222772, 222757, 222762, 222754, 222755, 222756, 222767, 222750, 222764, 222771,
   });
 
+
   -- Warlock healthstones
   SMARTBUFF_HEALTHSTONE         = C_Item.GetItemInfo(5512);  --"Healthstone"
   S.StoneWarlock = GetItems({5512, 224464});
@@ -838,11 +839,14 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_WarStomp        = getSpellBookItemByName(20549); --"War Stomp"
   SMARTBUFF_Visage          = getSpellBookItemByName(351239); --"Evoker Visage"
 
-  -- Food
-  SMARTBUFF_FOOD_AURA       = C_Spell.GetSpellInfo(46899); --"Well Fed"
-  SMARTBUFF_FOOD_SPELL      = C_Spell.GetSpellInfo(433);   --"Food"
-  SMARTBUFF_DRINK_SPELL     = C_Spell.GetSpellInfo(430);   --"Drink"
-
+  -- Eating & Drinking (Generic)
+  SMARTBUFF_EatingAura      = C_Spell.GetSpellInfo(433);    --"Food"
+  SMARTBUFF_DrinkingAura    = C_Spell.GetSpellInfo(430);    --"Drink"
+  SMARTBUFF_FoodDrinkAura   = C_Spell.GetSpellInfo(192002); --"Food & Drink"
+  -- Well Fed (Generic)
+  SMARTBUFF_WellFedAura     = C_Spell.GetSpellInfo(46899);  --"Well Fed"
+  SMARTBUFF_HeartyFedAura   = C_Spell.GetSpellInfo(462181); --"Hearty Well Fed"
+  
   -- Misc
   SMARTBUFF_KIRUSSOV        = C_Spell.GetSpellInfo(46302); --"K'iru's Song of Victory"
   SMARTBUFF_FISHING         = C_Spell.GetSpellInfo(450647) or C_Spell.GetSpellInfo(131476); --"Fishing"
