@@ -798,14 +798,15 @@ Enum.SmartBuffGroup = {
   LFR = 3,
   Raid = 4,
   MythicKeystone = 5,
-  Battleground = 6,
-  Arena = 7,
-  VoTI = 8,
-  Custom1 = 9,
-  Custom2 = 10,
-  Custom3 = 11,
-  Custom4 = 12,
-  Custom5 = 13
+  Delve = 6,
+  Battleground = 7,
+  Arena = 8,
+  VoTI = 9,
+  Custom1 = 10,
+  Custom2 = 11,
+  Custom3 = 12,
+  Custom4 = 13,
+  Custom5 = 14
 }
 
 -- Set the current template and create an array of units
@@ -819,8 +820,7 @@ function SMARTBUFF_SetTemplate(force)
   -- if autoswitch no group change is enabled, load new template based on group composition
   if O.AutoSwitchTemplate then
     newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo];
-    local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID =
-    GetInstanceInfo()
+    local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID = GetInstanceInfo()
 
     if IsInRaid() then
       newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid];
@@ -838,6 +838,9 @@ function SMARTBUFF_SetTemplate(force)
       if (difficultyID == 8) then
         newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.MythicKeystone];
       end
+    end
+    if (difficultyID == 208) then
+      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Delve];
     end
   end
 
