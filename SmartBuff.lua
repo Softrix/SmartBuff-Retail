@@ -502,6 +502,7 @@ function SMARTBUFF_OnLoad(self)
   --auto template events
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:RegisterEvent("GROUP_ROSTER_UPDATE")
+  self:RegisterEvent("ACTIVE_DELVE_DATA_UPDATE")
 
   --One of them allows SmartBuff to be closed with the Escape key
   tinsert(UISpecialFrames, "SmartBuffOptionsFrame");
@@ -708,13 +709,12 @@ function SMARTBUFF_OnEvent(self, event, ...)
     end
   end
 
-  -- TODO: This is a blizzard bug workaround that spams GROUP_ROSTER_UPDATE during delves
-  local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID =
-  GetInstanceInfo()
-  -- Any other event here
-  if event == "ZONE_CHANGED_NEW_AREA" or (event == "GROUP_ROSTER_UPDATE" and instanceType ~= "scenario") or
-    event == PLAYER_LEVEL_UP or event == PLAYER_SPECIALIZATION_CHANGED then
-    SMARTBUFF_SetTemplate()
+  -- This is a blizzard bug workaround that spams GROUP_ROSTER_UPDATE during delves
+  --local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID = GetInstanceInfo()
+  -- if event == "ZONE_CHANGED_NEW_AREA" or (event == "GROUP_ROSTER_UPDATE" and instanceType ~= "scenario") or event == "PLAYER_LEVEL_UP" or event == "PLAYER_SPECIALIZATION_CHANGED" or event == "ACTIVE_DELVE_DATA_UPDATE" then 
+  -- TODO disabled the above bug workaround since it prevents Delve detection from working 
+  if event == "ZONE_CHANGED_NEW_AREA" or event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_LEVEL_UP" or event == "PLAYER_SPECIALIZATION_CHANGED" or event == "ACTIVE_DELVE_DATA_UPDATE" then 
+      SMARTBUFF_SetTemplate()
   end
 end
 
