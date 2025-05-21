@@ -709,11 +709,7 @@ function SMARTBUFF_OnEvent(self, event, ...)
     end
   end
 
-  -- This is a blizzard bug workaround that spams GROUP_ROSTER_UPDATE during delves
-  --local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID = GetInstanceInfo()
-  -- if event == "ZONE_CHANGED_NEW_AREA" or (event == "GROUP_ROSTER_UPDATE" and instanceType ~= "scenario") or event == "PLAYER_LEVEL_UP" or event == "PLAYER_SPECIALIZATION_CHANGED" or event == "ACTIVE_DELVE_DATA_UPDATE" then 
-  -- TODO disabled the above bug workaround since it prevents Delve detection from working 
-  if event == "ZONE_CHANGED_NEW_AREA" or event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_LEVEL_UP" or event == "PLAYER_SPECIALIZATION_CHANGED" or event == "ACTIVE_DELVE_DATA_UPDATE" then 
+  if event == "ZONE_CHANGED_NEW_AREA" or event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_LEVEL_UP" or event == "PLAYER_SPECIALIZATION_CHANGED" then
       SMARTBUFF_SetTemplate()
   end
 end
@@ -798,15 +794,16 @@ Enum.SmartBuffGroup = {
   LFR = 3,
   Raid = 4,
   MythicKeystone = 5,
-  Delve = 6,
-  Battleground = 7,
-  Arena = 8,
-  VoTI = 9,
-  Custom1 = 10,
-  Custom2 = 11,
-  Custom3 = 12,
-  Custom4 = 13,
-  Custom5 = 14
+  HorrificVision = 6,
+  Delve = 7,
+  Battleground = 8,
+  Arena = 9,
+  VoTI = 10,
+  Custom1 = 11,
+  Custom2 = 12,
+  Custom3 = 13,
+  Custom4 = 14,
+  Custom5 = 15
 }
 
 -- Set the current template and create an array of units
@@ -821,6 +818,7 @@ function SMARTBUFF_SetTemplate(force)
   if O.AutoSwitchTemplate then
     newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo];
     local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID = GetInstanceInfo()
+    --printd("name: " .. name, ", instanceType: " .. instanceType .. ", difficultyID: " .. difficultyID .. ", difficultyName: " .. difficultyName, ", instanceID: " .. instanceID)
 
     if IsInRaid() then
       newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid];
@@ -839,7 +837,9 @@ function SMARTBUFF_SetTemplate(force)
         newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.MythicKeystone];
       end
     end
-    if (difficultyID == 208) then
+    if (difficultyID == 152) then
+      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.HorrificVision];
+    elseif (difficultyID == 208) then
       newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Delve];
     end
   end

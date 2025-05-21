@@ -26,10 +26,10 @@ SMARTBUFF_CREDITS = "|cffffffff"
 ;
 
 -- Weapon types
-SMARTBUFF_WEAPON_STANDARD = {"Daggers", "Axes", "Swords", "Maces", "Staves", "Fist Weapons", "Polearms", "Thrown", "Crossbows", "Bows", "Shields"};
+SMARTBUFF_WEAPON_STANDARD = {"Daggers", "Axes", "Swords", "Maces", "Staves", "Fist Weapons", "Polearms", "Thrown", "Crossbows", "Bows", "Shields", "Guns", "Warglaives"};
 SMARTBUFF_WEAPON_BLUNT = {"Maces", "Staves", "Fist Weapons"};
 SMARTBUFF_WEAPON_BLUNT_PATTERN = "Weightstone$";
-SMARTBUFF_WEAPON_SHARP = {"Daggers", "Axes", "Swords", "Polearms"};
+SMARTBUFF_WEAPON_SHARP = {"Daggers", "Axes", "Swords", "Polearms", "Warglaives"};
 SMARTBUFF_WEAPON_SHARP_PATTERN = "Sharpening Stone$";
 
 -- Creature types
@@ -44,7 +44,7 @@ SMARTBUFF_UNDEAD    = "Undead";
 SMARTBUFF_CLASSES = {"Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior", "Death Knight", "Monk", "Demon Hunter", "Evoker", "Hunter Pet", "Warlock Pet", "Death Knight Pet", "Tank", "Healer", "Damage Dealer"};
 
 -- Templates and Instances
-SMARTBUFF_TEMPLATES = {"Solo", "Party", "LFR", "Raid", "Mythic Keystone", "Delve", "Battleground", "Arena", "Vault of the Incarnates", "Aberrus, The Shadowed Crucible", "Amirdrassil, the Dream's Hope", "Nerub-ar Palace", "Liberation of Undermine", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"};
+SMARTBUFF_TEMPLATES = {"Solo", "Party", "LFR", "Raid", "Mythic Keystone", "Horrific Vision", "Delve", "Battleground", "Arena", "Vault of the Incarnates", "Aberrus, The Shadowed Crucible", "Amirdrassil, the Dream's Hope", "Nerub-ar Palace", "Liberation of Undermine", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"};
 SMARTBUFF_INSTANCES = {"Vault of the Incarnates", "Aberrus, the Shadowed Crucible", "Amirdrassil, the Dream's Hope", "Nerub-ar Palace", "Liberation of Undermine"};
 
 -- Mount
