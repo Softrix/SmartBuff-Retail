@@ -152,15 +152,15 @@ function SMARTBUFF_InitItemList()
   _,SMARTBUFF_TWWWeaponEnhance3_q1  = C_Item.GetItemInfo(222508);   --  Ironclaw Whetstone
   _,SMARTBUFF_TWWWeaponEnhance3_q2  = C_Item.GetItemInfo(222509);   --  Ironclaw Whetstone
   _,SMARTBUFF_TWWWeaponEnhance3_q3  = C_Item.GetItemInfo(222510);   --  Ironclaw Whetstone
-  _,SMARTBUFF_TWWWeaponEnhance4_q1  = C_Item.GetItemInfo(224105);   --  Oil of Beledar's Grace
-  _,SMARTBUFF_TWWWeaponEnhance4_q2  = C_Item.GetItemInfo(224106);   --  Oil of Beledar's Grace
-  _,SMARTBUFF_TWWWeaponEnhance4_q3  = C_Item.GetItemInfo(224107);   --  Oil of Beledar's Grace
-  _,SMARTBUFF_TWWWeaponEnhance5_q1  = C_Item.GetItemInfo(224108);   --  Oil of Deep Toxins
-  _,SMARTBUFF_TWWWeaponEnhance5_q2  = C_Item.GetItemInfo(224109);   --  Oil of Deep Toxins
-  _,SMARTBUFF_TWWWeaponEnhance5_q3  = C_Item.GetItemInfo(224109);   --  Oil of Deep Toxins
-  _,SMARTBUFF_TWWWeaponEnhance6_q1  = C_Item.GetItemInfo(224110);   --  Algari Mana Oil
-  _,SMARTBUFF_TWWWeaponEnhance6_q2  = C_Item.GetItemInfo(224111);   --  Algari Mana Oil
-  _,SMARTBUFF_TWWWeaponEnhance6_q3  = C_Item.GetItemInfo(224113);   --  Algari Mana Oil
+  _,SMARTBUFF_TWWWeaponEnhance4_q1  = C_Item.GetItemInfo(224108);   --  Oil of Beledar's Grace
+  _,SMARTBUFF_TWWWeaponEnhance4_q2  = C_Item.GetItemInfo(224109);   --  Oil of Beledar's Grace
+  _,SMARTBUFF_TWWWeaponEnhance4_q3  = C_Item.GetItemInfo(224110);   --  Oil of Beledar's Grace
+  _,SMARTBUFF_TWWWeaponEnhance5_q1  = C_Item.GetItemInfo(224111);   --  Oil of Deep Toxins
+  _,SMARTBUFF_TWWWeaponEnhance5_q2  = C_Item.GetItemInfo(224112);   --  Oil of Deep Toxins
+  _,SMARTBUFF_TWWWeaponEnhance5_q3  = C_Item.GetItemInfo(224113);   --  Oil of Deep Toxins
+  _,SMARTBUFF_TWWWeaponEnhance6_q1  = C_Item.GetItemInfo(224105);   --  Algari Mana Oil
+  _,SMARTBUFF_TWWWeaponEnhance6_q2  = C_Item.GetItemInfo(224106);   --  Algari Mana Oil
+  _,SMARTBUFF_TWWWeaponEnhance6_q3  = C_Item.GetItemInfo(224107);   --  Algari Mana Oil
 
 
   -- Food
