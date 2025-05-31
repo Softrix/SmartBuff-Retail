@@ -798,12 +798,13 @@ Enum.SmartBuffGroup = {
   Delve = 7,
   Battleground = 8,
   Arena = 9,
-  VoTI = 10,
-  Custom1 = 11,
-  Custom2 = 12,
-  Custom3 = 13,
-  Custom4 = 14,
-  Custom5 = 15
+  NerubarRaid = 10,
+  UndermineRaid = 11,
+  Custom1 = 12,
+  Custom2 = 13,
+  Custom3 = 14,
+  Custom4 = 15,
+  Custom5 = 16
 }
 
 -- Set the current template and create an array of units
