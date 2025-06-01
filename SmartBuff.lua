@@ -9,7 +9,7 @@
 -- Version/Release info, bump these as needed:
 -- Bump .toc file and optionally update notes in localization.en.lua
 
-SMARTBUFF_DATE               = "250425"; -- EU Date
+SMARTBUFF_DATE               = "010625"; -- EU Date
 SMARTBUFF_VERSION            = "r34." .. SMARTBUFF_DATE;
 -- Update the NR below to force  reload of SB_Buffs on first login
 -- This is needed for buff changes or major patches
