@@ -4,13 +4,13 @@
 
 -- Whats new info
 SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
-  .."          |cffffffffDragonflight version by Codermik, additional retail\n"
+  .."          |cffffffffDragonflight & Classic version by Codermik, additional retail\n"
   .."          programming by Speedwaystar/MrWizard.\n"
   .."\n\n"
-  .."          Changes in r34.2504125:\n\n"
-  .."             * Adding Symbiotic Link for druids\n"
-  .."             * The way it works is bad because its a targeted buff\n"
-  .."             * BugFix: Fix weapon buff due to itemlink change\n"
+  .."          Changes in r34.010625:\n\n"
+  .."             * Old raid template cleanup\n"
+  .."             * Delve Template fixes\n"
+  .."             * Misc buff fixes\n"
   .."\n\n"
   .."          |c0000FF96Many thanks to Chris S., Samantha R. and\n"
   .."          Twilight's Sundries for their kind donations.\n"
