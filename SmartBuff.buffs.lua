@@ -504,6 +504,7 @@ function SMARTBUFF_InitItemList()
 -- TWW
   -- Consumables
   _,SMARTBUFF_TWWCrystalAugRune1          = C_Item.GetItemInfo(224572); --"Crystallized Augment Rune"
+  _,SMARTBUFF_TWWEtherealAugRune          = C_Item.GetItemInfo(243191); --"Ethereal Augment Rune"
 
   -- Flasks and phials
   _,SMARTBUFF_FLASKTWW1_Q1          = C_Item.GetItemInfo(212269);  --"Flask of Tempered Aggression"
@@ -888,9 +889,10 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_BVantusRune_VotI_q3 = C_Spell.GetSpellInfo(384306); -- Vantus Rune: Vault of the Incarnates (Quality 3)
   -- TWW
   SMARTBUFF_BTWWCrystalAugRune1 = C_Spell.GetSpellInfo(453250);  -- Crystallization/Crystallized Augment Rune
+  SMARTBUFF_BTWWEtherealAugRune = C_Spell.GetSpellInfo(1234969);  -- Ethereal Augmentation from Ethereal Augment Rune
 
   S.LinkSafariHat           = { SMARTBUFF_BMiscItem9, SMARTBUFF_BMiscItem10 };
-  S.LinkAugment             = { SMARTBUFF_BMiscItem14, SMARTBUFF_BMiscItem14_1, SMARTBUFF_BMiscItem14_2, SMARTBUFF_BMiscItem14_3, SMARTBUFF_BAugmentRune,  SMARTBUFF_BVieledAugment, SMARTBUFF_BDreamAugmentRune, SMARTBUFF_BDraconicRune, SMARTBUFF_TWWCrystalAugRune1 };
+  S.LinkAugment             = { SMARTBUFF_BMiscItem14, SMARTBUFF_BMiscItem14_1, SMARTBUFF_BMiscItem14_2, SMARTBUFF_BMiscItem14_3, SMARTBUFF_BAugmentRune,  SMARTBUFF_BVieledAugment, SMARTBUFF_BDreamAugmentRune, SMARTBUFF_BDraconicRune, SMARTBUFF_TWWCrystalAugRune1, SMARTBUFF_BTWWEtherealAugRune };
 
   -- Flasks & Elixirs
   SMARTBUFF_BFLASKTBC1      = C_Spell.GetSpellInfo(28520);  --"Flask of Relentless Assault"
@@ -1610,6 +1612,7 @@ function SMARTBUFF_InitSpellList()
 
     -- TWW
     {SMARTBUFF_TWWCrystalAugRune1, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BTWWCrystalAugRune1, S.LinkAugment},
+    {SMARTBUFF_TWWEtherealAugRune, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BTWWEtherealAugRune, S.LinkAugment},
   };
 
   --  Toys:    ItemId, SpellId, Duration [min]
