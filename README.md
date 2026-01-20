@@ -1,6 +1,6 @@
 # SmartBuff Retail
 
-For clarity, this repository is ONLY for the Retail version of the client and it is not the Classic version.
+For clarity, this repository is ONLY for the Retail version of the client and it is not the Classic versions.
 
 SmartBuff is a buff addon to monitor you, your party or raids buffs easily and quickly allowing you to cast those that are missing - all classes are supported.
 
@@ -13,7 +13,7 @@ Run the mod when ever you wish, if nothing is buffed, there is no penalty or coo
 
 - Supports all classes.
 - Checks buffs and rebuffs you, raid, party members and pets.
-- Setup your own buff templates (Solo, Party, Raid, Battleground, MC, Onyxia, BWL, AQ, ZG, Custom 1-5)
+- Setup your own buff templates (Solo, Party, Raid, Battleground, Delves etc.)
 - Auto switch templates when playing solo, in a party or raid etc.
 - Individual setup for each buff.
 - Supports group buffs: 'Gift of the Wild'/'Arcane Brilliance'/'Prayer of Fortitude'/'Prayer of Spirit', incl. group size and reagence checks.
@@ -24,7 +24,7 @@ Run the mod when ever you wish, if nothing is buffed, there is no penalty or coo
 - Supports tracking abilities.
 - Reminder if a buff is missing (Splash/chat/sound).
 - ReBuff Timers.
-- Scrollwheel or only one key is needed.
+- Scroll wheel or only one key is needed.
 - Fast and easy to use.
 - FuBar support.
 - Titan Panel support

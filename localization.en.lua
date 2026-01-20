@@ -4,11 +4,14 @@
 
 -- Whats new info
 SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
-  .."          |cffffffffDragonflight & Classic version by Codermik, additional retail\n"
-  .."          programming by Speedwaystar/MrWizard.\n"
+  .."          |cffffffffMidnight & Classic versions by Codermik, additional retail\n"
+  .."          programming by MrWizard and Speedwaystar.\n"
   .."\n\n"
-  .."          Changes in r34.050925:\n\n"
-  .."             * TWW Ethereal Augment Rune\n"
+  .."          Changes in r35.200126:\n\n"
+  .."             * Updated TOC for Midnight.\n"
+  .."             * Added Midnight Flasks.\n"
+  .."             * Fixed wrong SpellID's.\n"
+  .."             * Added translations.\n"
   .."\n\n"
   .."          |c0000FF96Many thanks to Chris S., Samantha R. and\n"
   .."          Twilight's Sundries for their kind donations.\n"
@@ -16,7 +19,9 @@ SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
 ;
 
 SMARTBUFF_CREDITS = "|cffffffff"
-  .."Retail & Classic by Codermik & Speedwaystar.  Please join and get support via my discord server:\n\n"
+  .."Retail & Classic by Codermik, TheWizard &\n"
+  .."Speedwaystar.  Please join and get support\n"
+  .."via my discord server:\n\n"
   .."|cff00e0ffhttps://discord.gg/R6EkZ94TKK\n\n"
   .."|cffffffffIf you want to help support me and the development of this addon then please always download from Curse or use one of the following links:\n\n"
   .."|cffffffffTwitch: |cff00e0ffhttps://www.twitch.tv/codermik\n"
@@ -42,8 +47,8 @@ SMARTBUFF_UNDEAD    = "Undead";
 SMARTBUFF_CLASSES = {"Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior", "Death Knight", "Monk", "Demon Hunter", "Evoker", "Hunter Pet", "Warlock Pet", "Death Knight Pet", "Tank", "Healer", "Damage Dealer"};
 
 -- Templates and Instances
-SMARTBUFF_TEMPLATES = {"Solo", "Party", "LFR", "Raid", "Mythic Keystone", "Horrific Vision", "Delve", "Battleground", "Arena", "Nerub-ar Palace", "Liberation of Undermine", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"};
-SMARTBUFF_INSTANCES = {"Nerub-ar Palace", "Liberation of Undermine"};
+SMARTBUFF_TEMPLATES = {"Solo", "Party", "LFR", "Raid", "Mythic Keystone", "Horrific Vision", "Delve", "Battleground", "Arena", "The Voidspire", "The Dreamrift", "March on Quel'Danas", "Nerub-ar Palace", "Liberation of Undermine", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"};
+SMARTBUFF_INSTANCES = {"The Voidspire", "The Dreamrift", "March on Quel'Danas", "Nerub-ar Palace", "Liberation of Undermine"};
 
 -- Mount
 SMARTBUFF_MOUNT = "Increases speed by (%d+)%%.";

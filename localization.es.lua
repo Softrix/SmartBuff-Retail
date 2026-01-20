@@ -33,8 +33,8 @@ SMARTBUFF_UNDEAD    = "No-muerto";
 SMARTBUFF_CLASSES = {"Druida", "Cazador", "Mago", "Palad\195\173n", "Sacerdote", "P\195\173caro", "Cham\195\161n", "Brujo", "Guerrero", "Caballero de la Muerte", "Monje", "Cazador de demonios", "Evoker", "Mascota de cazador", "Mascota de brujo", "Mascota de caballero de la Muerte", "Tanque", "Sanador", "Infligir da\195\177o"};
 
 -- Templates and Instances
-SMARTBUFF_TEMPLATES = {"Solo", "Grupo", "Banda", "Campos de batalla", "Arena", "CCH", "PdC", "Ulduar", "MC", "Ony", "BWL", "Naxx", "AQ", "ZG", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"};
-SMARTBUFF_INSTANCES = {"Ciudadela de la Corona de Hielo", "Prueba del Cruzado", "Ulduar", "N\195\186cleo de Magma", "Guarida de Onyxia", "Guarida alanegra", "Naxxramas", "Ahn'Qiraj", "Zul'Gurub"};
+SMARTBUFF_TEMPLATES = {"En solitario", "Grupo", "BdB", "Banda", "Piedra angular mítica", "Visión horrífica", "Sondaje", "Campo de batalla", "Arena", "La Aguja del Vacío", "La Grieta de los Sueños", "Marcha sobre Quel'Danas", "Palacio de Nerub-ar", "Liberación de Submina", "Personalizado 1", "Personalizado 2", "Personalizado 3", "Personalizado 4", "Personalizado 5"};
+SMARTBUFF_INSTANCES = {"La Aguja del Vacío", "La Grieta de los Sueños", "Marcha sobre Quel'Danas", "Palacio de Nerub-ar", "Liberación de Submina"};
 
 -- Mount
 SMARTBUFF_MOUNT = "Aumenta la velocidad en un (%d+)%%.";

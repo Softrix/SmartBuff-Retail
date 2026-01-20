@@ -9,13 +9,13 @@
 -- Version/Release info, bump these as needed:
 -- Bump .toc file and optionally update notes in localization.en.lua
 
-SMARTBUFF_DATE               = "050925"; -- EU Date: DDMMYY
-SMARTBUFF_VERSION            = "r34." .. SMARTBUFF_DATE;
+SMARTBUFF_DATE               = "200126"; -- EU Date: DDMMYY
+SMARTBUFF_VERSION            = "r35." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is needed for changes in existing buffs or major patches
 -- While buffs are loaded on startup; their profile logic is not changed
 -- if it already exists; so we need to force a reset
-SMARTBUFF_VERSIONNR          = 110105;
+SMARTBUFF_VERSIONNR          = 120000;
 -- End of version info
 
 SMARTBUFF_TITLE              = "SmartBuff";

@@ -34,8 +34,8 @@ SMARTBUFF_UNDEAD    = "Mort-vivant";
 SMARTBUFF_CLASSES = {"Druide", "Chasseur", "Mage", "Paladin", "Pr\195\170tre", "Voleur", "Chaman", "D\195\169moniste", "Guerrier", "Chevalier de la mort", "Moine", "Chasseur de démons", "Evoker", "Chasseur Pet", "D\195\169moniste Pet", "Chevalier de la mort Pet", "Tank", "Gu\195\169risseur", "Sp\195\169cialiste des d\195\169g\195\162ts"};
 
 -- Templates and Instances
-SMARTBUFF_TEMPLATES = {"Seul", "Groupe", "Raid", "Champs de Bataille", "Ar\195\168ne", "CCG", "EdC", "Ulduar", "MC", "Ony", "BWL", "Naxx", "AQ", "ZG", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"};
-SMARTBUFF_INSTANCES = {"Citadelle de la Couronne de glace", "L\'\195\169preuve du crois\195\169", "Ulduar", "C\197\147ur du Magma", "Repaire d\'Onyxia", "Repaire de l\'Aile noire", "Naxxramas", "Ahn'Qiraj", "Zul'Gurub"};
+SMARTBUFF_TEMPLATES = {"Solo", "Groupe", "RdR", "Raid", "Clef mythique", "Vision horrifique", "Faille", "Champ de bataille", "Arène", "Flèche du Vide", "Faille onirique", "Marche sur Quel'Danas", "Palais de Nerub-ar", "Libération de Soutermine", "Personnalisé 1", "Personnalisé 2", "Personnalisé 3", "Personnalisé 4", "Personnalisé 5"};
+SMARTBUFF_INSTANCES = {"Flèche du Vide", "Faille onirique", "Marche sur Quel'Danas", "Palais de Nerub-ar", "Libération de Soutermine"};
 
 -- Mount
 SMARTBUFF_MOUNT = "Augmente la vitesse de (%d+)%%.";

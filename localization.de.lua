@@ -32,8 +32,8 @@ SMARTBUFF_UNDEAD    = "Untot";
 SMARTBUFF_CLASSES = {"Druide", "Jäger", "Magier", "Paladin", "Priester", "Schurke", "Schamane", "Hexenmeister", "Krieger", "Todesritter", "Mönch", "Dämonenjäger", "Evoker", "Jäger Pet", "Hexer Pet", "Todesritter Pet", "Tank", "Heiler", "Schadensverursacher"};
 
 -- Templates and Instances
-SMARTBUFF_TEMPLATES = {"Solo", "Gruppe", "Raid", "Schlachtfeld", "Arena", "ICC", "PDK", "Ulduar", "MC", "Ony", "BWL", "Naxx", "AQ", "ZG", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"};
-SMARTBUFF_INSTANCES = {"Eiskronenzitadelle", "Prüfung des Kreuzfahrers", "Ulduar", "geschmolzene Kern", "Onyxias Hort", "Pechschwingenhort", "Naxxramas", "Ahn'Qiraj", "Zul'Gurub"};
+SMARTBUFF_TEMPLATES = {"Solo", "Gruppe", "LFG", "Raid", "Mytisk nøgle", "Rædselsvision", "Dyk", "Slagmark", "Arena", "Tomspiret", "Drømmeriften", "March mod Quel'Danas", "Nerub-ar Palads", "Befrielse af Undermine", "Tilpasset 1", "Tilpasset 2", "Tilpasset 3", "Tilpasset 4", "Tilpasset 5"};
+SMARTBUFF_INSTANCES = {"Tomspiret", "Drømmeriften", "March mod Quel'Danas", "Nerub-ar Palads", "Befrielse af Undermine"};
 
 -- Mount
 SMARTBUFF_MOUNT = "Erhöht Tempo um (%d+)%%.";

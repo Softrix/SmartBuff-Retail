@@ -1,0 +1,203 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\SmartBuff\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|C:\\SmartBuff\\localization.en.lua||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|solutionrelative:localization.en.lua||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|C:\\SmartBuff\\localization.de.lua||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|solutionrelative:localization.de.lua||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|C:\\SmartBuff\\localization.es.lua||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|solutionrelative:localization.es.lua||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|C:\\SmartBuff\\localization.fr.lua||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|solutionrelative:localization.fr.lua||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|C:\\SmartBuff\\localization.ru.lua||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|solutionrelative:localization.ru.lua||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|C:\\SmartBuff\\localization.cn.lua||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|solutionrelative:localization.cn.lua||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|C:\\SmartBuff\\localization.tw.lua||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|solutionrelative:localization.tw.lua||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|C:\\SmartBuff\\SmartBuff.lua||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|solutionrelative:SmartBuff.lua||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|C:\\SmartBuff\\SmartBuff.toc||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{CDC2904D-BCF4-4DD3-8D66-2C5F751F8F6B}|SmartBuff.wowproj|solutionrelative:SmartBuff.toc||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 253,
+          "SelectedChildIndex": 12,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{9a3886bf-2dcb-401c-92ed-07bc30012aab}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "localization.tw.lua",
+              "DocumentMoniker": "C:\\SmartBuff\\localization.tw.lua",
+              "RelativeDocumentMoniker": "localization.tw.lua",
+              "ToolTip": "C:\\SmartBuff\\localization.tw.lua",
+              "RelativeToolTip": "localization.tw.lua",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAACQAAABIAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-20T18:58:36.244Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "localization.ru.lua",
+              "DocumentMoniker": "C:\\SmartBuff\\localization.ru.lua",
+              "RelativeDocumentMoniker": "localization.ru.lua",
+              "ToolTip": "C:\\SmartBuff\\localization.ru.lua",
+              "RelativeToolTip": "localization.ru.lua",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAACMAAAB5AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-20T18:58:35.397Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "localization.fr.lua",
+              "DocumentMoniker": "C:\\SmartBuff\\localization.fr.lua",
+              "RelativeDocumentMoniker": "localization.fr.lua",
+              "ToolTip": "C:\\SmartBuff\\localization.fr.lua",
+              "RelativeToolTip": "localization.fr.lua",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAACUAAACHAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-20T18:58:34.376Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "localization.es.lua",
+              "DocumentMoniker": "C:\\SmartBuff\\localization.es.lua",
+              "RelativeDocumentMoniker": "localization.es.lua",
+              "ToolTip": "C:\\SmartBuff\\localization.es.lua",
+              "RelativeToolTip": "localization.es.lua",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAACQAAACTAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-20T18:58:23.644Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "localization.de.lua",
+              "DocumentMoniker": "C:\\SmartBuff\\localization.de.lua",
+              "RelativeDocumentMoniker": "localization.de.lua",
+              "ToolTip": "C:\\SmartBuff\\localization.de.lua",
+              "RelativeToolTip": "localization.de.lua",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAACwAAAAwAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-20T18:58:19.961Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "localization.cn.lua",
+              "DocumentMoniker": "C:\\SmartBuff\\localization.cn.lua",
+              "RelativeDocumentMoniker": "localization.cn.lua",
+              "ToolTip": "C:\\SmartBuff\\localization.cn.lua",
+              "RelativeToolTip": "localization.cn.lua",
+              "ViewState": "AQIAAOcAAAAAAAAAAAAAAAwBAABFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-20T18:56:39.022Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "SmartBuff.lua",
+              "DocumentMoniker": "C:\\SmartBuff\\SmartBuff.lua",
+              "RelativeDocumentMoniker": "SmartBuff.lua",
+              "ToolTip": "C:\\SmartBuff\\SmartBuff.lua",
+              "RelativeToolTip": "SmartBuff.lua",
+              "ViewState": "AQIAAB4SAAAAAAAAAAAWwCQAAAA0AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-20T14:42:28.685Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "localization.en.lua",
+              "DocumentMoniker": "C:\\SmartBuff\\localization.en.lua",
+              "RelativeDocumentMoniker": "localization.en.lua",
+              "ToolTip": "C:\\SmartBuff\\localization.en.lua",
+              "RelativeToolTip": "localization.en.lua",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA4AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-20T14:42:01.775Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "SmartBuff.toc",
+              "DocumentMoniker": "C:\\SmartBuff\\SmartBuff.toc",
+              "RelativeDocumentMoniker": "SmartBuff.toc",
+              "ToolTip": "C:\\SmartBuff\\SmartBuff.toc",
+              "RelativeToolTip": "SmartBuff.toc",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAUAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-01-20T14:40:25.727Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedHeight": 171,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
