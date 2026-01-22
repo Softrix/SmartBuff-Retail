@@ -162,7 +162,6 @@ function SMARTBUFF_InitItemList()
   _,SMARTBUFF_TWWWeaponEnhance6_q2  = C_Item.GetItemInfo(224106);   --  Algari Mana Oil
   _,SMARTBUFF_TWWWeaponEnhance6_q3  = C_Item.GetItemInfo(224107);   --  Algari Mana Oil
 
-
   -- Food
 --  SMARTBUFF_KIBLERSBITS         = C_Item.GetItemInfo(33874); --"Kibler's Bits"
 --  SMARTBUFF_STORMCHOPS          = C_Item.GetItemInfo(33866); --"Stormchops"
@@ -267,9 +266,9 @@ function SMARTBUFF_InitItemList()
     241316, 241312, 241310, 241314, 241318, 
   });
 
-
   -- Warlock healthstones
   SMARTBUFF_HEALTHSTONE         = C_Item.GetItemInfo(5512);  --"Healthstone"
+  SMARTBUFF_DEMONICHEALTHSTONE  = C_Item.GetItemInfo(224464); --"Demonic Healthstone"
   S.StoneWarlock = GetItems({5512, 224464});
 
   -- Conjured mage food IDs
@@ -580,7 +579,6 @@ function SMARTBUFF_InitItemList()
   LoadToys();
 end
 
-
 function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_TESTSPELL       = getSpellBookItemByName(774);
 
@@ -619,7 +617,7 @@ function SMARTBUFF_InitSpellIDs()
   -- Warlock
   SMARTBUFF_UNENDINGBREATH  = getSpellBookItemByName(5697);  --"Unending Breath"
   SMARTBUFF_LIFETAP         = getSpellBookItemByName(1454);  --"Life Tap"
-  SMARTBUFF_CREATEHS        = getSpellBookItemByName(6201);  --"Create Healthstone"
+  SMARTBUFF_CREATEHS        = getSpellBookItemByName(6201);  --"Create Healthstone" (creates either regular or demonic based on talents)
   SMARTBUFF_CREATEHSWELL    = getSpellBookItemByName(29893); --"Create Soulwell"
   SMARTBUFF_SOULSTONE       = getSpellBookItemByName(20707); --"Soulstone"
   SMARTBUFF_GOSACRIFICE     = getSpellBookItemByName(108503);--"Grimoire of Sacrifice"
@@ -632,7 +630,7 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_DEMONICTYRANT   = getSpellBookItemByName(265187); --"Summon Demonic Tyrant"
 
   -- Hunter
-  SMARTBUFF_TRUESHOTAURA    = getSpellBookItemByName(288613); --"Trueshot Aura" (P)
+--  SMARTBUFF_TRUESHOTAURA    = getSpellBookItemByName(288613); --"Trueshot Aura" (P) -- candidate for deletion (spell doesn't exist in retail WoW)
   SMARTBUFF_VOLLEY          = getSpellBookItemByName(260243); --"Volley"
   SMARTBUFF_RAPIDFIRE       = getSpellBookItemByName(257044);  --"Rapid Fire"
   SMARTBUFF_AOTC            = getSpellBookItemByName(186257);  --"Aspect of the Cheetah"
@@ -679,8 +677,8 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_WARAVATAR       = getSpellBookItemByName(107574);   --"Avatar"
 
   -- Warrior buff links
-  S.ChainWarriorStance = { SMARTBUFF_BATSTANCE, SMARTBUFF_DEFSTANCE, SMARTBUFF_GLADSTANCE };
-  S.ChainWarriorShout  = { SMARTBUFF_BATTLESHOUT, SMARTBUFF_COMMANDINGSHOUT };
+  S.ChainWarriorStance = { SMARTBUFF_BATSTANCE, SMARTBUFF_DEFSTANCE }; -- SMARTBUFF_GLADSTANCE commented out - candidate for deletion
+  S.ChainWarriorShout  = { SMARTBUFF_BATTLESHOUT }; -- SMARTBUFF_COMMANDINGSHOUT commented out - candidate for deletion
 
   -- Rogue
   SMARTBUFF_STEALTH         = getSpellBookItemByName(1784);  --"Stealth"
@@ -697,12 +695,12 @@ function SMARTBUFF_InitSpellIDs()
 --  SMARTBUFF_LEECHINGPOISON      = getSpellBookItemByName(108211); --"Leeching Poison"
   SMARTBUFF_INSTANTPOISON       = getSpellBookItemByName(315584); --"Instant Poison"
   SMARTBUFF_NUMBINGPOISON       = getSpellBookItemByName(5761);   --"Numbing Poison"
---  SMARTBUFF_AMPLIFYPOISON       = getSpellBookItemByName(381664); --"Amplifying Poison"
---  SMARTBUFF_ATROPHICPOISON      = getSpellBookItemByName(381637);   --"Atrophic Poison"
+  SMARTBUFF_AMPLIFYPOISON       = getSpellBookItemByName(381664); --"Amplifying Poison"
+  SMARTBUFF_ATROPHICPOISON      = getSpellBookItemByName(381637);   --"Atrophic Poison"
 
   -- Rogue buff links
-  S.ChainRoguePoisonsLethal     = { SMARTBUFF_WOUNDPOISON, SMARTBUFF_INSTANTPOISON,  };
-  S.ChainRoguePoisonsNonLethal  = { SMARTBUFF_CRIPPLINGPOISON, SMARTBUFF_NUMBINGPOISON };
+  S.ChainRoguePoisonsLethal     = { SMARTBUFF_WOUNDPOISON, SMARTBUFF_INSTANTPOISON, SMARTBUFF_AMPLIFYPOISON };
+  S.ChainRoguePoisonsNonLethal  = { SMARTBUFF_CRIPPLINGPOISON, SMARTBUFF_NUMBINGPOISON, SMARTBUFF_ATROPHICPOISON };
 
   -- Paladin
   SMARTBUFF_RIGHTEOUSFURY         = getSpellBookItemByName(25780);  --"Righteous Fury"
@@ -717,7 +715,7 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_RITEOFSANTIFICATION   = getSpellBookItemByName(433568); --"Right of Sanctification, Hero"
   SMARTBUFF_RITEOFADJURATION      = getSpellBookItemByName(433583); --"Right of Adjuration, Hero"
   -- Paladin buff links
-  S.ChainPaladinAura     = { SMARTBUFF_DEVOTIONAURA, SMARTBUFF_RETRIBUTIONAURA, SMARTBUFF_CONCENTRATIONAURA };
+  S.ChainPaladinAura     = { SMARTBUFF_CRUSADERAURA, SMARTBUFF_DEVOTIONAURA, SMARTBUFF_CONCENTRATIONAURA };
 
   -- Death Knight
   SMARTBUFF_DANCINGRW         = getSpellBookItemByName(49028); --"Dancing Rune Weapon"
@@ -749,9 +747,7 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_BronzeAttunement = getSpellBookItemByName(403265);  --"Bronze Attunement"
   SMARTBUFF_BlackAttunement = getSpellBookItemByName(403264);   --"Black Attunement"
 
-
   -- Demon Hunter
-
 
   -- Tracking -- this is deprecated due to moving to minimap
   SMARTBUFF_FINDMINERALS    = getSpellBookItemByName(2580);  --"Find Minerals"
@@ -984,28 +980,21 @@ function SMARTBUFF_InitSpellIDs()
   --end
 
   -- Buff map
-  S.LinkStats = { SMARTBUFF_BOK, SMARTBUFF_MOTW, SMARTBUFF_LOTE, SMARTBUFF_LOTWT,
-                  getSpellBookItemByName(159988), -- Bark of the Wild
-                  getSpellBookItemByName(203538), -- Greater Blessing of Kings
-                  getSpellBookItemByName(90363),  -- Embrace of the Shale Spider
-                  getSpellBookItemByName(160077)  -- Strength of the Earth
+  S.LinkStats = { SMARTBUFF_MOTW, -- SMARTBUFF_BOK, SMARTBUFF_LOTE, SMARTBUFF_LOTWT commented out - candidate for deletion
+                  -- getSpellBookItemByName(159988), -- Bark of the Wild -- candidate for deletion
+                  -- getSpellBookItemByName(203538), -- Greater Blessing of Kings -- candidate for deletion (spell doesn't exist per Wowhead)
+                  -- getSpellBookItemByName(90363),  -- Embrace of the Shale Spider -- candidate for deletion (spell doesn't exist per Wowhead)
+                  -- getSpellBookItemByName(160077)  -- Strength of the Earth -- candidate for deletion (spell doesn't exist per Wowhead)
                 };
 
-  S.LinkSta   = { SMARTBUFF_PWF, SMARTBUFF_COMMANDINGSHOUT, SMARTBUFF_BLOODPACT,
-                  getSpellBookItemByName(50256),  -- Invigorating Roar
-                  getSpellBookItemByName(90364),  -- Qiraji Fortitude
-                  getSpellBookItemByName(160014), -- Sturdiness
-                  getSpellBookItemByName(160003)  -- Savage Vigor
+  S.LinkSta   = { SMARTBUFF_PWF, -- SMARTBUFF_COMMANDINGSHOUT and SMARTBUFF_BLOODPACT commented out - candidate for deletion
+                  -- getSpellBookItemByName(50256),  -- Invigorating Roar -- candidate for deletion (spell doesn't exist per Wowhead)
+                  -- getSpellBookItemByName(90364),  -- Qiraji Fortitude -- candidate for deletion (spell doesn't exist per Wowhead)
+                  -- getSpellBookItemByName(160014), -- Sturdiness -- candidate for deletion (spell doesn't exist per Wowhead)
+                  -- getSpellBookItemByName(160003)  -- Savage Vigor -- candidate for deletion (spell doesn't exist per Wowhead)
                 };
 
-  S.LinkAp    = { SMARTBUFF_HORNOFWINTER, SMARTBUFF_BATTLESHOUT, SMARTBUFF_TRUESHOTAURA };
-
-  S.LinkMa    = { SMARTBUFF_BOM, SMARTBUFF_DRUID_MKAURA, SMARTBUFF_GRACEOFAIR, SMARTBUFF_POTGRAVE,
-                  getSpellBookItemByName(93435),  -- Roar of Courage
-                  getSpellBookItemByName(160039), -- Keen Senses
-                  getSpellBookItemByName(128997), -- Spirit Beast Blessing
-                  getSpellBookItemByName(160073)  -- Plainswalking
-                };
+  -- S.LinkAp removed - only contained BATTLESHOUT (which doesn't need to link to itself)
 
   S.LinkInt   = { SMARTBUFF_BOW, SMARTBUFF_AB, SMARTBUFF_DALARANB };
 
@@ -1013,7 +1002,6 @@ function SMARTBUFF_InitSpellIDs()
 
   --SMARTBUFF_AddMsgD("Spell IDs initialized");
 end
-
 
 function SMARTBUFF_InitSpellList()
   if (SMARTBUFF_PLAYERCLASS == nil) then return; end
@@ -1041,7 +1029,7 @@ function SMARTBUFF_InitSpellList()
     SMARTBUFF_BUFFLIST = {
       {SMARTBUFF_SHADOWFORM, -1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_VAMPIRICEMBRACE, 30, SMARTBUFF_CONST_SELF},
-      {SMARTBUFF_PWF, 60, SMARTBUFF_CONST_GROUP, {6}, "HPET;WPET;DKPET", S.LinkSta},
+      {SMARTBUFF_PWF, 60, SMARTBUFF_CONST_GROUP, {6}, "HPET;WPET;DKPET"}, -- S.LinkSta removed - chain only contains PWF itself
       {SMARTBUFF_PWS, 0.5, SMARTBUFF_CONST_GROUP, {6}, "MAGE;WARLOCK;ROGUE;PALADIN;WARRIOR;DRUID;HUNTER;SHAMAN;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
       {SMARTBUFF_LEVITATE, 2, SMARTBUFF_CONST_GROUP, {34}, "HPET;WPET;DKPET"},
     };
@@ -1055,7 +1043,6 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_ICEBARRIER, 1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_COMBUSTION, -1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_PRESENCEOFMIND, 0.165, SMARTBUFF_CONST_SELF},
-      {SMARTBUFF_IMPPRISBARRIER, 1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_BLAZBARRIER, 1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_REFRESHMENT, 0.03, SMARTBUFF_CONST_ITEM, nil, SMARTBUFF_CONJUREDMANA, nil, S.FoodMage},
     };
@@ -1082,7 +1069,7 @@ function SMARTBUFF_InitSpellList()
     SMARTBUFF_BUFFLIST = {
       {SMARTBUFF_RAPIDFIRE, 0.2, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_VOLLEY, -1, SMARTBUFF_CONST_SELF},
-      {SMARTBUFF_TRUESHOTAURA, -1, SMARTBUFF_CONST_SELF},
+      -- {SMARTBUFF_TRUESHOTAURA, -1, SMARTBUFF_CONST_SELF}, -- candidate for deletion (spell doesn't exist in retail WoW)
       {SMARTBUFF_AOTC, -1, SMARTBUFF_CONST_SELF, nil, nil, S.LinkAspects},
       {SMARTBUFF_AOTW, -1, SMARTBUFF_CONST_SELF, nil, nil, S.LinkAspects},
       {SMARTBUFF_CALL_PET_1, -1, SMARTBUFF_CONST_SELF, nil, S.CheckPet},
@@ -1117,7 +1104,7 @@ function SMARTBUFF_InitSpellList()
   -- Warrior
   if (SMARTBUFF_PLAYERCLASS == "WARRIOR") then
     SMARTBUFF_BUFFLIST = {
-      {SMARTBUFF_BATTLESHOUT, 60, SMARTBUFF_CONST_SELF, nil, nil, S.LinkAp, S.ChainWarriorShout},
+      {SMARTBUFF_BATTLESHOUT, 60, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainWarriorShout}, -- S.LinkAp removed - chain only contains BATTLESHOUT itself
       {SMARTBUFF_BERSERKERRAGE, 0.165, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_SHIELDBLOCK, 0.1666, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_BATSTANCE, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainWarriorStance},
@@ -1137,9 +1124,10 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_EVASION, 0.2, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_INSTANTPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsLethal},
       {SMARTBUFF_WOUNDPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsLethal},
-      {SMARTBUFF_AGONIZINGPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsLethal},
+      {SMARTBUFF_AMPLIFYPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsLethal},
       {SMARTBUFF_NUMBINGPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsNonLethal},
       {SMARTBUFF_CRIPPLINGPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsNonLethal},
+      {SMARTBUFF_ATROPHICPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsNonLethal},
     };
   end
 
@@ -1150,7 +1138,7 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_BEACONOFLIGHT, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
       {SMARTBUFF_BEACONOFAITH, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
       {SMARTBUFF_BEACONOFVIRTUE, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
-	  {SMARTBUFF_CRUSADERAURA, -1, SMARTBUFF_CONST_SELF},
+      {SMARTBUFF_CRUSADERAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
       {SMARTBUFF_DEVOTIONAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
       {SMARTBUFF_CONCENTRATIONAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
       {SMARTBUFF_RITEOFADJURATION, 60, SMARTBUFF_CONST_WEAPON},
@@ -1393,7 +1381,6 @@ function SMARTBUFF_InitSpellList()
   end
   ]]
 
-
   -- Scrolls
   SMARTBUFF_SCROLL = {
     {SMARTBUFF_MiscItem17, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BMiscItem17, S.LinkFlaskLeg},
@@ -1575,8 +1562,6 @@ function SMARTBUFF_InitSpellList()
   -- TWW
   AddItem(212518, 431709, 60);  -- Vial of Endless Draconic Scales
 
-
-
   -- Potions... but really it's flasks :)
   SMARTBUFF_POTION = {
     {SMARTBUFF_ELIXIRTBC1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BELIXIRTBC1},
@@ -1690,7 +1675,6 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_FlaskDF4_q1, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFlaskDF4, S.LinkFlaskDF},
     {SMARTBUFF_FlaskDF4_q2, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFlaskDF4, S.LinkFlaskDF},
     {SMARTBUFF_FlaskDF4_q3, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFlaskDF4, S.LinkFlaskDF},
-
 
     {SMARTBUFF_FlaskDF5_q1, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFlaskDF5, S.LinkFlaskDF},
     {SMARTBUFF_FlaskDF5_q2, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFlaskDF5, S.LinkFlaskDF},
