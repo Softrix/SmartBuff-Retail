@@ -270,6 +270,7 @@ function SMARTBUFF_InitItemList()
 
   -- Warlock healthstones
   SMARTBUFF_HEALTHSTONE         = C_Item.GetItemInfo(5512);  --"Healthstone"
+  SMARTBUFF_DEMONICHEALTHSTONE  = C_Item.GetItemInfo(224464); --"Demonic Healthstone"
   S.StoneWarlock = GetItems({5512, 224464});
 
   -- Conjured mage food IDs
@@ -619,7 +620,7 @@ function SMARTBUFF_InitSpellIDs()
   -- Warlock
   SMARTBUFF_UNENDINGBREATH  = getSpellBookItemByName(5697);  --"Unending Breath"
   SMARTBUFF_LIFETAP         = getSpellBookItemByName(1454);  --"Life Tap"
-  SMARTBUFF_CREATEHS        = getSpellBookItemByName(6201);  --"Create Healthstone"
+  SMARTBUFF_CREATEHS        = getSpellBookItemByName(6201);  --"Create Healthstone" (creates either regular or demonic based on talents)
   SMARTBUFF_CREATEHSWELL    = getSpellBookItemByName(29893); --"Create Soulwell"
   SMARTBUFF_SOULSTONE       = getSpellBookItemByName(20707); --"Soulstone"
   SMARTBUFF_GOSACRIFICE     = getSpellBookItemByName(108503);--"Grimoire of Sacrifice"
@@ -698,11 +699,11 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_INSTANTPOISON       = getSpellBookItemByName(315584); --"Instant Poison"
   SMARTBUFF_NUMBINGPOISON       = getSpellBookItemByName(5761);   --"Numbing Poison"
 --  SMARTBUFF_AMPLIFYPOISON       = getSpellBookItemByName(381664); --"Amplifying Poison"
---  SMARTBUFF_ATROPHICPOISON      = getSpellBookItemByName(381637);   --"Atrophic Poison"
+  SMARTBUFF_ATROPHICPOISON      = getSpellBookItemByName(381637);   --"Atrophic Poison"
 
   -- Rogue buff links
-  S.ChainRoguePoisonsLethal     = { SMARTBUFF_WOUNDPOISON, SMARTBUFF_INSTANTPOISON,  };
-  S.ChainRoguePoisonsNonLethal  = { SMARTBUFF_CRIPPLINGPOISON, SMARTBUFF_NUMBINGPOISON };
+  S.ChainRoguePoisonsLethal     = { SMARTBUFF_WOUNDPOISON, SMARTBUFF_INSTANTPOISON };
+  S.ChainRoguePoisonsNonLethal  = { SMARTBUFF_CRIPPLINGPOISON, SMARTBUFF_NUMBINGPOISON, SMARTBUFF_ATROPHICPOISON };
 
   -- Paladin
   SMARTBUFF_RIGHTEOUSFURY         = getSpellBookItemByName(25780);  --"Righteous Fury"
@@ -1137,9 +1138,9 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_EVASION, 0.2, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_INSTANTPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsLethal},
       {SMARTBUFF_WOUNDPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsLethal},
-      {SMARTBUFF_AGONIZINGPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsLethal},
       {SMARTBUFF_NUMBINGPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsNonLethal},
       {SMARTBUFF_CRIPPLINGPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsNonLethal},
+      {SMARTBUFF_ATROPHICPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsNonLethal},
     };
   end
 
@@ -1150,7 +1151,7 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_BEACONOFLIGHT, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
       {SMARTBUFF_BEACONOFAITH, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
       {SMARTBUFF_BEACONOFVIRTUE, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
-	  {SMARTBUFF_CRUSADERAURA, -1, SMARTBUFF_CONST_SELF},
+      {SMARTBUFF_CRUSADERAURA, -1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_DEVOTIONAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
       {SMARTBUFF_CONCENTRATIONAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
       {SMARTBUFF_RITEOFADJURATION, 60, SMARTBUFF_CONST_WEAPON},

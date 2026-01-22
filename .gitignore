@@ -1,3 +1,4 @@
 *.wowproj
 *.wowsln
 .vscode
+.cursorrules
