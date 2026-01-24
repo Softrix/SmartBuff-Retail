@@ -6,7 +6,7 @@
 ## Notes: Cast the most important buffs on you or party/raid members/pets. Use /sbm for options menu.
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
-## LoadSavedVariablesFirst: true
+## LoadSavedVariablesFirst: 1
 ## SavedVariables: SMARTBUFF_OptionsGlobal
 ## SavedVariablesPerCharacter: SMARTBUFF_Options, SMARTBUFF_Buffs
 ## IconTexture: Interface\Addons\Smartbuff\Icons\IconEnabled.tga

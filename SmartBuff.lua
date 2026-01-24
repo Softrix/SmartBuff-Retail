@@ -535,14 +535,14 @@ end
 
 -- SMARTBUFF_OnEvent
 function SMARTBUFF_OnEvent(self, event, ...)
-  local arg1, arg2, arg3, arg4, arg5 = ...;
+local arg1, arg2, arg3, arg4, arg5 = ...;
 
   if ((event == "UNIT_NAME_UPDATE" and arg1 == "player") or event == "PLAYER_ENTERING_WORLD") then
     if IsPlayerInGuild() and event == "PLAYER_ENTERING_WORLD" then
       C_ChatInfo.SendAddonMessage(SmartbuffPrefix, SMARTBUFF_VERSION, "GUILD")
     end
     isPlayer = true;
-    if (event == "PLAYER_ENTERING_WORLD" and isInit and O.Toggle) then
+    if (event == "PLAYER_ENTERING_WORLD" and isInit and O and O.Toggle) then
       isSetZone = true;
       tStartZone = GetTime();
     end
@@ -812,10 +812,16 @@ Enum.SmartBuffGroup = {
 
 -- Set the current template and create an array of units
 function SMARTBUFF_SetTemplate(force)
-  -- Don't init things when mounted or in combat
-  if (not force and (InCombatLockdown() or IsMounted() or IsFlying())) then return end
+  -- Only block in combat (not when mounted) - setup should work when mounted
+  -- Mount check only blocks actual buff checking/casting, not data structure setup
+  if (not force and InCombatLockdown()) then return end
   if (SmartBuffOptionsFrame:IsVisible()) then return end
 
+  -- Ensure currentTemplate is set (fallback to Solo if nil)
+  if (currentTemplate == nil) then
+    currentTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo];
+  end
+  
   local newTemplate = currentTemplate -- default to old template
 
   -- if autoswitch no group change is enabled, load new template based on group composition
@@ -1277,6 +1283,26 @@ function SMARTBUFF_PreCheck(mode, force)
     return false;
   end
 
+  -- Check if buffs need to be set up BEFORE mount/other checks
+  -- This ensures buffs are initialized even when mounted (setup, not casting)
+  if (isSetBuffs and not UnitAffectingCombat("player")) then
+    SMARTBUFF_SetBuffs();
+    isSyncReq = true;
+  end
+
+  if ((mode == 1 and not O.ToggleAuto) or IsMounted() or IsFlying() or LootFrame:IsVisible()
+        or UnitOnTaxi("player") or UnitIsDeadOrGhost("player") or UnitIsCorpse("player")
+        or (mode ~= 1 and (SMARTBUFF_IsPicnic("player") or SMARTBUFF_IsFishing("player")))
+        or (UnitInVehicle("player") or UnitHasVehicleUI("player"))
+        --or (mode == 1 and (O.ToggleAutoRest and IsResting()) and not UnitIsPVP("player"))
+        or (not O.BuffInCities and IsResting() and not UnitIsPVP("player"))) then
+    if (UnitIsDeadOrGhost("player")) then
+      SMARTBUFF_CheckBuffTimers();
+    end
+    return false;
+  end
+
+  -- Now check AutoTimer (only if we passed the mount check)
   if (mode == 1 and not force) then
     if ((GetTime() - tLastCheck) < O.AutoTimer) then
       return false;
@@ -1304,19 +1330,6 @@ function SMARTBUFF_PreCheck(mode, force)
   elseif (sPlayerClass == "DEATHKNIGHT" and IsMounted() and not SMARTBUFF_CheckBuff("player", SMARTBUFF_PATHOFFROST)) then
     return true;
   end
-
-  if ((mode == 1 and not O.ToggleAuto) or IsMounted() or IsFlying() or LootFrame:IsVisible()
-        or UnitOnTaxi("player") or UnitIsDeadOrGhost("player") or UnitIsCorpse("player")
-        or (mode ~= 1 and (SMARTBUFF_IsPicnic("player") or SMARTBUFF_IsFishing("player")))
-        or (UnitInVehicle("player") or UnitHasVehicleUI("player"))
-        --or (mode == 1 and (O.ToggleAutoRest and IsResting()) and not UnitIsPVP("player"))
-        or (not O.BuffInCities and IsResting() and not UnitIsPVP("player"))) then
-    if (UnitIsDeadOrGhost("player")) then
-      SMARTBUFF_CheckBuffTimers();
-    end
-
-    return false;
-  end
   --SMARTBUFF_AddMsgD("2: " .. GetTime() - tLastCheck);
 
   if (UnitAffectingCombat("player")) then
@@ -1325,11 +1338,6 @@ function SMARTBUFF_PreCheck(mode, force)
   else
     isCombat = false;
     SMARTBUFF_AddMsgD("Out of combat");
-  end
-
-  if (not isCombat and isSetBuffs) then
-    SMARTBUFF_SetBuffs();
-    isSyncReq = true;
   end
 
   sMsgWarning = "";
@@ -3058,7 +3066,6 @@ function SMARTBUFF_Options_Init(self)
 
   SMARTBUFF_PLAYERCLASS = sPlayerClass;
 
-
   if (not SMARTBUFF_Buffs) then SMARTBUFF_Buffs = {}; end
   B = SMARTBUFF_Buffs;
   if (not SMARTBUFF_Options) then SMARTBUFF_Options = {}; end
@@ -3248,15 +3255,15 @@ function SMARTBUFF_Options_Init(self)
     SmartBuffOptionsCredits_lblText:SetText(SMARTBUFF_CREDITS); -- bugfix, credits now showing at first start
     SmartBuffWNF_lblText:SetText(SMARTBUFF_WHATSNEW);
     SmartBuffWNF:Show();
-  else
-    SMARTBUFF_SetBuffs();
   end
-
   if (not IsVisibleToPlayer(SmartBuff_KeyButton)) then
     SmartBuff_KeyButton:ClearAllPoints();
     SmartBuff_KeyButton:SetPoint("CENTER", UIParent, "CENTER", 0, 100);
   end
 
+  -- Call SMARTBUFF_SetTemplate() first to set up currentTemplate and groups
+  -- Then it will call SMARTBUFF_SetBuffs() internally
+  -- This ensures proper initialization order
   SMARTBUFF_SetTemplate(true);
   SMARTBUFF_RebindKeys();
   isSyncReq = true;
