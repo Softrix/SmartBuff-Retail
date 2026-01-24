@@ -12,7 +12,8 @@
 SMARTBUFF_DATE               = "200126"; -- EU Date: DDMMYY
 SMARTBUFF_VERSION            = "r35." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
--- This is needed for changes in existing buffs or major patches
+-- This is only needed for major patches or rewrites of profile logic.
+-- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
 -- While buffs are loaded on startup; their profile logic is not changed
 -- if it already exists; so we need to force a reset
 SMARTBUFF_VERSIONNR          = 120000;
@@ -1235,15 +1236,20 @@ function SMARTBUFF_SetInCombatBuffs()
   for name, data in pairs(B[CS()][ct]) do
     --SMARTBUFF_AddMsgD(name .. ", type = " .. type(data));
     if (type(data) == "table" and cBuffIndex[name] and (B[CS()][ct][name].EnableS or B[CS()][ct][name].EnableG) and B[CS()][ct][name].CIn) then
-      if (cBuffsCombat[name]) then
-        wipe(cBuffsCombat[name]);
-      else
-        cBuffsCombat[name] = {};
+      local cBI = cBuffs[cBuffIndex[name]];  -- Get definition data from cBuffs[]
+      if (cBI) then
+        if (cBuffsCombat[name]) then
+          wipe(cBuffsCombat[name]);
+        else
+          cBuffsCombat[name] = {};
+        end
+        cBuffsCombat[name].Unit = "player";
+        cBuffsCombat[name].Type = cBI.Type;  -- ✅ From cBuffs[]
+        cBuffsCombat[name].Links = cBI.Links;  -- ✅ Copy Links for future use
+        cBuffsCombat[name].Chain = cBI.Chain;  -- ✅ Copy Chain for future use
+        cBuffsCombat[name].ActionType = "spell";
+        SMARTBUFF_AddMsgD("Set combat spell: " .. name);
       end
-      cBuffsCombat[name].Unit = "player";
-      cBuffsCombat[name].Type = cBuffs[cBuffIndex[name]].Type;
-      cBuffsCombat[name].ActionType = "spell";
-      SMARTBUFF_AddMsgD("Set combat spell: " .. name);
       --break;
     end
   end
@@ -2634,11 +2640,12 @@ function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
       for i = 1, #t, 1 do
         if (t[i] and tfind(buffC, t[i])) then
           v = GetBuffSettings(t[i]);
-          if (v and v.EnableS) then
+          local cBI = cBuffs[cBuffIndex[t[i]]];
+          if (v and v.EnableS and cBI) then
             local b, tl, im = SMARTBUFF_CheckBuff(unit, t[i]);
             if (b and im) then
               --SMARTBUFF_AddMsgD("Chained buff found: "..t[i]..", "..tl);
-              if (SMARTBUFF_CheckBuffLink(unit, t[i], v.Type, v.Links)) then
+              if (SMARTBUFF_CheckBuffLink(unit, t[i], cBI.Type, cBI.Links)) then
                 return nil, i, defBuff, tl, -1;
               end
             elseif (not b and t[i] == defBuff) then
@@ -4711,11 +4718,12 @@ end
 
 local HelpPlateList = {
   FramePos = { x = 20, y = -20 },
-  FrameSize = { width = 480, height = 500 },
+  FrameSize = { width = 480, height = 720 },
   [1] = { ButtonPos = { x = 344, y = -80 }, HighLightBox = { x = 260, y = -50, width = 204, height = 410 }, ToolTipDir = "DOWN", ToolTipText = "Spell list\nDrag'n'Drop to change the priority order" },
   [2] = { ButtonPos = { x = 105, y = -110 }, HighLightBox = { x = 10, y = -30, width = 230, height = 125 }, ToolTipDir = "DOWN", ToolTipText = "Buff reminder options" },
   [3] = { ButtonPos = { x = 105, y = -250 }, HighLightBox = { x = 10, y = -165, width = 230, height = 135 }, ToolTipDir = "DOWN", ToolTipText = "Character based options" },
   [4] = { ButtonPos = { x = 200, y = -320 }, HighLightBox = { x = 10, y = -300, width = 230, height = 90 }, ToolTipDir = "RIGHT", ToolTipText = "Additional UI options" },
+  [5] = { ButtonPos = { x = 192, y = -630 }, HighLightBox = { x = 5, y = -635, width = 374, height = 33 }, ToolTipDir = "UP", ToolTipText = "Reset buttons\n\nReset BT: Clear buff timers only\nReset All: Wipe everything (profiles + options)\nReset Buffs: Resets buffs and profiles to defaults\nReset List: Reset buff order only" },
 }
 
 function SMARTBUFF_ToggleTutorial(close)

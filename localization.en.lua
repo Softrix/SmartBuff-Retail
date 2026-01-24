@@ -19,7 +19,7 @@ SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
 ;
 
 SMARTBUFF_CREDITS = "|cffffffff"
-  .."Retail & Classic by Codermik, TheWizard &\n"
+  .."Retail & Classic by Codermik, MrWizard &\n"
   .."Speedwaystar.  Please join and get support\n"
   .."via my discord server:\n\n"
   .."|cff00e0ffhttps://discord.gg/R6EkZ94TKK\n\n"
