@@ -55,5 +55,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SmartBuff-Retail-package
-          path: .release/SmartBuff-Retail-*.zip
+          path: SmartBuff-Retail-*.zip
           retention-days: 7
