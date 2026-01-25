@@ -29,7 +29,16 @@ jobs:
         with:
           fetch-depth: 0  # Gets entire git history, needed for automatic changelogs
 
-      - name: Package and release
+      - name: Package (manual trigger - test only)
+        if: github.event_name == 'workflow_dispatch'
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -n "SmartBuff-Retail-{project-version}" -d
+        # -d flag skips upload/release creation for testing
+        # Creates zip file in .release/ directory for artifact upload
+
+      - name: Package and release (tag trigger)
+        if: github.event_name != 'workflow_dispatch'
         uses: BigWigsMods/packager@v2
         with:
           args: -n "SmartBuff-Retail-{project-version}"
@@ -39,4 +48,12 @@ jobs:
         # - Folder inside zip will be "SmartBuff" (from package-as in .pkgmeta)
         # - Automatically detect interface versions from TOC files
         # - Generate changelog from git commits since last tag
-        # - Create GitHub release and upload the zip file
+        # - Create GitHub release and upload the zip file (permanent, attached to release)
+
+      - name: Upload package as artifact (manual trigger only)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartBuff-Retail-package
+          path: .release/*.zip
+          retention-days: 7
