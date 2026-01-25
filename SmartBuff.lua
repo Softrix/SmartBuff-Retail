@@ -411,26 +411,40 @@ local function InitBuffOrder(reset)
   end
 
   -- Remove not longer existing buffs in the order list
+  -- Also remove toys if IncludeToys is disabled
+  local toRemove = {};
+  local includeToys = (O and O.IncludeToys) or false;
   for k, v in pairs(ord) do
     if (v and cBuffIndex[v] == nil) then
       SMARTBUFF_AddMsgD("Remove from buff order: " .. v);
-      tremove(ord, k);
+      tinsert(toRemove, k);
+    elseif (v and not includeToys and SG.Toybox and SG.Toybox[v]) then
+      SMARTBUFF_AddMsgD("Remove toy from buff order (toys excluded): " .. v);
+      tinsert(toRemove, k);
     end
+  end
+  -- Remove collected indices in reverse order to avoid index shifting issues
+  table.sort(toRemove, function(a, b) return a > b; end);
+  for _, k in ipairs(toRemove) do
+    tremove(ord, k);
   end
 
   i = 1;
   while (cBuffs[i] and cBuffs[i].BuffS) do
-    b = false;
-    for _, v in pairs(ord) do
-      if (v and v == cBuffs[i].BuffS) then
-        b = true;
-        break;
+    -- Skip toys if IncludeToys is disabled
+    if (includeToys or not SG.Toybox or not SG.Toybox[cBuffs[i].BuffS]) then
+      b = false;
+      for _, v in pairs(ord) do
+        if (v and v == cBuffs[i].BuffS) then
+          b = true;
+          break;
+        end
       end
-    end
-    -- buff not found add it to order list
-    if (not b) then
-      tinsert(ord, cBuffs[i].BuffS);
-      SMARTBUFF_AddMsgD("Add to buff order: " .. cBuffs[i].BuffS);
+      -- buff not found add it to order list
+      if (not b) then
+        tinsert(ord, cBuffs[i].BuffS);
+        SMARTBUFF_AddMsgD("Add to buff order: " .. cBuffs[i].BuffS);
+      end
     end
     i = i + 1;
   end
@@ -3680,7 +3694,7 @@ end
 function SMARTBUFF_OIncludeToys()
   O.IncludeToys = not O.IncludeToys;
   SMARTBUFF_Options_OnShow();
-  SMARTBUFF_BuffOrderReset();
+  -- InitBuffOrder(false) is already called in SMARTBUFF_Options_OnShow(), no need to reset order
 end
 
 function SMARTBUFF_OToggleMsgNormal()
@@ -4014,8 +4028,8 @@ function SMARTBUFF_Options_OnShow()
 
   SmartBuff_ShowControls("SmartBuffOptionsFrame", true);
 
-  -- Temporary hack to avoid ever growing list.
-  SMARTBUFF_BuffOrderReset();
+  -- Clean up buff order (remove invalid, add missing) without resetting custom order
+  InitBuffOrder(false);
 
   SmartBuffOptionsFrame_cbSB:SetChecked(O.Toggle);
   SmartBuffOptionsFrame_cbAuto:SetChecked(O.ToggleAuto);
