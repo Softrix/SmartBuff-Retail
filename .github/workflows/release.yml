@@ -50,10 +50,24 @@ jobs:
         # - Generate changelog from git commits since last tag
         # - Create GitHub release and upload the zip file (permanent, attached to release)
 
+      - name: Debug - Find zip file location
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Searching for zip file..."
+          echo "Current directory: $(pwd)"
+          echo "Listing .release directory:"
+          ls -la .release/ 2>/dev/null || echo ".release not found"
+          echo "Searching for zip files:"
+          find . -name "SmartBuff-Retail-*.zip" -type f
+          echo "All zip files in workspace:"
+          find . -name "*.zip" -type f
+
       - name: Upload package as artifact (manual trigger only)
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: SmartBuff-Retail-package
-          path: SmartBuff-Retail-*.zip
+          path: |
+            .release/SmartBuff-Retail-*.zip
+            SmartBuff-Retail-*.zip
           retention-days: 7
