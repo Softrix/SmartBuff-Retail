@@ -12,14 +12,14 @@ SMARTBUFF_CONST_SELF      = "SELF";
 SMARTBUFF_CONST_FORCESELF = "FORCESELF";
 SMARTBUFF_CONST_TRACK     = "TRACK";
 SMARTBUFF_CONST_WEAPON    = "WEAPON";
-SMARTBUFF_CONST_INV       = "INVENTORY";
-SMARTBUFF_CONST_FOOD      = "FOOD";
-SMARTBUFF_CONST_SCROLL    = "SCROLL";
-SMARTBUFF_CONST_POTION    = "POTION";
-SMARTBUFF_CONST_STANCE    = "STANCE";
-SMARTBUFF_CONST_ITEM      = "ITEM";
-SMARTBUFF_CONST_ITEMGROUP = "ITEMGROUP";
-SMARTBUFF_CONST_TOY       = "TOY";
+SMARTBUFF_CONST_INV       = "INVENTORY";  -- This denotes that it's something in the inventory, not an item itself
+SMARTBUFF_CONST_FOOD      = "FOOD";  -- This is food, an inventory item
+SMARTBUFF_CONST_SCROLL    = "SCROLL";  -- This is a scroll, an inventory item
+SMARTBUFF_CONST_POTION    = "POTION";  -- This is a potion, an inventory item
+SMARTBUFF_CONST_STANCE    = "STANCE";  -- This is a warrior stance
+SMARTBUFF_CONST_ITEM      = "ITEM";  -- This denotes that it's a conjured item (healthstone, mage food)
+SMARTBUFF_CONST_ITEMGROUP = "ITEMGROUP";  -- Unused, candidate for removal
+SMARTBUFF_CONST_TOY       = "TOY";  -- This is a toy in the toybox
 
 S.CheckPet = "CHECKPET";
 S.CheckPetNeeded = "CHECKPETNEEDED";
@@ -30,12 +30,31 @@ S.Toybox = { };
 local function GetItems(items)
   local t = { };
   for _, id in pairs(items) do
-    -- Get item link (second return value from C_Item.GetItemInfo)
-    -- If item isn't cached yet, link will be nil and we skip it
-    local _, link = C_Item.GetItemInfo(id);
-    if (link) then
-      --print("Item found: "..id..", "..link);
-      tinsert(t, link);
+    -- Validate item ID is a number
+    if (type(id) == "number" and id > 0) then
+      -- Validate item ID exists in game using GetItemInfoInstant
+      -- GetItemInfoInstant doesn't rely on cache - returns instantly for real items
+      -- Non-real items will return nil
+      local itemID = C_Item.GetItemInfoInstant(id);
+      if (itemID) then
+        -- Item ID is valid and exists in game
+        -- Store item ID initially (will be updated to link when async load completes)
+        local idx = #t + 1;
+        t[idx] = itemID; -- Store numeric ID initially
+        
+        -- Async load item link using ContinueOnItemLoad
+        -- This fires immediately if cached, or async if not cached
+        local item = Item:CreateFromItemID(itemID);
+        item:ContinueOnItemLoad(function()
+          local link = item:GetItemLink();
+          if (link) then
+            --print("Item found: "..id..", "..link);
+            t[idx] = link;
+          end
+          -- If link unavailable, keep ID (SMARTBUFF_FindItem handles both)
+        end);
+      end
+      -- If GetItemInfoInstant returns nil, item doesn't exist - skip it
     end
   end
   return t;
