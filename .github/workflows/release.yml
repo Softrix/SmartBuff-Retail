@@ -1,10 +1,12 @@
 name: Package and Release
 
 # Trigger on tag creation (annotated tags recommended)
+# Also supports manual triggering for testing on branches
 on:
   push:
     tags:
       - '**'
+  workflow_dispatch:  # Allows manual triggering for testing
 
 permissions:
   contents: write  # Required to create releases
