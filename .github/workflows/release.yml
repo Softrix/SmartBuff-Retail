@@ -1,0 +1,40 @@
+name: Package and Release
+
+# Trigger on tag creation (annotated tags recommended)
+on:
+  push:
+    tags:
+      - '**'
+
+permissions:
+  contents: write  # Required to create releases
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    # Environment variables for uploading to various platforms
+    # These should be set as secrets in your GitHub repository settings
+    env:
+      # CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      # WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+      # WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Clone project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Gets entire git history, needed for automatic changelogs
+
+      - name: Package and release
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -n "SmartBuff-Retail-{project-version}"
+        # The packager will:
+        # - Read .pkgmeta file for packaging configuration
+        # - Create a zip file named "SmartBuff-Retail-{version}.zip"
+        # - Folder inside zip will be "SmartBuff" (from package-as in .pkgmeta)
+        # - Automatically detect interface versions from TOC files
+        # - Generate changelog from git commits since last tag
+        # - Create GitHub release and upload the zip file

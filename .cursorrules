@@ -1,0 +1,62 @@
+# SmartBuff AddOn Development Rules
+
+## Code Style
+- Use the same code style as existing files
+- Follow Lua conventions used in the project
+- Maintain consistent indentation (appears to use 2 spaces)
+- Use descriptive variable names following the existing pattern (e.g., cBuff, bs, buffnS)
+- Keep functions brief and focused
+- Add debug messages using SMARTBUFF_AddMsgD() for troubleshooting
+- Code formatting: No trailing white spaces on non-blank lines
+- Code formatting: No whitespaces on blank lines
+- Every non-external code file should end with a new line, unless the language rules prohibits it
+- Use spaces instead of tabs for compatibility
+
+## Implementation Guidelines
+- Always ask for permission before implementing changes
+- When iterating on same logic, try to roll back to original state and re-implement instead of building on top of faulty try
+- Explain the reasoning behind any modifications
+- Verify changes work with the existing addon structure before suggesting them
+- Maintain backward compatibility and ensure changes don't break existing functionality
+- Follow the existing error handling patterns
+- Analyze logic for fallacies
+- Suggest coverage for missed edge cases in logic
+- Avoid duplicating existing functionality - check existing code first and reuse existing functions/patterns
+- Clean up debug code and temporary variables after implementation
+- Keep modifications minimal, focused, and avoid over-engineering solutions
+- Minimize structural changes to the addon unless absolutely necessary
+
+## File Structure
+- Don't create new files unless absolutely necessary
+- Follow the existing file organization (buffs in SmartBuff.buffs.lua, main logic in SmartBuff.lua)
+- Use existing constants and patterns where possible
+
+## Documentation
+- Provide brief but clear explanations for any new functions
+- Include user-friendly descriptions in function headers
+- Avoid inline comments in code snippets provided to users for copy/paste ease
+- Place detailed comments in function headers instead
+
+## Session Management
+- Periodically remind the user to reference .cursorrules if modifications become complex
+- When implementing multiple related changes, suggest re-reading .cursorrules for consistency
+- If the user asks for a "check" or "review", include .cursorrules compliance in the review
+- If implementing 3+ related changes in sequence, suggest the user ask "please re-read .cursorrules"
+- When the user mentions "complex" or "major" changes, proactively reference .cursorrules
+
+## Git Commit Messages
+- Commit messages should be short and to the point
+- Format: Start with a heading summarizing the commit (one line)
+- Then break down changes by section using markdown headers
+- Use bullet points for individual changes within each section
+- Example format:
+  ```
+  Heading summarizing the commit
+
+  ## Section Name
+  - Thing A changed
+  - Thing B changed
+
+  ## Another Section
+  - Thing C changed
+  ```

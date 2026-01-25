@@ -1,0 +1,89 @@
+name: Sync External Libraries
+
+# Manual workflow to sync external libraries back to repository
+# This updates bundled library versions to match what's fetched from CurseForge
+# Run this manually via GitHub Actions tab when you want to update bundled libraries
+on:
+  workflow_dispatch:  # Manual trigger only
+
+permissions:
+  contents: write  # Required to commit changes
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch LibStub
+        run: |
+          mkdir -p Libs/LibStub
+          curl -L https://repos.curseforge.com/wow/libstub/trunk/LibStub.lua -o Libs/LibStub/LibStub.lua.new
+          if [ -f Libs/LibStub/LibStub.lua.new ]; then
+            mv Libs/LibStub/LibStub.lua.new Libs/LibStub/LibStub.lua
+          fi
+
+      - name: Fetch CallbackHandler-1.0
+        run: |
+          mkdir -p Libs/CallbackHandler-1.0
+          curl -L https://repos.curseforge.com/wow/callbackhandler/trunk/CallbackHandler-1.0/CallbackHandler-1.0.lua -o Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua.new
+          if [ -f Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua.new ]; then
+            mv Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua.new Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua
+          fi
+
+      - name: Fetch LibSharedMedia-3.0
+        run: |
+          mkdir -p Libs/LibSharedMedia-3.0
+          curl -L https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0/LibSharedMedia-3.0.lua -o Libs/LibSharedMedia-3.0/LibSharedMedia-3.0.lua.new
+          curl -L https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0/lib.xml -o Libs/LibSharedMedia-3.0/lib.xml.new
+          if [ -f Libs/LibSharedMedia-3.0/LibSharedMedia-3.0.lua.new ]; then
+            mv Libs/LibSharedMedia-3.0/LibSharedMedia-3.0.lua.new Libs/LibSharedMedia-3.0/LibSharedMedia-3.0.lua
+          fi
+          if [ -f Libs/LibSharedMedia-3.0/lib.xml.new ]; then
+            mv Libs/LibSharedMedia-3.0/lib.xml.new Libs/LibSharedMedia-3.0/lib.xml
+          fi
+
+      - name: Fetch LibDataBroker-1.1
+        run: |
+          mkdir -p Libs/Broker_SmartBuff
+          curl -L https://raw.githubusercontent.com/tekkub/libdatabroker-1-1/master/LibDataBroker-1.1.lua -o Libs/Broker_SmartBuff/LibDataBroker-1.1.lua.new
+          if [ -f Libs/Broker_SmartBuff/LibDataBroker-1.1.lua.new ]; then
+            mv Libs/Broker_SmartBuff/LibDataBroker-1.1.lua.new Libs/Broker_SmartBuff/LibDataBroker-1.1.lua
+          fi
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          git add -A
+          if git diff --staged --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in external libraries"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in external libraries"
+            git diff --staged --stat
+          fi
+
+      - name: Commit and push changes
+        if: steps.check-changes.outputs.changed == 'true'
+        run: |
+          git commit -m "chore: Update external libraries from CurseForge and GitHub
+
+          Auto-synced external libraries:
+          - LibStub (CurseForge)
+          - CallbackHandler-1.0 (CurseForge)
+          - LibSharedMedia-3.0 (CurseForge)
+          - LibDataBroker-1.1 (GitHub)
+
+          [skip ci]"
+          git push
