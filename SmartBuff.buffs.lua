@@ -30,10 +30,12 @@ S.Toybox = { };
 local function GetItems(items)
   local t = { };
   for _, id in pairs(items) do
-    local _,name = C_Item.GetItemInfo(id);
-    if (name) then
-      --print("Item found: "..id..", "..name);
-      tinsert(t, name);
+    -- Get item link (second return value from C_Item.GetItemInfo)
+    -- If item isn't cached yet, link will be nil and we skip it
+    local _, link = C_Item.GetItemInfo(id);
+    if (link) then
+      --print("Item found: "..id..", "..link);
+      tinsert(t, link);
     end
   end
   return t;
