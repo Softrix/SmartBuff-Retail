@@ -3,18 +3,18 @@
 ## Code Style
 - Use the same code style as existing files
 - Follow Lua conventions used in the project
-- Maintain consistent indentation (appears to use 2 spaces)
-- Use descriptive variable names following the existing pattern (e.g., cBuff, bs, buffnS)
+- Use 2-space indentation for this repository
+- Use descriptive variable names following the existing pattern (e.g., cBuff, bufferSize, buffnS)
 - Keep functions brief and focused
 - Add debug messages using SMARTBUFF_AddMsgD() for troubleshooting
 - Code formatting: No trailing white spaces on non-blank lines
 - Code formatting: No whitespaces on blank lines
-- Every non-external code file should end with a new line, unless the language rules prohibits it
+- Every non-external code file should end with a new line, unless the language rules prohibit it
 - Use spaces instead of tabs for compatibility
 
 ## Implementation Guidelines
 - Always ask for permission before implementing changes
-- When iterating on same logic, try to roll back to original state and re-implement instead of building on top of faulty try
+- When iterating on same logic, try to roll back to original state and re-implement instead of building on top of a failed implementation
 - Explain the reasoning behind any modifications
 - Verify changes work with the existing addon structure before suggesting them
 - Maintain backward compatibility and ensure changes don't break existing functionality
