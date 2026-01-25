@@ -12,7 +12,8 @@
 SMARTBUFF_DATE               = "200126"; -- EU Date: DDMMYY
 SMARTBUFF_VERSION            = "r35." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
--- This is needed for changes in existing buffs or major patches
+-- This is only needed for major patches or rewrites of profile logic.
+-- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
 -- While buffs are loaded on startup; their profile logic is not changed
 -- if it already exists; so we need to force a reset
 SMARTBUFF_VERSIONNR          = 120000;
@@ -146,7 +147,6 @@ local Icons                  = {
 };
 
 -- available sounds (25)
----@type LSM
 local sharedMedia            = LibStub:GetLibrary("LibSharedMedia-3.0")
 local Sounds                 = { 1141, 3784, 4574, 17318, 15262, 13830, 15273, 10042, 10720, 17316, 3337, 7894, 7914, 10033, 416, 57207, 78626, 49432, 10571, 58194, 21970, 17339, 84261, 43765 }
 local soundTable             = {
@@ -534,14 +534,14 @@ end
 
 -- SMARTBUFF_OnEvent
 function SMARTBUFF_OnEvent(self, event, ...)
-  local arg1, arg2, arg3, arg4, arg5 = ...;
+local arg1, arg2, arg3, arg4, arg5 = ...;
 
   if ((event == "UNIT_NAME_UPDATE" and arg1 == "player") or event == "PLAYER_ENTERING_WORLD") then
     if IsPlayerInGuild() and event == "PLAYER_ENTERING_WORLD" then
       C_ChatInfo.SendAddonMessage(SmartbuffPrefix, SMARTBUFF_VERSION, "GUILD")
     end
     isPlayer = true;
-    if (event == "PLAYER_ENTERING_WORLD" and isInit and O.Toggle) then
+    if (event == "PLAYER_ENTERING_WORLD" and isInit and O and O.Toggle) then
       isSetZone = true;
       tStartZone = GetTime();
     end
@@ -653,6 +653,15 @@ function SMARTBUFF_OnEvent(self, event, ...)
     if (UnitAffectingCombat("player") and (arg1 == "player" or string.find(arg1, "^party") or string.find(arg1, "^raid"))) then
       isSyncReq = true;
     end
+    -- Detect dismounting: trigger check on next ticker cycle during initialization
+    if (arg1 == "player" and isInit) then
+      local wasMounted = isMounted;
+      isMounted = IsMounted() or IsFlying();
+      -- If player just dismounted, trigger check on next ticker cycle
+      if (wasMounted and not isMounted) then
+        isAuraChanged = true;
+      end
+    end
   end
 
   if (event == "UI_ERROR_MESSAGE") then
@@ -697,6 +706,19 @@ function SMARTBUFF_OnEvent(self, event, ...)
           cBuffTimer[unit] = {};
         end
         cBuffTimer[unit][spell] = GetTime();
+        
+        -- Check if this is an ITEM type creation spell (like Create Healthstone)
+        -- If so, reset tLastCheck to prevent immediate extra check before item appears in inventory
+        if (spell and cBuffIndex[spell]) then
+          local buffIndex = cBuffIndex[spell];
+          local cBI = cBuffs[buffIndex];
+          if (cBI and cBI.Type == SMARTBUFF_CONST_ITEM) then
+            -- Reset check timer so next check happens after normal interval (prevents extra out-of-order check)
+            tLastCheck = GetTime();
+            SMARTBUFF_AddMsgD("ITEM type spell cast succeeded, resetting check timer");
+          end
+        end
+        
         if (name ~= nil) then
           SMARTBUFF_AddMsg(name .. ": " .. spell .. " " .. SMARTBUFF_MSG_BUFFED);
           currentUnit = nil;
@@ -811,10 +833,16 @@ Enum.SmartBuffGroup = {
 
 -- Set the current template and create an array of units
 function SMARTBUFF_SetTemplate(force)
-  -- Don't init things when mounted or in combat
-  if (not force and (InCombatLockdown() or IsMounted() or IsFlying())) then return end
+  -- Only block in combat (not when mounted) - setup should work when mounted
+  -- Mount check only blocks actual buff checking/casting, not data structure setup
+  if (not force and InCombatLockdown()) then return end
   if (SmartBuffOptionsFrame:IsVisible()) then return end
 
+  -- Ensure currentTemplate is set (fallback to Solo if nil)
+  if (currentTemplate == nil) then
+    currentTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo];
+  end
+  
   local newTemplate = currentTemplate -- default to old template
 
   -- if autoswitch no group change is enabled, load new template based on group composition
@@ -1174,23 +1202,61 @@ function SMARTBUFF_SetBuff(buff, i, ia)
       end
       cBuffs[i].IconS = texture;
     else
-      local _, _, _, _, minLevel = C_Item.GetItemInfo(cBuffs[i].BuffS);
+      -- ITEM type (conjured items like Create Healthstone) or FOOD/SCROLL/POTION types
+      SMARTBUFF_AddMsgD("SetBuff item-related type: " .. cBuffs[i].BuffS .. " (Type: " .. cBuffs[i].Type .. ")");
+      -- Extract both minLevel and texture from single GetItemInfo call to avoid redundant API call
+      local _, _, _, _, minLevel, _, _, _, _, buffTexture = C_Item.GetItemInfo(cBuffs[i].BuffS);
+      SMARTBUFF_AddMsgD("  GetItemInfo(BuffS) minLevel: " .. tostring(minLevel));
       if (not IsMinLevel(minLevel)) then
+        SMARTBUFF_AddMsgD("  Filtered out: level requirement not met");
         cBuffs[i] = nil;
         return i;
       end
       local _, _, count, texture = SMARTBUFF_FindItem(cBuffs[i].BuffS, cBuffs[i].Chain);
+      SMARTBUFF_AddMsgD("  FindItem result: count=" .. tostring(count) .. ", texture=" .. tostring(texture));
 
       if count then
-        if (count <= 0) then
-          cBuffs[i] = nil;
-          return i;
+        if (count == 0) then
+          -- For ITEM type (conjured items), count == 0 is expected - spell creates the item
+          -- For FOOD/SCROLL/POTION types, count == 0 means item not available - filter out
+          if (cBuffs[i].Type == SMARTBUFF_CONST_ITEM) then
+            SMARTBUFF_AddMsgD("  Item not found (count=0), keeping buff (ITEM type - spell creates item)");
+            -- Try to get texture from item name/chain for icon
+            local chainTexture = nil;
+            if (cBuffs[i].Chain and #cBuffs[i].Chain > 0) then
+              -- Try first item in chain for texture
+              local chainItem = cBuffs[i].Chain[1];
+              local itemID = nil;
+              if type(chainItem) == "number" then
+                itemID = chainItem;
+              elseif type(chainItem) == "string" then
+                itemID = tonumber(string.match(chainItem, "item:(%d+)"));
+              end
+              if (itemID) then
+                local _, _, _, _, _, _, _, _, _, chainTexture = C_Item.GetItemInfo(itemID);
+                cBuffs[i].IconS = chainTexture;
+              end
+            end
+            if (not cBuffs[i].IconS) then
+              -- Fallback: use texture from BuffS (already retrieved above)
+              cBuffs[i].IconS = buffTexture;
+            end
+          else
+            -- FOOD/SCROLL/POTION types - filter out if item not found
+            SMARTBUFF_AddMsgD("  Filtered out: count=0 (item not in inventory for " .. cBuffs[i].Type .. " type)");
+            cBuffs[i] = nil;
+            return i;
+          end
+        else
+          -- count > 0: Item found in inventory
+          SMARTBUFF_AddMsgD("  Item found in inventory (count=" .. count .. "), keeping buff");
+          cBuffs[i].IconS = texture;
         end
       else
+        SMARTBUFF_AddMsgD("  Filtered out: FindItem returned nil");
         cBuffs[i] = nil;
         return i;
       end
-      cBuffs[i].IconS = texture;
     end
   end
 
@@ -1235,15 +1301,20 @@ function SMARTBUFF_SetInCombatBuffs()
   for name, data in pairs(B[CS()][ct]) do
     --SMARTBUFF_AddMsgD(name .. ", type = " .. type(data));
     if (type(data) == "table" and cBuffIndex[name] and (B[CS()][ct][name].EnableS or B[CS()][ct][name].EnableG) and B[CS()][ct][name].CIn) then
-      if (cBuffsCombat[name]) then
-        wipe(cBuffsCombat[name]);
-      else
-        cBuffsCombat[name] = {};
+      local cBI = cBuffs[cBuffIndex[name]];  -- Get definition data from cBuffs[]
+      if (cBI) then
+        if (cBuffsCombat[name]) then
+          wipe(cBuffsCombat[name]);
+        else
+          cBuffsCombat[name] = {};
+        end
+        cBuffsCombat[name].Unit = "player";
+        cBuffsCombat[name].Type = cBI.Type;  -- ✅ From cBuffs[]
+        cBuffsCombat[name].Links = cBI.Links;  -- ✅ Copy Links for future use
+        cBuffsCombat[name].Chain = cBI.Chain;  -- ✅ Copy Chain for future use
+        cBuffsCombat[name].ActionType = "spell";
+        SMARTBUFF_AddMsgD("Set combat spell: " .. name);
       end
-      cBuffsCombat[name].Unit = "player";
-      cBuffsCombat[name].Type = cBuffs[cBuffIndex[name]].Type;
-      cBuffsCombat[name].ActionType = "spell";
-      SMARTBUFF_AddMsgD("Set combat spell: " .. name);
       --break;
     end
   end
@@ -1271,6 +1342,26 @@ function SMARTBUFF_PreCheck(mode, force)
     return false;
   end
 
+  -- Check if buffs need to be set up BEFORE mount/other checks
+  -- This ensures buffs are initialized even when mounted (setup, not casting)
+  if (isSetBuffs and not UnitAffectingCombat("player")) then
+    SMARTBUFF_SetBuffs();
+    isSyncReq = true;
+  end
+
+  if ((mode == 1 and not O.ToggleAuto) or IsMounted() or IsFlying() or LootFrame:IsVisible()
+        or UnitOnTaxi("player") or UnitIsDeadOrGhost("player") or UnitIsCorpse("player")
+        or (mode ~= 1 and (SMARTBUFF_IsPicnic("player") or SMARTBUFF_IsFishing("player")))
+        or (UnitInVehicle("player") or UnitHasVehicleUI("player"))
+        --or (mode == 1 and (O.ToggleAutoRest and IsResting()) and not UnitIsPVP("player"))
+        or (not O.BuffInCities and IsResting() and not UnitIsPVP("player"))) then
+    if (UnitIsDeadOrGhost("player")) then
+      SMARTBUFF_CheckBuffTimers();
+    end
+    return false;
+  end
+
+  -- Now check AutoTimer (only if we passed the mount check)
   if (mode == 1 and not force) then
     if ((GetTime() - tLastCheck) < O.AutoTimer) then
       return false;
@@ -1298,19 +1389,6 @@ function SMARTBUFF_PreCheck(mode, force)
   elseif (sPlayerClass == "DEATHKNIGHT" and IsMounted() and not SMARTBUFF_CheckBuff("player", SMARTBUFF_PATHOFFROST)) then
     return true;
   end
-
-  if ((mode == 1 and not O.ToggleAuto) or IsMounted() or IsFlying() or LootFrame:IsVisible()
-        or UnitOnTaxi("player") or UnitIsDeadOrGhost("player") or UnitIsCorpse("player")
-        or (mode ~= 1 and (SMARTBUFF_IsPicnic("player") or SMARTBUFF_IsFishing("player")))
-        or (UnitInVehicle("player") or UnitHasVehicleUI("player"))
-        --or (mode == 1 and (O.ToggleAutoRest and IsResting()) and not UnitIsPVP("player"))
-        or (not O.BuffInCities and IsResting() and not UnitIsPVP("player"))) then
-    if (UnitIsDeadOrGhost("player")) then
-      SMARTBUFF_CheckBuffTimers();
-    end
-
-    return false;
-  end
   --SMARTBUFF_AddMsgD("2: " .. GetTime() - tLastCheck);
 
   if (UnitAffectingCombat("player")) then
@@ -1319,11 +1397,6 @@ function SMARTBUFF_PreCheck(mode, force)
   else
     isCombat = false;
     SMARTBUFF_AddMsgD("Out of combat");
-  end
-
-  if (not isCombat and isSetBuffs) then
-    SMARTBUFF_SetBuffs();
-    isSyncReq = true;
   end
 
   sMsgWarning = "";
@@ -1738,31 +1811,31 @@ end
 
 -- Buffs a unit
 function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
-  local bs = nil;
-  local buff = nil;
-  local buffname = nil;
-  local buffnS = nil;
-  local uc = nil;
-  local ur = "NONE";
-  local un = nil;
-  local uct = nil;
-  local ucf = nil;
-  local r;
-  local i;
-  local bt = 0;
-  local cd = 0;
-  local cds = 0;
-  local charges = 0;
-  local handtype = "";
-  local bExpire = false;
-  local isPvP = false;
-  local bufftarget = nil;
-  local rbTime = 0;
-  local bUsable = false;
-  local time = GetTime();
-  local cBuff = nil;
-  local iId = nil;
-  local iSlot = -1;
+  local bs = nil;  -- Buff settings for current buff
+  local buff = nil;  -- Current buff name being checked
+  local buffname = nil; -- Name of current buff
+  local buffnS = nil; -- Name of current buff in cBuffs array
+  local uc = nil; -- Unit class
+  local ur = "NONE"; -- Unit role
+  local un = nil; -- Unit name
+  local uct = nil; -- Unit creature type
+  local ucf = nil; -- Unit creature family
+  local r;  -- Return value: 0 = success, 1 = item found, 20 = item not found
+  local i;  -- Index of current buff in cBuffs array
+  local bt = 0; -- Buff target
+  local cd = 0; -- Cooldown of current buff
+  local cds = 0; -- Cooldown start time of current buff
+  local charges = 0; -- Charges of current buff
+  local handtype = ""; -- Hand type of current buff
+  local bExpire = false; -- Expire flag for current buff
+  local isPvP = false; -- Is PvP flag
+  local bufftarget = nil; -- Buff target
+  local rbTime = 0; -- Rebuff timer
+  local bUsable = false; -- Usable flag for current buff
+  local time = GetTime(); -- Current time
+  local cBuff = nil; -- Current buff in cBuffs array
+  local iId = nil; -- Item ID of current buff
+  local iSlot = -1; -- Item slot of current buff
 
   if (UnitIsPVP("player")) then isPvP = true end
 
@@ -1923,6 +1996,9 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
               elseif (cBuff.Type == SMARTBUFF_CONST_FOOD or cBuff.Type == SMARTBUFF_CONST_SCROLL or cBuff.Type == SMARTBUFF_CONST_POTION or cBuff.Type == SMARTBUFF_CONST_ITEM or
                     cBuff.Type == SMARTBUFF_CONST_ITEMGROUP) then
                 if (cBuff.Type == SMARTBUFF_CONST_ITEM) then
+                  SMARTBUFF_AddMsgD("BuffUnit ITEM type: " .. buffnS);
+                  SMARTBUFF_AddMsgD("  Params: " .. tostring(cBuff.Params));
+                  SMARTBUFF_AddMsgD("  Chain: " .. (cBuff.Chain and tostring(#cBuff.Chain) .. " items" or "nil"));
                   bt = nil;
                   buff = nil;
                   if (cBuff.Params ~= SG.NIL) then
@@ -1930,6 +2006,17 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                     SMARTBUFF_AddMsgD(cr .. " " .. cBuff.Params .. " found");
                     if (cr == 0) then
                       buff = cBuff.Params;
+                    end
+                  else
+                    -- Params is nil, use Chain to find item
+                    SMARTBUFF_AddMsgD("  Params is nil, checking Chain for items");
+                    local bag, slot, count = SMARTBUFF_FindItem(buffnS, cBuff.Chain);
+                    SMARTBUFF_AddMsgD("  FindItem result: count=" .. tostring(count) .. ", bag=" .. tostring(bag) .. ", slot=" .. tostring(slot));
+                    if (count == 0) then
+                      SMARTBUFF_AddMsgD("  Item not found (count=0), will cast creation spell");
+                      buff = buffnS; -- Use spell name for casting
+                    else
+                      SMARTBUFF_AddMsgD("  Item found in inventory (count=" .. count .. "), skipping cast");
                     end
                   end
 
@@ -2204,14 +2291,22 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
                     -- create item
                   elseif (cBuff.Type == SMARTBUFF_CONST_ITEM) then
-                    r = 20;
+                    SMARTBUFF_AddMsgD("BuffUnit ITEM type: " .. buffnS);
+                    SMARTBUFF_AddMsgD("  Chain: " .. (cBuff.Chain and tostring(#cBuff.Chain) .. " items" or "nil"));
                     local bag, slot, count = SMARTBUFF_FindItem(buff, cBuff.Chain);
+                    SMARTBUFF_AddMsgD("  FindItem result: count=" .. tostring(count) .. ", bag=" .. tostring(bag) .. ", slot=" .. tostring(slot));
                     if (count == 0) then
+                      SMARTBUFF_AddMsgD("  Item not found (count=0), attempting to cast: " .. buffnS .. " (IDS: " .. tostring(cBuff.IDS) .. ")");
                       r = SMARTBUFF_doCast(unit, cBuff.IDS, buffnS, cBuff.LevelsS, cBuff.Type);
+                      SMARTBUFF_AddMsgD("  doCast result: " .. tostring(r));
                       if (r == 0) then
                         currentUnit = unit;
                         currentSpell = buffnS;
                       end
+                    else
+                      SMARTBUFF_AddMsgD("  Item found in inventory (count=" .. count .. "), skipping cast");
+                      -- Item exists, no action needed - return early to avoid warning
+                      return 0;
                     end
 
                     -- cast spell
@@ -2634,11 +2729,12 @@ function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
       for i = 1, #t, 1 do
         if (t[i] and tfind(buffC, t[i])) then
           v = GetBuffSettings(t[i]);
-          if (v and v.EnableS) then
+          local cBI = cBuffs[cBuffIndex[t[i]]];
+          if (v and v.EnableS and cBI) then
             local b, tl, im = SMARTBUFF_CheckBuff(unit, t[i]);
             if (b and im) then
               --SMARTBUFF_AddMsgD("Chained buff found: "..t[i]..", "..tl);
-              if (SMARTBUFF_CheckBuffLink(unit, t[i], v.Type, v.Links)) then
+              if (SMARTBUFF_CheckBuffLink(unit, t[i], cBI.Type, cBI.Links)) then
                 return nil, i, defBuff, tl, -1;
               end
             elseif (not b and t[i] == defBuff) then
@@ -2896,77 +2992,122 @@ end
 -- END SMARTASPECT_IsDebuffTex
 
 
+
+-- Unified internal function for finding items in bags
+-- Searches on ItemLink in addition to itemText to support Dragonflight and above item qualities
+-- Returns: firstBag, firstSlot, firstCount, totalCount, itemID, texture
+--   - firstBag, firstSlot: First match location (or 999, toyID for toys)
+--   - firstCount: Stack count of first match (for FindItem)
+--   - totalCount: Sum of all matching items across all bags (for CountReagent)
+--   - itemID: Item ID of first match
+--   - texture: Icon of first match
+local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
+  if (reagent == nil) then
+    if (debug) then
+      SMARTBUFF_AddMsgD("FindItem: reagent is nil");
+    end
+    return nil, nil, 0, 0, nil, nil;
+  end
+  
+  -- Handle special case: "ScanBagsForSBInit" is just a trigger, not a real item
+  if (type(reagent) == "string" and reagent == "ScanBagsForSBInit") then
+    return nil, nil, 0, 0, nil, nil;
+  end
+  
+  if (O.IncludeToys) then
+    local _, link = C_Item.GetItemInfo(reagent); -- itemlink
+    local toy = SG.Toybox[link];
+    if (toy) then
+      if (debug) then
+        SMARTBUFF_AddMsgD("FindItem: Found toy");
+      end
+      -- For toys: bag=999 (special marker), slot=toyID, firstCount=1, totalCount=1, id=toyID, texture=toyIcon
+      return 999, toy[1], 1, 1, toy[1], toy[2];
+    end
+  end
+
+  local totalCount = 0;
+  local itemID = nil;
+  local firstBag = nil;
+  local firstSlot = nil;
+  local firstCount = 0;
+  local texture = nil;
+  
+  if not (chain) then chain = { reagent }; end
+  
+  if (debug) then
+    SMARTBUFF_AddMsgD("FindItem: Searching for reagent=" .. tostring(reagent) .. ", chain size=" .. #chain);
+    for i = 1, #chain do
+      local chainItem = chain[i];
+      SMARTBUFF_AddMsgD("  Chain[" .. i .. "]: " .. tostring(chainItem) .. " (type: " .. type(chainItem) .. ")");
+    end
+  end
+  
+  for bag = 0, NUM_BAG_FRAMES do
+    for slot = 1, C_Container.GetContainerNumSlots(bag) do
+      local bagItemID = C_Container.GetContainerItemID(bag, slot);
+      if (bagItemID) then
+        for i = 1, #chain, 1 do
+          -- Handle both numeric IDs and item link strings
+          -- Supports Dragonflight item qualities by extracting ID from item links
+          local buffItemID = nil;
+          if type(chain[i]) == "number" then
+            buffItemID = chain[i];
+          elseif type(chain[i]) == "string" then
+            buffItemID = tonumber(string.match(chain[i], "item:(%d+)"));
+          end
+          
+          if buffItemID and buffItemID == bagItemID then
+            local containerInfo = C_Container.GetContainerItemInfo(bag, slot);
+            if (containerInfo) then
+              -- Store first match location, count, and icon
+              if (firstBag == nil) then
+                firstBag = bag;
+                firstSlot = slot;
+                firstCount = containerInfo.stackCount;
+                itemID = buffItemID;
+                texture = containerInfo.iconFileID;
+              end
+              -- Sum all matches for total count
+              totalCount = totalCount + containerInfo.stackCount;
+              
+              if (debug) then
+                SMARTBUFF_AddMsgD("FindItem: MATCH! bagItemID=" .. bagItemID .. " matches chain[" .. i .. "]=" .. buffItemID);
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+  
+  if (debug and totalCount == 0) then
+    SMARTBUFF_AddMsgD("FindItem: Not found in inventory, returning count=0");
+  end
+  
+  return firstBag, firstSlot, firstCount, totalCount, itemID, texture;
+end
+
 -- Returns the number of a reagent currently in player's bag
 -- we now search on ItemLink in addition to itemText, in order to support Dragonflight item qualities
+-- Returns: totalCount, itemID (sum of all matches across all bags)
 function SMARTBUFF_CountReagent(reagent, chain)
+  local _, _, _, totalCount, itemID = SMARTBUFF_FindItemInternal(reagent, chain, false);
   if (reagent == nil) then
     return -1, nil;
   end
-  if (O.IncludeToys) then
-    local _, link = C_Item.GetItemInfo(reagent) -- itemlink
-    local toy = SG.Toybox[link];
-    if (toy) then
-      return 1, toy[1];
-    end
-  end
-
-  local total = 0;
-  local id = nil;
-  local bag = 0;
-  local slot = 0;
-  if not (chain) then chain = { reagent }; end
-  for bag = 0, NUM_BAG_FRAMES do
-    for slot = 1, C_Container.GetContainerNumSlots(bag) do
-      bagItemID = C_Container.GetContainerItemID(bag, slot)
-      if bagItemID then
-        containerInfo = C_Container.GetContainerItemInfo(bag, slot);
-        --SMARTBUFF_AddMsgD("Reagent found: " .. C_Container.GetContainerItemLink(bag.slot));
-        for i = 1, #chain, 1 do
-          local buffItemID = tonumber(string.match(chain[i], "item:(%d+)"))
-          if bagItemID == buffItemID then
-            id = buffItemID
-            total = total + containerInfo.stackCount;
-          end
-        end
-      end
-    end
-  end
-  return total, id;
+  return totalCount, itemID;
 end
 
--- these two functions are basically identical and should be merged
+-- Returns the first matching item location and icon
+-- we now search on ItemLink in addition to itemText, in order to support Dragonflight item qualities
+-- Returns: bag, slot, count, texture (first match only - count is stackCount of first match)
 function SMARTBUFF_FindItem(reagent, chain)
+  local bag, slot, firstCount, _, _, texture = SMARTBUFF_FindItemInternal(reagent, chain, true);
   if (reagent == nil) then
     return nil, nil, -1, nil;
   end
-
-  if (O.IncludeToys) then
-    local _, link = C_Item.GetItemInfo(reagent) -- itemlink
-    local toy = SG.Toybox[link];
-    if (toy) then
-      return 999, toy[1], 1, toy[2];
-    end
-  end
-
-  local n = 0;
-  local bag = 0;
-  local slot = 0;
-  if not (chain) then chain = { reagent }; end
-  for bag = 0, NUM_BAG_FRAMES do
-    for slot = 1, C_Container.GetContainerNumSlots(bag) do
-      bagItemID = C_Container.GetContainerItemID(bag, slot);
-      if (bagItemID) then
-        --SMARTBUFF_AddMsgD("Reagent found: " .. C_Container.GetContainerItemLink(bag.slot));
-        for i = 1, #chain, 1 do
-          if tonumber(string.match(chain[i], "item:(%d+)")) == bagItemID then
-            containerInfo = C_Container.GetContainerItemInfo(bag, slot);
-            return bag, slot, containerInfo.stackCount, containerInfo.iconFileID;
-          end
-        end
-      end
-    end
-  end
-  return nil, nil, 0, nil;
+  return bag, slot, firstCount, texture;
 end
 
 -- END Reagent functions
@@ -3050,7 +3191,6 @@ function SMARTBUFF_Options_Init(self)
   --AutoSelfCast = GetCVar("autoSelfCast");
 
   SMARTBUFF_PLAYERCLASS = sPlayerClass;
-
 
   if (not SMARTBUFF_Buffs) then SMARTBUFF_Buffs = {}; end
   B = SMARTBUFF_Buffs;
@@ -3241,18 +3381,23 @@ function SMARTBUFF_Options_Init(self)
     SmartBuffOptionsCredits_lblText:SetText(SMARTBUFF_CREDITS); -- bugfix, credits now showing at first start
     SmartBuffWNF_lblText:SetText(SMARTBUFF_WHATSNEW);
     SmartBuffWNF:Show();
-  else
-    SMARTBUFF_SetBuffs();
   end
-
   if (not IsVisibleToPlayer(SmartBuff_KeyButton)) then
     SmartBuff_KeyButton:ClearAllPoints();
     SmartBuff_KeyButton:SetPoint("CENTER", UIParent, "CENTER", 0, 100);
   end
 
+  -- Initialize mount state
+  isMounted = IsMounted() or IsFlying();
+
+  -- Call SMARTBUFF_SetTemplate() first to set up currentTemplate and groups
+  -- Then it will call SMARTBUFF_SetBuffs() internally
+  -- This ensures proper initialization order
   SMARTBUFF_SetTemplate(true);
   SMARTBUFF_RebindKeys();
   isSyncReq = true;
+  -- Initialize tLastCheck to ensure AutoTimer works correctly after dismounting
+  tLastCheck = GetTime();
 end
 
 -- END SMARTBUFF_Options_Init
@@ -4711,11 +4856,12 @@ end
 
 local HelpPlateList = {
   FramePos = { x = 20, y = -20 },
-  FrameSize = { width = 480, height = 500 },
+  FrameSize = { width = 480, height = 720 },
   [1] = { ButtonPos = { x = 344, y = -80 }, HighLightBox = { x = 260, y = -50, width = 204, height = 410 }, ToolTipDir = "DOWN", ToolTipText = "Spell list\nDrag'n'Drop to change the priority order" },
   [2] = { ButtonPos = { x = 105, y = -110 }, HighLightBox = { x = 10, y = -30, width = 230, height = 125 }, ToolTipDir = "DOWN", ToolTipText = "Buff reminder options" },
   [3] = { ButtonPos = { x = 105, y = -250 }, HighLightBox = { x = 10, y = -165, width = 230, height = 135 }, ToolTipDir = "DOWN", ToolTipText = "Character based options" },
   [4] = { ButtonPos = { x = 200, y = -320 }, HighLightBox = { x = 10, y = -300, width = 230, height = 90 }, ToolTipDir = "RIGHT", ToolTipText = "Additional UI options" },
+  [5] = { ButtonPos = { x = 192, y = -630 }, HighLightBox = { x = 5, y = -635, width = 374, height = 33 }, ToolTipDir = "UP", ToolTipText = "Reset buttons\n\nReset BT: Clear buff timers only\nReset All: Wipe everything (profiles + options)\nReset Buffs: Resets buffs and profiles to defaults\nReset List: Reset buff order only" },
 }
 
 function SMARTBUFF_ToggleTutorial(close)
