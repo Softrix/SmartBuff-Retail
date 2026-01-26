@@ -1,0 +1,74 @@
+name: Package and Release
+
+# Trigger on tag creation (annotated tags recommended)
+# Also supports manual triggering for testing on branches
+on:
+  push:
+    tags:
+      - '**'
+  workflow_dispatch:  # Allows manual triggering for testing
+
+permissions:
+  contents: write  # Required to create releases
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    # Environment variables for uploading to various platforms
+    # These should be set as secrets in your GitHub repository settings
+    env:
+      # CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      # WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+      # WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Clone project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Gets entire git history, needed for automatic changelogs
+
+      - name: Package (manual trigger - test only)
+        if: github.event_name == 'workflow_dispatch'
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -n "SmartBuff-Retail-{project-version}" -d
+        # -d flag skips upload/release creation for testing
+        # Creates zip file in .release/ directory for artifact upload
+
+      - name: Package and release (tag trigger)
+        if: github.event_name != 'workflow_dispatch'
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -n "SmartBuff-Retail-{project-version}"
+        # The packager will:
+        # - Read .pkgmeta file for packaging configuration
+        # - Create a zip file named "SmartBuff-Retail-{version}.zip"
+        # - Folder inside zip will be "SmartBuff" (from package-as in .pkgmeta)
+        # - Automatically detect interface versions from TOC files
+        # - Generate changelog from git commits since last tag
+        # - Create GitHub release and upload the zip file (permanent, attached to release)
+
+      - name: Find zip file location
+        if: github.event_name == 'workflow_dispatch'
+        id: find-zip
+        run: |
+          cd ${{ github.workspace }}
+          ZIP_FILE=$(find .release -name "SmartBuff-Retail-*.zip" -type f | head -1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "Error: Zip file not found in .release/"
+            exit 1
+          fi
+          # Remove leading ./ if present to get clean relative path from workspace root
+          ZIP_FILE=$(echo "$ZIP_FILE" | sed 's|^\./||')
+          echo "Found zip file: $ZIP_FILE"
+          echo "zip_path=$ZIP_FILE" >> $GITHUB_OUTPUT
+
+      - name: Upload package as artifact (manual trigger only)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartBuff-Retail-package
+          path: ${{ steps.find-zip.outputs.zip_path }}
+          retention-days: 7

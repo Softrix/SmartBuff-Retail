@@ -6,16 +6,16 @@
 -- Cast the most important buffs on you, tanks or party/raid members/pets.
 -------------------------------------------------------------------------------
 
--- Version/Release info, bump these as needed:
--- Bump .toc file and optionally update notes in localization.en.lua
-
-SMARTBUFF_DATE               = "200126"; -- EU Date: DDMMYY
-SMARTBUFF_VERSION            = "r35." .. SMARTBUFF_DATE;
+-- Changes to SMARTBUFF_VERSION will pop up a 'what's new'
+-- and options frame on first load... could be annoying if done too often
+-- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
+-- this is mostly optional, but good for internal housekeeping
+SMARTBUFF_DATE               = "250126"; -- EU Date: DDMMYY
+SMARTBUFF_VERSION            = "r36." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
--- This is only needed for major patches or rewrites of profile logic.
+-- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
--- While buffs are loaded on startup; their profile logic is not changed
--- if it already exists; so we need to force a reset
+-- Profile logic changes and buff definition updates are handled automatically without requiring version bumps.
 SMARTBUFF_VERSIONNR          = 120000;
 -- End of version info
 
@@ -3394,7 +3394,17 @@ function SMARTBUFF_Options_Init(self)
     end
     SmartBuffOptionsCredits_lblText:SetText(SMARTBUFF_CREDITS); -- bugfix, credits now showing at first start
     SmartBuffWNF_lblText:SetText(SMARTBUFF_WHATSNEW);
-    SmartBuffWNF:Show();
+    -- Ensure options frame is visible and positioned before showing WNF frame
+    if (SmartBuffOptionsFrame:IsVisible()) then
+      SmartBuffWNF:Show();
+    else
+      -- If options frame isn't visible yet, show WNF after a short delay
+      C_Timer.After(0.1, function()
+        if (SmartBuffOptionsFrame:IsVisible()) then
+          SmartBuffWNF:Show();
+        end
+      end);
+    end
   end
   if (not IsVisibleToPlayer(SmartBuff_KeyButton)) then
     SmartBuff_KeyButton:ClearAllPoints();
@@ -3584,7 +3594,10 @@ function SMARTBUFF_command(msg)
   elseif (msg == "changes") then
     SMARTBUFF_OptionsFrame_Open(true);
     SmartBuffWNF_lblText:SetText(SMARTBUFF_WHATSNEW);
-    SmartBuffWNF:Show();
+    -- Force show the changelog frame after a brief delay to ensure options frame is positioned
+    C_Timer.After(0.1, function()
+      SmartBuffWNF:Show();
+    end);
   elseif (msg == "reload") then
     SMARTBUFF_BuffOrderReset();
     SMARTBUFF_OptionsFrame_Open(true);

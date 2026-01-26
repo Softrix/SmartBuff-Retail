@@ -1,5 +1,9 @@
 package-as: SmartBuff
+# External libraries - these will be fetched from CurseForge during packaging
+# Bundled versions in Libs/ will be overwritten by externals during packaging
 externals:
   Libs/CallbackHandler-1.0: https://repos.curseforge.com/wow/callbackhandler/trunk/CallbackHandler-1.0
   Libs/LibStub: https://repos.curseforge.com/wow/libstub/trunk
   Libs/LibSharedMedia-3.0: https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
+# Note: LibDataBroker-1.1 is bundled in Libs/Broker_SmartBuff/ and is not available as a standard external
+# It should remain bundled as it's meant to be embedded directly into addons
