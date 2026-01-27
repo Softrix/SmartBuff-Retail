@@ -515,6 +515,12 @@ function SMARTBUFF_OnLoad(self)
   self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
   self:RegisterEvent("PLAYER_LEVEL_UP");
   self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED");
+  -- Cache-related events for partial reloads
+  self:RegisterEvent("TOYS_UPDATED");
+  self:RegisterEvent("NEW_TOY_ADDED");
+  self:RegisterEvent("BAG_UPDATE");
+  self:RegisterEvent("ITEM_DATA_LOAD_RESULT");
+  self:RegisterEvent("SPELL_DATA_LOAD_RESULT");
   --auto template events
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -569,6 +575,8 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
   -- PLAYER_LOGIN
   if event == "PLAYER_LOGIN" then
     local prefixResult = C_ChatInfo.RegisterAddonMessagePrefix(SmartbuffPrefix)
+    -- Load cache on login
+    SMARTBUFF_LoadCache();
   end
 
   -- CHAT_MSG_ADDON
@@ -659,6 +667,10 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     isSetBuffs = true;
   end
 
+  if (not isInit or O == nil) then
+    return;
+  end;
+
   if (not O.Toggle) then
     return;
   end;
@@ -743,6 +755,118 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
       if (isClearSplash) then
         isClearSplash = false;
         SMARTBUFF_Splash_Clear();
+      end
+    end
+  end
+
+  -- Cache-related event handlers for partial reloads
+  -- Note: These handlers are after isInit check, so isInit and O are guaranteed to be valid
+  if (event == "TOYS_UPDATED" or event == "NEW_TOY_ADDED") then
+    if (O.Toggle) then
+      -- Reload toys when collection changes (only reload toys, not static tables)
+      SMARTBUFF_ReloadToys();
+    end
+  elseif (event == "BAG_UPDATE") then
+    -- Only process character bags (0-5: backpack, equipped bags, reagent bag)
+    -- Bank bags (6-12) don't need to trigger reload
+    local bagID = arg1;
+    if (bagID and bagID >= 0 and bagID <= 5 and O.Toggle) then
+      -- Check for new items in character bags (debounced to avoid spam)
+      if (not SMARTBUFF_BagUpdateTimer) then
+        SMARTBUFF_BagUpdateTimer = C_Timer.After(0.5, function()
+          SMARTBUFF_ReloadItems();
+          SMARTBUFF_BagUpdateTimer = nil;
+        end);
+      end
+    end
+  elseif (event == "SPELLS_CHANGED" or event == "PLAYER_LEVEL_UP" or event == "PLAYER_SPECIALIZATION_CHANGED") then
+    if (O.Toggle) then
+      -- Reload spells when spells change, level up, or spec changes
+      -- Only reload spell IDs, not static tables from buffs.lua
+      SMARTBUFF_ReloadSpells();
+    end
+  elseif (event == "ITEM_DATA_LOAD_RESULT" or event == "SPELL_DATA_LOAD_RESULT") then
+    -- Item/Spell data finished loading (or failed) - validate, update cache, and rebuild buff list if needed
+    -- Following AllTheThings pattern: accept partial data, rebuild when data loads
+    local dataID, success = ...;
+    if (success and isInit and O and O.Toggle) then
+      -- Data loaded successfully - validate and update cache
+      local cache = SmartBuffItemSpellCache;
+      if (cache and cache.needsRefresh) then
+        if (event == "ITEM_DATA_LOAD_RESULT") then
+          -- Find item variable by itemID and validate/update cache
+          for varName, itemId in pairs(SMARTBUFF_ExpectedData.items or {}) do
+            if (itemId == dataID) then
+              local itemName, itemLink, itemRarity, itemLevel, minLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, texture = C_Item.GetItemInfo(itemId);
+              if (itemLink and SMARTBUFF_ValidateItemData(itemLink, minLevel, texture)) then
+                -- Valid data - update cache
+                if (not cache.items) then cache.items = {}; end
+                if (not cache.itemIDs) then cache.itemIDs = {}; end
+                if (not cache.itemData) then cache.itemData = {}; end
+                cache.items[varName] = itemLink;
+                cache.itemIDs[varName] = itemId;
+                cache.itemData[varName] = {minLevel or 0, texture or 0};
+                cache.needsRefresh[varName] = false;  -- Mark as valid
+                _G[varName] = itemLink;  -- Update global variable
+                
+                -- Update placeholder entries in static tables (SMARTBUFF_SCROLL, SMARTBUFF_FOOD, etc.)
+                -- Replace "item:12345" placeholders with actual itemLink
+                local placeholder = "item:" .. tostring(itemId);
+                for _, buffTable in pairs({SMARTBUFF_SCROLL, SMARTBUFF_FOOD, SMARTBUFF_POTION, SMARTBUFF_WEAPON}) do
+                  if (buffTable) then
+                    for _, buff in pairs(buffTable) do
+                      if (buff[1] == placeholder) then
+                        buff[1] = itemLink;  -- Update placeholder to real itemLink
+                      end
+                    end
+                  end
+                end
+                
+                -- Update S.Toybox placeholder entry to use real itemLink as key
+                if (SG.Toybox and SG.Toybox[placeholder]) then
+                  local toyData = SG.Toybox[placeholder];
+                  SG.Toybox[itemLink] = toyData;  -- Add entry with real itemLink
+                  SG.Toybox[placeholder] = nil;  -- Remove placeholder entry
+                end
+              else
+                -- Data incomplete - re-queue
+                cache.needsRefresh[varName] = true;
+                C_Item.RequestLoadItemDataByID(itemId);
+              end
+              break;
+            end
+          end
+        elseif (event == "SPELL_DATA_LOAD_RESULT") then
+          -- Find spell variable by spellID and validate/update cache
+          for varName, spellId in pairs(SMARTBUFF_ExpectedData.spells or {}) do
+            if (spellId == dataID) then
+              local spellInfo = C_Spell.GetSpellInfo(spellId);
+              if (spellInfo and SMARTBUFF_ValidateSpellData(spellInfo)) then
+                -- Valid data - update cache
+                if (not cache.spells) then cache.spells = {}; end
+                cache.spells[varName] = spellInfo;
+                cache.needsRefresh[varName] = false;  -- Mark as valid
+                _G[varName] = spellInfo;  -- Update global variable
+              else
+                -- Data incomplete - re-queue
+                cache.needsRefresh[varName] = true;
+                C_Spell.RequestLoadSpellData(spellId);
+              end
+              break;
+            end
+          end
+        end
+      end
+      -- Trigger rebuild to include updated data
+      -- Use a small delay to batch multiple loads
+      if (not SMARTBUFF_DataLoadPendingRebuild) then
+        SMARTBUFF_DataLoadPendingRebuild = true;
+        C_Timer.After(0.5, function()
+          SMARTBUFF_DataLoadPendingRebuild = false;
+          if (not InCombatLockdown() and isInit and O and O.Toggle) then
+            isSetBuffs = true;
+          end
+        end);
       end
     end
   end
@@ -1057,7 +1181,7 @@ function SMARTBUFF_GetSpellID(spellname)
     spellN = C_SpellBook.GetSpellBookItemName(i, Enum.SpellBookSpellBank.Player);
     skillType, spellId = C_SpellBook.GetSpellBookItemType(i, Enum.SpellBookSpellBank.Player);
 --    print(spellN .. " " .. spellId);
-    print(skillType)
+--    print(skillType)
     if (skillType == "FLYOUT") then
       for j = 1, GetNumFlyouts() do
         local fid = GetFlyoutID(j);
@@ -1080,7 +1204,10 @@ function SMARTBUFF_GetSpellID(spellname)
     i = i + 1;
   end
   if (id) then
-    if (IsPassiveSpell(id) or skillType == "FUTURESPELL" or not IsSpellKnown(id)) then
+    -- IsPassiveSpell is a legacy function that no longer exists in modern WoW API
+    -- Passive spells are typically not usable, so we skip them via IsSpellKnown check
+    -- FUTURESPELL indicates a spell not yet learned, so skip it
+    if (skillType == "FUTURESPELL" or not IsSpellKnown(id)) then
       id = nil;
       i = nil;
     end
@@ -1089,6 +1216,471 @@ function SMARTBUFF_GetSpellID(spellname)
 end
 
 -- END SMARTBUFF_GetSpellID
+
+-- Cache Management Functions
+-- These functions handle saving and loading the buff list cache for verification purposes
+
+-- Load cache from SavedVariablesPerCharacter
+function SMARTBUFF_LoadCache()
+  if (not SmartBuffBuffListCache) then
+    -- Initialize cache if it doesn't exist
+    SmartBuffBuffListCache = {
+      version = nil,
+      lastUpdate = 0,
+      expectedCounts = {
+        SCROLL = 0,
+        FOOD = 0,
+        POTION = 0,
+        SELF = 0,
+        GROUP = 0,
+        ITEM = 0,
+        TOTAL = 0
+      },
+      enabledBuffs = {}
+    };
+  end
+  
+  -- Invalidate cache if version changed
+  if (SmartBuffBuffListCache.version and SmartBuffBuffListCache.version ~= SMARTBUFF_VERSION) then
+    -- Version changed, reset cache
+    SmartBuffBuffListCache.version = nil;
+    SmartBuffBuffListCache.lastUpdate = 0;
+    wipe(SmartBuffBuffListCache.expectedCounts);
+    wipe(SmartBuffBuffListCache.enabledBuffs);
+  end
+  
+  -- Load and validate global toy cache
+  if (not SmartBuffToyCache) then
+    SmartBuffToyCache = { version = nil, lastUpdate = 0, toyCount = 0, toybox = {} };
+  end
+  
+  -- Invalidate toy cache if version changed
+  if (SmartBuffToyCache.version and SmartBuffToyCache.version ~= SMARTBUFF_VERSION) then
+    SmartBuffToyCache.version = nil;
+    SmartBuffToyCache.lastUpdate = 0;
+    SmartBuffToyCache.toyCount = 0;
+    wipe(SmartBuffToyCache.toybox);
+  end
+  
+  -- Load and validate item/spell cache
+  if (not SmartBuffItemSpellCache) then
+    SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
+  end
+  
+  -- Initialize missing fields if cache exists but doesn't have them
+  if (not SmartBuffItemSpellCache.itemData) then
+    SmartBuffItemSpellCache.itemData = {};
+  end
+  if (not SmartBuffItemSpellCache.needsRefresh) then
+    SmartBuffItemSpellCache.needsRefresh = {};
+  end
+  
+  -- Invalidate item/spell cache if version changed
+  if (SmartBuffItemSpellCache.version and SmartBuffItemSpellCache.version ~= SMARTBUFF_VERSION) then
+    SmartBuffItemSpellCache.version = nil;
+    SmartBuffItemSpellCache.lastUpdate = 0;
+    wipe(SmartBuffItemSpellCache.items);
+    wipe(SmartBuffItemSpellCache.spells);
+    wipe(SmartBuffItemSpellCache.itemIDs);
+    wipe(SmartBuffItemSpellCache.itemData);
+    wipe(SmartBuffItemSpellCache.needsRefresh);
+  end
+  
+  -- Load and validate buff relationships cache
+  if (not SmartBuffBuffRelationsCache) then
+    SmartBuffBuffRelationsCache = { version = nil, lastUpdate = 0, chains = {}, links = {} };
+  end
+  
+  -- Invalidate buff relationships cache if version changed
+  if (SmartBuffBuffRelationsCache.version and SmartBuffBuffRelationsCache.version ~= SMARTBUFF_VERSION) then
+    SmartBuffBuffRelationsCache.version = nil;
+    SmartBuffBuffRelationsCache.lastUpdate = 0;
+    wipe(SmartBuffBuffRelationsCache.chains);
+    wipe(SmartBuffBuffRelationsCache.links);
+  end
+  
+  return SmartBuffBuffListCache;
+end
+
+-- Sync cache with expected items/spells from buffs.lua
+-- Removes items/spells not in expected list, adds missing ones, flags all as needsRefresh
+-- Called after SMARTBUFF_InitSpellIDs() and SMARTBUFF_InitItemList() have built expected list
+function SMARTBUFF_SyncItemSpellCache()
+  if (not SmartBuffItemSpellCache) then
+    SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
+  end
+  if (not SmartBuffItemSpellCache.items) then SmartBuffItemSpellCache.items = {}; end
+  if (not SmartBuffItemSpellCache.spells) then SmartBuffItemSpellCache.spells = {}; end
+  if (not SmartBuffItemSpellCache.itemIDs) then SmartBuffItemSpellCache.itemIDs = {}; end
+  if (not SmartBuffItemSpellCache.itemData) then SmartBuffItemSpellCache.itemData = {}; end
+  if (not SmartBuffItemSpellCache.needsRefresh) then SmartBuffItemSpellCache.needsRefresh = {}; end
+  
+  local cache = SmartBuffItemSpellCache;
+  local expected = SMARTBUFF_ExpectedData;
+  
+  if (not expected or not expected.items or not expected.spells) then
+    return;  -- Expected list not built yet
+  end
+  
+  -- Remove items from cache that are not in expected list
+  for varName, _ in pairs(cache.items) do
+    if (not expected.items[varName]) then
+      cache.items[varName] = nil;
+      cache.itemIDs[varName] = nil;
+      cache.itemData[varName] = nil;
+      cache.needsRefresh[varName] = nil;
+    end
+  end
+  
+  -- Remove spells from cache that are not in expected list
+  for varName, _ in pairs(cache.spells) do
+    if (not expected.spells[varName]) then
+      cache.spells[varName] = nil;
+      cache.needsRefresh[varName] = nil;
+    end
+  end
+  
+  -- Add missing items to cache (with needsRefresh=true)
+  for varName, itemId in pairs(expected.items) do
+    if (not cache.items[varName]) then
+      cache.items[varName] = nil;  -- Placeholder - will be populated when data loads
+      cache.itemIDs[varName] = itemId;
+      cache.itemData[varName] = nil;  -- Will be populated when data loads
+      cache.needsRefresh[varName] = true;  -- Flag for refresh
+    else
+      -- Item exists in cache - flag as needsRefresh to ensure it's current
+      cache.needsRefresh[varName] = true;
+    end
+  end
+  
+  -- Add missing spells to cache (with needsRefresh=true)
+  for varName, spellId in pairs(expected.spells) do
+    if (not cache.spells[varName]) then
+      cache.spells[varName] = nil;  -- Placeholder - will be populated when data loads
+      cache.needsRefresh[varName] = true;  -- Flag for refresh
+    else
+      -- Spell exists in cache - flag as needsRefresh to ensure it's current
+      cache.needsRefresh[varName] = true;
+    end
+  end
+  
+  -- Update cache version and timestamp
+  cache.version = SMARTBUFF_VERSION;
+  cache.lastUpdate = GetTime();
+end
+
+-- Load buff relationships (chains and links) from cache
+-- Called before spell/item variables are populated to restore cached relationships
+function SMARTBUFF_LoadBuffRelationsCache()
+  local cache = SmartBuffBuffRelationsCache;
+  if (not cache or not cache.version or cache.version ~= SMARTBUFF_VERSION) then
+    return;  -- Cache invalid or doesn't exist
+  end
+  
+  -- Restore chains (S.Chain* tables) from cache
+  if (cache.chains and SG) then
+    for key, value in pairs(cache.chains) do
+      if (type(value) == "table") then
+        SG[key] = value;
+      end
+    end
+  end
+  
+  -- Restore links (S.Link* tables) from cache
+  if (cache.links and SG) then
+    for key, value in pairs(cache.links) do
+      if (type(value) == "table") then
+        SG[key] = value;
+      end
+    end
+  end
+end
+
+-- Save buff relationships (chains and links) to cache
+-- Called after spell/item variables are populated
+function SMARTBUFF_SaveBuffRelationsCache()
+  if (not SmartBuffBuffRelationsCache) then
+    SmartBuffBuffRelationsCache = { version = nil, lastUpdate = 0, chains = {}, links = {} };
+  end
+  
+  local cache = SmartBuffBuffRelationsCache;
+  cache.version = SMARTBUFF_VERSION;
+  cache.lastUpdate = GetTime();
+  
+  -- Save all chains (S.Chain* tables) dynamically
+  wipe(cache.chains);
+  if (SG) then
+    for key, value in pairs(SG) do
+      if (type(key) == "string" and string.match(key, "^Chain") and type(value) == "table") then
+        cache.chains[key] = value;
+      end
+    end
+  end
+  
+  -- Save all links (S.Link* tables) dynamically
+  wipe(cache.links);
+  if (SG) then
+    for key, value in pairs(SG) do
+      if (type(key) == "string" and string.match(key, "^Link") and type(value) == "table") then
+        cache.links[key] = value;
+      end
+    end
+  end
+end
+
+-- Save cache to SavedVariablesPerCharacter
+-- This is called after successful initialization
+function SMARTBUFF_SaveCache(counts, enabledBuffsSnapshot, toyCount)
+  local cache = SmartBuffBuffListCache;
+  if (not cache) then
+    SMARTBUFF_LoadCache();
+    cache = SmartBuffBuffListCache;
+  end
+  
+  cache.version = SMARTBUFF_VERSION;
+  cache.lastUpdate = GetTime();
+  
+  if (counts) then
+    cache.expectedCounts.SCROLL = counts.SCROLL or 0;
+    cache.expectedCounts.FOOD = counts.FOOD or 0;
+    cache.expectedCounts.POTION = counts.POTION or 0;
+    cache.expectedCounts.SELF = counts.SELF or 0;
+    cache.expectedCounts.GROUP = counts.GROUP or 0;
+    cache.expectedCounts.ITEM = counts.ITEM or 0;
+    cache.expectedCounts.TOTAL = counts.TOTAL or 0;
+  end
+  
+  if (enabledBuffsSnapshot) then
+    wipe(cache.enabledBuffs);
+    for _, buffName in ipairs(enabledBuffsSnapshot) do
+      tinsert(cache.enabledBuffs, buffName);
+    end
+  end
+  
+  -- Save toy cache to global cache (toys are global, not per-character)
+  if (toyCount ~= nil) then
+    if (not SmartBuffToyCache) then
+      SmartBuffToyCache = { version = nil, lastUpdate = 0, toyCount = 0, toybox = {} };
+    end
+    SmartBuffToyCache.toyCount = toyCount;
+    SmartBuffToyCache.version = SMARTBUFF_VERSION;
+    SmartBuffToyCache.lastUpdate = GetTime();
+    
+    -- Cache toybox data for fallback when live data not available
+    if (SG.Toybox) then
+      wipe(SmartBuffToyCache.toybox);
+      for itemLink, toyData in pairs(SG.Toybox) do
+        SmartBuffToyCache.toybox[itemLink] = {toyData[1], toyData[2]};  -- Copy {toyID, icon}
+      end
+    end
+  end
+end
+
+-- Print cache statistics for debugging
+function SMARTBUFF_PrintCacheStats()
+  SMARTBUFF_AddMsg("=== SmartBuff Cache Statistics ===", true);
+  
+  -- Buff List Cache
+  local buffCache = SmartBuffBuffListCache;
+  if (buffCache) then
+    SMARTBUFF_AddMsg("BuffListCache: version=" .. tostring(buffCache.version) .. ", lastUpdate=" .. tostring(buffCache.lastUpdate), true);
+    if (buffCache.expectedCounts) then
+      SMARTBUFF_AddMsg("  Expected: SCROLL=" .. buffCache.expectedCounts.SCROLL .. ", FOOD=" .. buffCache.expectedCounts.FOOD .. ", POTION=" .. buffCache.expectedCounts.POTION .. ", SELF=" .. buffCache.expectedCounts.SELF .. ", GROUP=" .. buffCache.expectedCounts.GROUP .. ", ITEM=" .. buffCache.expectedCounts.ITEM .. ", TOTAL=" .. buffCache.expectedCounts.TOTAL, true);
+    end
+  else
+    SMARTBUFF_AddMsg("BuffListCache: not initialized", true);
+  end
+  
+  -- Toy Cache (Global)
+  local toyCache = SmartBuffToyCache;
+  if (toyCache) then
+    SMARTBUFF_AddMsg("ToyCache: version=" .. tostring(toyCache.version) .. ", lastUpdate=" .. tostring(toyCache.lastUpdate), true);
+    SMARTBUFF_AddMsg("  ToyCount: " .. tostring(toyCache.toyCount), true);
+    local toyCacheCount = 0;
+    if (toyCache.toybox) then
+      for _ in pairs(toyCache.toybox) do toyCacheCount = toyCacheCount + 1; end
+    end
+    SMARTBUFF_AddMsg("  Toys in cache: " .. toyCacheCount, true);
+  else
+    SMARTBUFF_AddMsg("ToyCache: not initialized", true);
+  end
+  
+  -- Item/Spell Cache
+  local itemSpellCache = SmartBuffItemSpellCache;
+  if (itemSpellCache) then
+    SMARTBUFF_AddMsg("ItemSpellCache: version=" .. tostring(itemSpellCache.version) .. ", lastUpdate=" .. tostring(itemSpellCache.lastUpdate), true);
+    local itemCount = 0;
+    local spellCount = 0;
+    local needsRefreshCount = 0;
+    if (itemSpellCache.items) then
+      for _ in pairs(itemSpellCache.items) do itemCount = itemCount + 1; end
+    end
+    if (itemSpellCache.spells) then
+      for _ in pairs(itemSpellCache.spells) do spellCount = spellCount + 1; end
+    end
+    if (itemSpellCache.needsRefresh) then
+      for _, needsRefresh in pairs(itemSpellCache.needsRefresh) do
+        if (needsRefresh) then needsRefreshCount = needsRefreshCount + 1; end
+      end
+    end
+    SMARTBUFF_AddMsg("  Items: " .. itemCount .. ", Spells: " .. spellCount .. ", NeedsRefresh: " .. needsRefreshCount, true);
+    
+    -- Count nil items/spells
+    local nilItems = 0;
+    local nilSpells = 0;
+    if (itemSpellCache.items) then
+      for _, itemLink in pairs(itemSpellCache.items) do
+        if (not itemLink) then nilItems = nilItems + 1; end
+      end
+    end
+    if (itemSpellCache.spells) then
+      for _, spellInfo in pairs(itemSpellCache.spells) do
+        if (not spellInfo) then nilSpells = nilSpells + 1; end
+      end
+    end
+    if (nilItems > 0 or nilSpells > 0) then
+      SMARTBUFF_AddMsg("  WARNING: Nil entries - Items: " .. nilItems .. ", Spells: " .. nilSpells, true);
+    end
+  else
+    SMARTBUFF_AddMsg("ItemSpellCache: not initialized", true);
+  end
+  
+  -- Valid Spells Cache
+  local validSpells = SmartBuffValidSpells;
+  if (validSpells) then
+    local validCount = 0;
+    local invalidCount = 0;
+    if (validSpells.spells) then
+      for _, isValid in pairs(validSpells.spells) do
+        if (isValid == true) then
+          validCount = validCount + 1;
+        elseif (isValid == false) then
+          invalidCount = invalidCount + 1;
+        end
+      end
+    end
+    SMARTBUFF_AddMsg("ValidSpells: version=" .. tostring(validSpells.version) .. ", Valid: " .. validCount .. ", Invalid: " .. invalidCount, true);
+  else
+    SMARTBUFF_AddMsg("ValidSpells: not initialized", true);
+  end
+  
+  -- Expected Data
+  local expected = SMARTBUFF_ExpectedData;
+  if (expected) then
+    local expectedItems = 0;
+    local expectedSpells = 0;
+    if (expected.items) then
+      for _ in pairs(expected.items) do expectedItems = expectedItems + 1; end
+    end
+    if (expected.spells) then
+      for _ in pairs(expected.spells) do expectedSpells = expectedSpells + 1; end
+    end
+    SMARTBUFF_AddMsg("ExpectedData: Items: " .. expectedItems .. ", Spells: " .. expectedSpells, true);
+  end
+  
+  -- Current buff list
+  local currentCount = 0;
+  if (cBuffs) then
+    for i, _ in pairs(cBuffs) do
+      if (type(i) == "number" and cBuffs[i] and cBuffs[i].BuffS) then
+        currentCount = currentCount + 1;
+      end
+    end
+  end
+  SMARTBUFF_AddMsg("Current Buff List: " .. currentCount .. " buffs", true);
+  
+  SMARTBUFF_AddMsg("=== End Cache Statistics ===", true);
+end
+
+-- Get current buff counts from cBuffs array (final list)
+-- Returns a table with counts by category
+function SMARTBUFF_GetCurrentBuffCounts()
+  local counts = {
+    SCROLL = 0,
+    FOOD = 0,
+    POTION = 0,
+    SELF = 0,
+    GROUP = 0,
+    ITEM = 0,
+    TOTAL = 0
+  };
+  
+  -- Count from cBuffs array (final list)
+  local maxIndex = 0;
+  for i, _ in pairs(cBuffs) do
+    if (type(i) == "number" and i > maxIndex) then
+      maxIndex = i;
+    end
+  end
+  
+  for i = 1, maxIndex do
+    if (cBuffs[i] and cBuffs[i].Type) then
+      local buffType = cBuffs[i].Type;
+      if (counts[buffType] ~= nil) then
+        counts[buffType] = counts[buffType] + 1;
+      end
+      counts.TOTAL = counts.TOTAL + 1;
+    end
+  end
+  
+  return counts;
+end
+
+-- Verify buff list completeness by comparing current counts to cache
+-- Returns: true if counts match or exceed cache, false if significantly lower
+-- Note: Following AllTheThings pattern - this is informational only, we accept partial data
+function SMARTBUFF_VerifyBuffList()
+  local cache = SmartBuffBuffListCache;
+  if (not cache or not cache.version) then
+    -- No cache exists yet - first run, accept whatever we have
+    return true;
+  end
+  
+  local currentCounts = SMARTBUFF_GetCurrentBuffCounts();
+  local expectedCounts = cache.expectedCounts;
+  
+  -- If current total is significantly lower than cache (< 80%), items might still be loading
+  -- But we accept it anyway (AllTheThings pattern: accept partial data)
+  if (expectedCounts.TOTAL > 0 and currentCounts.TOTAL < expectedCounts.TOTAL * 0.8) then
+    return false;  -- Likely incomplete, but we'll accept it
+  end
+  
+  -- If current total matches or exceeds cache, initialization is likely complete
+  -- (exceeding is OK - player may have acquired new items)
+  return true;
+end
+
+-- Partial reload functions for event-based updates
+-- These functions only update what's needed without rebuilding static tables from buffs.lua
+-- Static tables (SMARTBUFF_SCROLL, SMARTBUFF_FOOD, etc.) are only rebuilt on initial load or reset
+
+-- Reload toys only (called when TOYS_UPDATED or NEW_TOY_ADDED fires)
+-- Only reloads toy collection, does NOT rebuild static tables
+function SMARTBUFF_ReloadToys()
+  if (InCombatLockdown()) then return; end
+  SMARTBUFF_LoadToys();
+  -- Trigger rebuild of cBuffs from existing static tables to include new toys
+  isSetBuffs = true;
+end
+
+-- Reload items from inventory (called when BAG_UPDATE fires for character bags)
+-- Does NOT rebuild static tables - just triggers rebuild of cBuffs which checks bags
+function SMARTBUFF_ReloadItems()
+  if (InCombatLockdown()) then return; end
+  -- Trigger rebuild of cBuffs - SMARTBUFF_SetBuff() will check bags via SMARTBUFF_FindItem()
+  -- Don't call SMARTBUFF_InitItemList() as that rebuilds static item variables unnecessarily
+  isSetBuffs = true;
+end
+
+-- Reload spells (called when SPELLS_CHANGED, PLAYER_LEVEL_UP, or PLAYER_SPECIALIZATION_CHANGED fires)
+-- Only reloads spell IDs, does NOT rebuild static tables from buffs.lua
+function SMARTBUFF_ReloadSpells()
+  if (InCombatLockdown()) then return; end
+  -- Only reload spell IDs - static tables from buffs.lua don't change during gameplay
+  SMARTBUFF_InitSpellIDs();
+  -- Trigger rebuild of cBuffs from existing static tables with updated spell IDs
+  isSetBuffs = true;
+end
 
 -- Set the buff array
 function SMARTBUFF_SetBuffs()
@@ -1103,9 +1695,63 @@ function SMARTBUFF_SetBuffs()
     B[CS()] = {};
   end
 
-  SMARTBUFF_InitSpellIDs();
-  SMARTBUFF_InitItemList();
-  SMARTBUFF_InitSpellList();
+  -- Load cache for verification
+  SMARTBUFF_LoadCache();
+
+  -- Only rebuild static tables from buffs.lua if they're not already populated
+  -- Static tables don't change during gameplay, only on initial load or reset
+  if (SMARTBUFF_BUFFLIST == nil) then
+    -- Clear expected data list before building
+    SMARTBUFF_ExpectedData.items = {};
+    SMARTBUFF_ExpectedData.spells = {};
+    SMARTBUFF_InitSpellIDs();
+    SMARTBUFF_InitItemList();
+    -- Sync cache with expected list (remove extras, add missing, flag all as needsRefresh)
+    SMARTBUFF_SyncItemSpellCache();
+    SMARTBUFF_InitSpellList();
+    -- Load toys on initial setup
+    SMARTBUFF_LoadToys();
+  elseif (SMARTBUFF_PLAYERCLASS ~= sPlayerClass) then
+    -- Player class changed (shouldn't happen, but be safe)
+    SMARTBUFF_ExpectedData.items = {};
+    SMARTBUFF_ExpectedData.spells = {};
+    SMARTBUFF_InitSpellIDs();
+    SMARTBUFF_SyncItemSpellCache();
+    SMARTBUFF_InitSpellList();
+  else
+    -- Static tables already populated - only reload spell IDs if needed (for spell availability)
+    -- Don't rebuild static tables unnecessarily
+    SMARTBUFF_ExpectedData.spells = {};  -- Only rebuild spell expected list
+    SMARTBUFF_InitSpellIDs();
+    -- Sync only spells (items haven't changed)
+    if (SmartBuffItemSpellCache and SmartBuffItemSpellCache.spells) then
+      local expected = SMARTBUFF_ExpectedData;
+      for varName, _ in pairs(SmartBuffItemSpellCache.spells) do
+        if (not expected.spells[varName]) then
+          SmartBuffItemSpellCache.spells[varName] = nil;
+          if (SmartBuffItemSpellCache.needsRefresh) then
+            SmartBuffItemSpellCache.needsRefresh[varName] = nil;
+          end
+        end
+      end
+      for varName, spellId in pairs(expected.spells) do
+        if (not SmartBuffItemSpellCache.spells[varName]) then
+          SmartBuffItemSpellCache.spells[varName] = nil;
+          if (not SmartBuffItemSpellCache.needsRefresh) then
+            SmartBuffItemSpellCache.needsRefresh = {};
+          end
+          SmartBuffItemSpellCache.needsRefresh[varName] = true;
+        else
+          if (not SmartBuffItemSpellCache.needsRefresh) then
+            SmartBuffItemSpellCache.needsRefresh = {};
+          end
+          SmartBuffItemSpellCache.needsRefresh[varName] = true;
+        end
+      end
+    end
+    -- Don't reload toys if already verified via cache
+    -- Toys will only reload when TOYS_UPDATED/NEW_TOY_ADDED events fire
+  end
 
   if (B[CS()][ct] == nil) then
     B[CS()][ct] = {};
@@ -1147,10 +1793,51 @@ function SMARTBUFF_SetBuffs()
   wipe(cBuffsCombat);
   SMARTBUFF_SetInCombatBuffs();
 
-  InitBuffOrder(false);
-
   numBuffs = n - 1;
+
+  -- Accept current state (even if incomplete) - following AllTheThings pattern
+  -- Don't retry indefinitely - accept partial data and let events handle updates
+  local currentCounts = SMARTBUFF_GetCurrentBuffCounts();
+  
+  -- Count toys separately (stored in S.Toybox, not in static tables)
+  local toyCount = 0;
+  if (SG.Toybox) then
+    for _ in pairs(SG.Toybox) do
+      toyCount = toyCount + 1;
+    end
+  end
+  
+  -- Note: currentCounts includes items/spells that made it into cBuffs[]
+  -- Items/spells that returned nil during SMARTBUFF_SetBuff() were filtered out
+  -- This is expected - they'll be added when ITEM_DATA_LOAD_RESULT/SPELL_DATA_LOAD_RESULT fires
+  
+  -- Save cache with current state (accept partial data like AllTheThings)
+  local enabledBuffsSnapshot = {};
+  if (B[CS()] and B[CS()][ct]) then
+    for buffName, settings in pairs(B[CS()][ct]) do
+      if (type(settings) == "table" and (settings.EnableS or settings.EnableG)) then
+        tinsert(enabledBuffsSnapshot, buffName);
+      end
+    end
+  end
+  SMARTBUFF_SaveCache(currentCounts, enabledBuffsSnapshot, toyCount);
+  InitBuffOrder(false);
+  
+  -- Note: If items/spells are still loading, ITEM_DATA_LOAD_RESULT/SPELL_DATA_LOAD_RESULT events will trigger rebuild
+  -- This follows AllTheThings pattern: accept partial data, mark what's missing, let events handle updates
+
   isSetBuffs = false;
+end
+
+-- Helper function to extract itemID from itemLink string or itemID number
+-- Returns itemID (number) or nil
+local function ExtractItemID(item)
+  if (type(item) == "number") then
+    return item;
+  elseif (type(item) == "string") then
+    return tonumber(string.match(item, "item:(%d+)"));
+  end
+  return nil;
 end
 
 function SMARTBUFF_SetBuff(buff, i, ia)
@@ -1168,8 +1855,46 @@ function SMARTBUFF_SetBuff(buff, i, ia)
   cBuffs[i].CanCharge = false;
 
   if (SMARTBUFF_IsSpell(cBuffs[i].Type)) then
-    --    cBuffs[i].IDS, cBuffs[i].BookID = SMARTBUFF_GetSpellID(cBuffs[i].BuffS);
-    cBuffs[i].IDS = buff[1].spellID;
+    -- Extract spellID from buff[1] - cached spellInfo table has spellID, spell name string needs lookup
+    if (type(buff[1]) == "table" and buff[1].spellID) then
+      cBuffs[i].IDS = buff[1].spellID;
+    elseif (cBuffs[i].BuffS) then
+      cBuffs[i].IDS, cBuffs[i].BookID = SMARTBUFF_GetSpellID(cBuffs[i].BuffS);
+    end
+    
+    -- Filter invalid/uncastable spells using valid spells cache
+    if (cBuffs[i].IDS and SmartBuffValidSpells and SmartBuffValidSpells.spells) then
+      local isValid = SmartBuffValidSpells.spells[cBuffs[i].IDS];
+      if (isValid == false) then
+        -- Spell marked as invalid - filter out
+        cBuffs[i] = nil;
+        return i;
+      elseif (isValid == nil) then
+        -- Spell not yet validated - check now
+        local spellName = C_Spell.GetSpellName(cBuffs[i].IDS);
+        if (not spellName) then
+          -- Spell doesn't exist
+          if (not SmartBuffValidSpells.spells) then SmartBuffValidSpells.spells = {}; end
+          SmartBuffValidSpells.spells[cBuffs[i].IDS] = false;
+          cBuffs[i] = nil;
+          return i;
+        end
+        -- For class spells, verify they're known (item spells are always valid if they exist)
+        if (cBuffs[i].Type == SMARTBUFF_CONST_SELF or cBuffs[i].Type == SMARTBUFF_CONST_GROUP) then
+          local isKnown = C_SpellBook.IsSpellKnownOrInSpellBook(cBuffs[i].IDS);
+          if (not isKnown) then
+            -- Spell not known - mark as invalid
+            if (not SmartBuffValidSpells.spells) then SmartBuffValidSpells.spells = {}; end
+            SmartBuffValidSpells.spells[cBuffs[i].IDS] = false;
+            cBuffs[i] = nil;
+            return i;
+          end
+        end
+        -- Valid spell - mark as valid
+        if (not SmartBuffValidSpells.spells) then SmartBuffValidSpells.spells = {}; end
+        SmartBuffValidSpells.spells[cBuffs[i].IDS] = true;
+      end
+    end
   end
   if (cBuffs[i].IDS == nil and not (SMARTBUFF_IsItem(cBuffs[i].Type) or cBuffs[i].Type == SMARTBUFF_CONST_TRACK)) then
     cBuffs[i] = nil;
@@ -1187,7 +1912,15 @@ function SMARTBUFF_SetBuff(buff, i, ia)
   --end
 
   if (cBuffs[i].IDS ~= nil) then
-    cBuffs[i].IconS = C_Spell.GetSpellTexture(cBuffs[i].IDS);
+    -- Try to get icon from cached spellInfo first
+    local icon = nil;
+    if (type(buff[1]) == "table" and buff[1].icon) then
+      icon = buff[1].icon;
+    else
+      -- Fallback to API call
+      icon = C_Spell.GetSpellTexture(cBuffs[i].IDS);
+    end
+    cBuffs[i].IconS = icon;
   else
     if (cBuffs[i].Type == SMARTBUFF_CONST_TRACK) then
       local b = false;
@@ -1208,25 +1941,90 @@ function SMARTBUFF_SetBuff(buff, i, ia)
         return i;
       end
     elseif (ia or cBuffs[i].Type == SMARTBUFF_CONST_ITEMGROUP) then
-      -- itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice
-      local _, _, _, _, minLevel, _, _, _, _, texture = C_Item.GetItemInfo(cBuffs[i].BuffS);
-      if (not IsMinLevel(minLevel)) then
+      -- Try to get minLevel and texture from cache first
+      local minLevel, texture = nil, nil;
+      local cache = SmartBuffItemSpellCache;
+      if (cache and cache.itemData) then
+        -- Find varName by itemLink
+        for varName, itemLink in pairs(cache.items or {}) do
+          if (itemLink == cBuffs[i].BuffS) then
+            local itemData = cache.itemData[varName];
+            if (itemData) then
+              minLevel = itemData[1];
+              texture = itemData[2];
+            end
+            break;
+          end
+        end
+      end
+      
+      -- If not in cache, try API call
+      if (minLevel == nil) then
+        local _, _, _, _, apiMinLevel, _, _, _, _, apiTexture = C_Item.GetItemInfo(cBuffs[i].BuffS);
+        minLevel = apiMinLevel;
+        texture = apiTexture;
+      end
+      
+      if (minLevel == nil) then
+        -- Item data not loaded yet - request loading and keep buff (AllTheThings pattern: accept partial data)
+        local itemID = ExtractItemID(cBuffs[i].BuffS);
+        if (itemID) then
+          C_Item.RequestLoadItemDataByID(itemID);
+        end
+        -- Keep buff in list - will be validated when ITEM_DATA_LOAD_RESULT fires
+        cBuffs[i].IconS = nil;  -- No texture yet
+      elseif (not IsMinLevel(minLevel)) then
         cBuffs[i] = nil;
         return i;
+      else
+        cBuffs[i].IconS = texture;
       end
-      cBuffs[i].IconS = texture;
     else
       -- ITEM type (conjured items like Create Healthstone) or FOOD/SCROLL/POTION types
       SMARTBUFF_AddMsgD("SetBuff item-related type: " .. cBuffs[i].BuffS .. " (Type: " .. cBuffs[i].Type .. ")");
-      -- Extract both minLevel and texture from single GetItemInfo call to avoid redundant API call
-      local _, _, _, _, minLevel, _, _, _, _, buffTexture = C_Item.GetItemInfo(cBuffs[i].BuffS);
+      -- Try to get minLevel and texture from cache first
+      local minLevel, texture = nil, nil;
+      local cache = SmartBuffItemSpellCache;
+      if (cache and cache.itemData) then
+        -- Find varName by itemLink
+        for varName, itemLink in pairs(cache.items or {}) do
+          if (itemLink == cBuffs[i].BuffS) then
+            local itemData = cache.itemData[varName];
+            if (itemData) then
+              minLevel = itemData[1];
+              texture = itemData[2];
+            end
+            break;
+          end
+        end
+      end
+      
+      -- If not in cache, try API call
+      if (minLevel == nil) then
+        local _, _, _, _, apiMinLevel, _, _, _, _, apiTexture = C_Item.GetItemInfo(cBuffs[i].BuffS);
+        minLevel = apiMinLevel;
+        texture = apiTexture;
+      end
+      
       SMARTBUFF_AddMsgD("  GetItemInfo(BuffS) minLevel: " .. tostring(minLevel));
-      if (not IsMinLevel(minLevel)) then
+      if (minLevel == nil) then
+        -- Item data not loaded yet - request loading and keep buff (AllTheThings pattern: accept partial data)
+        local itemID = ExtractItemID(cBuffs[i].BuffS);
+        if (itemID) then
+          C_Item.RequestLoadItemDataByID(itemID);
+          SMARTBUFF_AddMsgD("  Item data not loaded yet, requested loading (itemID: " .. itemID .. ")");
+        end
+        -- Keep buff in list - will be validated when ITEM_DATA_LOAD_RESULT fires
+      elseif (not IsMinLevel(minLevel)) then
         SMARTBUFF_AddMsgD("  Filtered out: level requirement not met");
         cBuffs[i] = nil;
         return i;
       end
-      local _, _, count, texture = SMARTBUFF_FindItem(cBuffs[i].BuffS, cBuffs[i].Chain);
+      local _, _, count, findItemTexture = SMARTBUFF_FindItem(cBuffs[i].BuffS, cBuffs[i].Chain);
+      -- Use texture from cache if available, otherwise use FindItem result
+      if (not texture) then
+        texture = findItemTexture;
+      end
       SMARTBUFF_AddMsgD("  FindItem result: count=" .. tostring(count) .. ", texture=" .. tostring(texture));
 
       if count then
@@ -1239,16 +2037,15 @@ function SMARTBUFF_SetBuff(buff, i, ia)
             local chainTexture = nil;
             if (cBuffs[i].Chain and #cBuffs[i].Chain > 0) then
               -- Try first item in chain for texture
-              local chainItem = cBuffs[i].Chain[1];
-              local itemID = nil;
-              if type(chainItem) == "number" then
-                itemID = chainItem;
-              elseif type(chainItem) == "string" then
-                itemID = tonumber(string.match(chainItem, "item:(%d+)"));
-              end
+              local itemID = ExtractItemID(cBuffs[i].Chain[1]);
               if (itemID) then
                 local _, _, _, _, _, _, _, _, _, chainTexture = C_Item.GetItemInfo(itemID);
-                cBuffs[i].IconS = chainTexture;
+                if (chainTexture) then
+                  cBuffs[i].IconS = chainTexture;
+                else
+                  -- Chain item data not loaded - request loading
+                  C_Item.RequestLoadItemDataByID(itemID);
+                end
               end
             end
             if (not cBuffs[i].IconS) then
@@ -1691,13 +2488,22 @@ end
 function SMARTBUFF_IsShapeshifted()
   if (sPlayerClass == "SHAMAN") then
     if (GetShapeshiftForm(true) > 0) then
-      return true, C_Spell.GetSpellInfo("Ghost Wolf");
+      local spellInfo = C_Spell.GetSpellInfo("Ghost Wolf");
+      if (not spellInfo) then
+        -- Spell data not loaded - request loading (AllTheThings pattern)
+        C_Spell.RequestLoadSpellData("Ghost Wolf");
+      end
+      return true, spellInfo;
     end
   elseif (sPlayerClass == "DRUID") then
     local i;
     for i = 1, GetNumShapeshiftForms(), 1 do
       local icon, active, castable, spellId = GetShapeshiftFormInfo(i);
       local spellIinfo = C_Spell.GetSpellInfo(spellId);
+      if (not spellIinfo and spellId) then
+        -- Spell data not loaded - request loading (AllTheThings pattern)
+        C_Spell.RequestLoadSpellData(spellId);
+      end
       if (active and castable and spellIinfo ~= SMARTBUFF_DRUID_TREANT) then
         return true, spellIinfo;
       end
@@ -2273,7 +3079,15 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                       local bag, slot, count = SMARTBUFF_FindItem(buffnS, cBuff.Chain);
                       if (count > 0) then
                         sMsgWarning = "";
-                        return 0, SMARTBUFF_ACTION_ITEM, C_Item.GetItemInfo(buffnS), iSlot, "player", cBuff.Type;
+                        local itemInfo = C_Item.GetItemInfo(buffnS);
+                        if (not itemInfo) then
+                          -- Item data not loaded - request loading (AllTheThings pattern)
+                          local itemID = ExtractItemID(buffnS);
+                          if (itemID) then
+                            C_Item.RequestLoadItemDataByID(itemID);
+                          end
+                        end
+                        return 0, SMARTBUFF_ACTION_ITEM, itemInfo or buffnS, iSlot, "player", cBuff.Type;
                       end
                     end
                     r = 50;
@@ -2528,7 +3342,12 @@ function SMARTBUFF_CanApplyWeaponBuff(buff, slot)
 
   local itemLink = GetInventoryItemLink("player", slot);
   local _, _, itemCode = string.find(itemLink, "item:(%d+):");
-  local _, _, _, _, _, itemType, itemSubType = C_Item.GetItemInfo(itemCode);
+  local itemID = itemCode and tonumber(itemCode);
+  local _, _, _, _, _, itemType, itemSubType = C_Item.GetItemInfo(itemID);
+  if (not itemType and itemID) then
+    -- Item data not loaded - request loading (AllTheThings pattern)
+    C_Item.RequestLoadItemDataByID(itemID);
+  end
 
   --if (itemType and itemSubType) then
   --  SMARTBUFF_AddMsgD("Type: " .. itemType .. ", Subtype: " .. itemSubType);
@@ -2954,8 +3773,15 @@ function SMARTBUFF_IsFishingPoleEquiped()
   local link = GetInventoryItemLink("player", GetInventorySlotInfo("MainHandSlot"));
   if (not link) then return false end
 
-  local _, _, _, _, _, _, subType = C_Item.GetItemInfo(link);
-  if (not subType) then return false end
+  local itemID = ExtractItemID(link);
+  local _, _, _, _, _, _, subType = C_Item.GetItemInfo(itemID);
+  if (not subType) then
+    -- Item data not loaded - request loading (AllTheThings pattern)
+    if (itemID) then
+      C_Item.RequestLoadItemDataByID(itemID);
+    end
+    return false;
+  end
 
   --print(SG.FishingPole.." - "..subType);
   if (SG.FishingPole == subType) then return true end
@@ -3029,14 +3855,55 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
   end
   
   if (O.IncludeToys) then
-    local _, link = C_Item.GetItemInfo(reagent); -- itemlink
-    local toy = SG.Toybox[link];
-    if (toy) then
-      if (debug) then
-        SMARTBUFF_AddMsgD("FindItem: Found toy");
+    -- reagent can be itemLink (string), itemID (number), or placeholder "item:12345"
+    local link = nil;
+    local itemID = nil;
+    
+    if (type(reagent) == "string") then
+      -- Check if it's a full itemLink (starts with |c)
+      if (string.match(reagent, "^|c")) then
+        link = reagent;
+        -- Extract itemID from full itemLink for matching
+        itemID = tonumber(string.match(reagent, "item:(%d+)"));
+      elseif (string.match(reagent, "^item:%d+$")) then
+        -- Placeholder format "item:12345" - extract itemID
+        itemID = tonumber(string.match(reagent, "item:(%d+)"));
+        -- Try to get full itemLink from API
+        if (itemID) then
+          local _, itemLink = C_Item.GetItemInfo(itemID);
+          link = itemLink;
+        end
       end
-      -- For toys: bag=999 (special marker), slot=toyID, firstCount=1, totalCount=1, id=toyID, texture=toyIcon
-      return 999, toy[1], 1, 1, toy[1], toy[2];
+    elseif (type(reagent) == "number") then
+      -- itemID - need to get itemLink
+      itemID = reagent;
+      local _, itemLink = C_Item.GetItemInfo(reagent);
+      link = itemLink;
+    end
+    
+    -- Try direct link match first
+    if (link) then
+      local toy = SG.Toybox[link];
+      if (toy) then
+        if (debug) then
+          SMARTBUFF_AddMsgD("FindItem: Found toy by link");
+        end
+        -- For toys: bag=999 (special marker), slot=toyID, firstCount=1, totalCount=1, id=toyID, texture=toyIcon
+        return 999, toy[1], 1, 1, toy[1], toy[2];
+      end
+    end
+    
+    -- If no direct match and we have itemID, search S.Toybox by itemID (toy[1] is the itemID)
+    if (itemID and SG.Toybox) then
+      for cachedLink, toy in pairs(SG.Toybox) do
+        if (toy[1] == itemID) then
+          if (debug) then
+            SMARTBUFF_AddMsgD("FindItem: Found toy by itemID");
+          end
+          -- For toys: bag=999 (special marker), slot=toyID, firstCount=1, totalCount=1, id=toyID, texture=toyIcon
+          return 999, toy[1], 1, 1, toy[1], toy[2];
+        end
+      end
     end
   end
 
@@ -3439,8 +4306,52 @@ function SMARTBUFF_InitActionButtonPos()
   --print(format("x = %.0f, y = %.0f", O.ActionBtnX, O.ActionBtnY));
 end
 
+-- Invalidate all buff-related caches
+-- Called when reset buttons are clicked to ensure fresh data on next load
+function SMARTBUFF_InvalidateBuffCache()
+  -- Invalidate buff list cache
+  if (SmartBuffBuffListCache) then
+    SmartBuffBuffListCache.version = nil;
+    SmartBuffBuffListCache.lastUpdate = 0;
+    wipe(SmartBuffBuffListCache.expectedCounts);
+    wipe(SmartBuffBuffListCache.enabledBuffs);
+  end
+  
+  -- Invalidate global toy cache
+  if (SmartBuffToyCache) then
+    SmartBuffToyCache.version = nil;
+    SmartBuffToyCache.lastUpdate = 0;
+    SmartBuffToyCache.toyCount = 0;
+    wipe(SmartBuffToyCache.toybox);
+  end
+  
+  -- Invalidate item/spell cache
+  if (SmartBuffItemSpellCache) then
+    SmartBuffItemSpellCache.version = nil;
+    SmartBuffItemSpellCache.lastUpdate = 0;
+    wipe(SmartBuffItemSpellCache.items);
+    wipe(SmartBuffItemSpellCache.spells);
+    wipe(SmartBuffItemSpellCache.itemIDs);
+    if (SmartBuffItemSpellCache.itemData) then
+      wipe(SmartBuffItemSpellCache.itemData);
+    end
+    if (SmartBuffItemSpellCache.needsRefresh) then
+      wipe(SmartBuffItemSpellCache.needsRefresh);
+    end
+  end
+  
+  -- Invalidate buff relationships cache
+  if (SmartBuffBuffRelationsCache) then
+    SmartBuffBuffRelationsCache.version = nil;
+    SmartBuffBuffRelationsCache.lastUpdate = 0;
+    wipe(SmartBuffBuffRelationsCache.chains);
+    wipe(SmartBuffBuffRelationsCache.links);
+  end
+end
+
 -- Reset all options, buffs and window position
 function SMARTBUFF_ResetAll()
+  SMARTBUFF_InvalidateBuffCache();
   wipe(SMARTBUFF_Buffs);
   wipe(SMARTBUFF_Options);
   ReloadUI();
@@ -3449,6 +4360,7 @@ end
 -- Reset only buffs. Useful for upgrades, keep UI options
 -- Don't reload UI. Since buffs are after reset
 function SMARTBUFF_ResetBuffs()
+  SMARTBUFF_InvalidateBuffCache();
   wipe(SMARTBUFF_Buffs);
   SMARTBUFF_SetTemplate()
   InitBuffOrder(true);
@@ -3601,6 +4513,8 @@ function SMARTBUFF_command(msg)
   elseif (msg == "reload") then
     SMARTBUFF_BuffOrderReset();
     SMARTBUFF_OptionsFrame_Open(true);
+  elseif (msg == "cache") then
+    SMARTBUFF_PrintCacheStats();
   else
     --SMARTBUFF_Check(0);
     SMARTBUFF_AddMsg(SMARTBUFF_VERS_TITLE, true);
@@ -4875,6 +5789,7 @@ function SMARTBUFF_BuffOrderBtnOnDragStop(i, n)
 end
 
 function SMARTBUFF_BuffOrderReset()
+  SMARTBUFF_InvalidateBuffCache();
   InitBuffOrder(true);
   SMARTBUFF_BuffOrderOnScroll();
 end

@@ -7,8 +7,8 @@
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## LoadSavedVariablesFirst: 1
-## SavedVariables: SMARTBUFF_OptionsGlobal
-## SavedVariablesPerCharacter: SMARTBUFF_Options, SMARTBUFF_Buffs
+## SavedVariables: SMARTBUFF_OptionsGlobal, SmartBuffItemSpellCache, SmartBuffBuffRelationsCache, SmartBuffToyCache
+## SavedVariablesPerCharacter: SMARTBUFF_Options, SMARTBUFF_Buffs, SmartBuffBuffListCache, SmartBuffValidSpells
 ## IconTexture: Interface\Addons\Smartbuff\Icons\IconEnabled.tga
 
 Libs\LibStub\LibStub.lua

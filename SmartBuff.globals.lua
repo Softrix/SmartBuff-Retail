@@ -5,6 +5,83 @@
 SMARTBUFF_GLOBALS = { };
 local SG = SMARTBUFF_GLOBALS;
 
+-- Expected items/spells from buffs.lua - built during init, used for cache sync
+-- Format: {items = {[varName] = itemID, ...}, spells = {[varName] = spellID, ...}}
+SMARTBUFF_ExpectedData = {
+  items = {},
+  spells = {}
+};
+
+-- Buff List Cache Structure
+-- This cache is used to verify initialization completeness and detect when items/spells haven't loaded yet
+-- It does NOT override user settings (SMARTBUFF_Buffs) - it's verification-only
+if (not SmartBuffBuffListCache) then
+  SmartBuffBuffListCache = {
+    version = nil,  -- Will be set to SMARTBUFF_VERSION when cache is created/updated
+    lastUpdate = 0,  -- Timestamp of last successful update (GetTime())
+    expectedCounts = {
+      SCROLL = 0,
+      FOOD = 0,
+      POTION = 0,
+      SELF = 0,
+      GROUP = 0,
+      ITEM = 0,
+      TOTAL = 0
+    },
+    enabledBuffs = {}  -- Snapshot of buff names that were enabled (for comparison only, not restoration)
+  };
+end
+
+-- Item/Spell Data Cache Structure
+-- Stores itemLinks and spell data from buffs.lua for persistence across reloads
+-- Format: {[varName] = {itemLink/itemID/spellInfo, itemID (if item), needsRefresh (bool)}, ...}
+if (not SmartBuffItemSpellCache) then
+  SmartBuffItemSpellCache = {
+    version = nil,  -- Will be set to SMARTBUFF_VERSION when cache is created/updated
+    lastUpdate = 0,  -- Timestamp of last successful update (GetTime())
+    items = {},  -- {[varName] = itemLink, ...} - itemLink strings for items
+    spells = {},  -- {[varName] = spellInfo or spellName, ...} - spell data for spells
+    itemIDs = {},  -- {[varName] = itemID, ...} - itemIDs for quick lookup
+    itemData = {},  -- {[varName] = {minLevel, texture}, ...} - additional item data
+    needsRefresh = {}  -- {[varName] = true/false, ...} - flag for items/spells that need refresh
+  };
+end
+
+-- Buff Relationships Cache Structure
+-- Stores chains and buff relationships (links/exclusivity) separately
+-- Format: {[chainName] = {itemLink/itemID, ...}, [buffName] = {linkedBuffs}, ...}
+if (not SmartBuffBuffRelationsCache) then
+  SmartBuffBuffRelationsCache = {
+    version = nil,  -- Will be set to SMARTBUFF_VERSION when cache is created/updated
+    lastUpdate = 0,  -- Timestamp of last successful update (GetTime())
+    chains = {},  -- {[chainName] = {itemLink/itemID, ...}, ...} - item chains
+    links = {}  -- {[buffName] = {linkedBuffName, ...}, ...} - buff relationships
+  };
+end
+
+-- Toy Cache Structure (Global - all characters see all toys)
+-- Stores cached toy list for faster initialization
+-- Format: {[itemLink] = {toyID, icon}, ...} - fallback when live data not available
+if (not SmartBuffToyCache) then
+  SmartBuffToyCache = {
+    version = nil,  -- Will be set to SMARTBUFF_VERSION when cache is created/updated
+    lastUpdate = 0,  -- Timestamp of last successful update (GetTime())
+    toyCount = 0,  -- Last known toy count from C_ToyBox.GetNumLearnedDisplayedToys()
+    toybox = {}  -- Cached toy list: {[itemLink] = {toyID, icon}, ...}
+  };
+end
+
+-- Valid Spells Cache Structure
+-- Stores list of valid castable spells for this character (per-character)
+-- Format: {[spellID] = true, ...} - spellIDs that are known/valid for this character
+if (not SmartBuffValidSpells) then
+  SmartBuffValidSpells = {
+    version = nil,  -- Will be set to SMARTBUFF_VERSION when cache is created/updated
+    lastUpdate = 0,  -- Timestamp of last successful update (GetTime())
+    spells = {}  -- {[spellID] = true, ...} - valid spellIDs for this character
+  };
+end
+
 SMARTBUFF_TTC_R = 1;
 SMARTBUFF_TTC_G = 1;
 SMARTBUFF_TTC_B = 1;
