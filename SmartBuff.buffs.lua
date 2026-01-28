@@ -26,6 +26,8 @@ S.CheckPetNeeded = "CHECKPETNEEDED";
 S.CheckFishingPole = "CHECKFISHINGPOLE";
 S.NIL = "x";
 S.Toybox = { };
+-- Index by itemID for O(1) toy lookup in FindItem (avoids O(n) pairs over Toybox every check)
+S.ToyboxByID = { };
 
 local function GetItems(items)
   local t = { };
@@ -101,9 +103,11 @@ end
 -- Usage: GetSpellInfoIfNeeded("SMARTBUFF_VARNAME", spellId, isSpellbookSpell)
 -- isSpellbookSpell: true for class/talent spells (use spellbook check), false/nil for item spells (flasks/potions)
 local function GetSpellInfoIfNeeded(varName, spellId, isSpellbookSpell)
-  -- Track expected spell for cache sync
+  -- Track expected spell for cache sync (and O(1) reverse lookup in DATA_LOAD_RESULT)
   if (SMARTBUFF_ExpectedData and SMARTBUFF_ExpectedData.spells) then
     SMARTBUFF_ExpectedData.spells[varName] = spellId;
+    if (not SMARTBUFF_ExpectedData.spellIDToVarName) then SMARTBUFF_ExpectedData.spellIDToVarName = {}; end
+    SMARTBUFF_ExpectedData.spellIDToVarName[spellId] = varName;
   end
   
   -- Check if variable is already set (non-nil) - skip if already loaded
@@ -208,9 +212,11 @@ end
 -- Usage: GetSpellInfoDirectIfNeeded("SMARTBUFF_VARNAME", spellId, isSpellbookSpell)
 -- isSpellbookSpell: true for character/racial spells (use spellbook check), false/nil for item spells (flasks/potions/scrolls)
 local function GetSpellInfoDirectIfNeeded(varName, spellId, isSpellbookSpell)
-  -- Track expected spell for cache sync
+  -- Track expected spell for cache sync (and O(1) reverse lookup in DATA_LOAD_RESULT)
   if (SMARTBUFF_ExpectedData and SMARTBUFF_ExpectedData.spells) then
     SMARTBUFF_ExpectedData.spells[varName] = spellId;
+    if (not SMARTBUFF_ExpectedData.spellIDToVarName) then SMARTBUFF_ExpectedData.spellIDToVarName = {}; end
+    SMARTBUFF_ExpectedData.spellIDToVarName[spellId] = varName;
   end
   
   -- Check if variable is already set (non-nil) - skip if already loaded
@@ -325,9 +331,11 @@ end
 -- Loads from cache first, then API if needed
 -- Usage: GetItemInfoIfNeeded("SMARTBUFF_VARNAME", itemId)
 local function GetItemInfoIfNeeded(varName, itemId)
-  -- Track expected item for cache sync
+  -- Track expected item for cache sync (and O(1) reverse lookup in DATA_LOAD_RESULT)
   if (SMARTBUFF_ExpectedData and SMARTBUFF_ExpectedData.items) then
     SMARTBUFF_ExpectedData.items[varName] = itemId;
+    if (not SMARTBUFF_ExpectedData.itemIDToVarName) then SMARTBUFF_ExpectedData.itemIDToVarName = {}; end
+    SMARTBUFF_ExpectedData.itemIDToVarName[itemId] = varName;
   end
   
   -- Check if variable is already set (non-nil) - skip if already loaded
@@ -421,9 +429,11 @@ local function InsertItem(t, type, itemId, spellId, duration, link)
   -- Generate a unique varName for tracking (won't be used as global, just for cache tracking)
   local varName = "SMARTBUFF_DYNAMIC_" .. tostring(itemId);
   
-  -- Track expected item for cache sync
+  -- Track expected item for cache sync (and O(1) reverse lookup in DATA_LOAD_RESULT)
   if (SMARTBUFF_ExpectedData and SMARTBUFF_ExpectedData.items) then
     SMARTBUFF_ExpectedData.items[varName] = itemId;
+    if (not SMARTBUFF_ExpectedData.itemIDToVarName) then SMARTBUFF_ExpectedData.itemIDToVarName = {}; end
+    SMARTBUFF_ExpectedData.itemIDToVarName[itemId] = varName;
   end
   
   -- Try cache first
@@ -488,6 +498,8 @@ local function InsertItem(t, type, itemId, spellId, duration, link)
   local spellVarName = "SMARTBUFF_DYNAMIC_SPELL_" .. tostring(spellId);
   if (SMARTBUFF_ExpectedData and SMARTBUFF_ExpectedData.spells) then
     SMARTBUFF_ExpectedData.spells[spellVarName] = spellId;
+    if (not SMARTBUFF_ExpectedData.spellIDToVarName) then SMARTBUFF_ExpectedData.spellIDToVarName = {}; end
+    SMARTBUFF_ExpectedData.spellIDToVarName[spellId] = spellVarName;
   end
   
   local spell = nil;
@@ -573,55 +585,54 @@ function SMARTBUFF_LoadToys()
 
   -- Clear and restore from cache first (fallback pattern - AllTheThings: use cache when live data not available)
   wipe(S.Toybox);
+  wipe(S.ToyboxByID);
+  -- Cache format: new [toyID]=icon; legacy [itemLink]={toyID,icon}. Build toyIDToCachedLink for placeholders.
+  local toyIDToCachedLink = {};
   if (cache and cache.version and cache.toybox) then
-    for itemLink, toyData in pairs(cache.toybox) do
-      S.Toybox[itemLink] = {toyData[1], toyData[2]};
+    for k, v in pairs(cache.toybox) do
+      local id, icon, linkKey;
+      if (type(v) == "table") then
+        id, icon = v[1], v[2];
+        linkKey = k;
+      else
+        id, icon = k, v;
+        linkKey = "item:" .. tostring(id);
+      end
+      local entry = {id, icon};
+      S.Toybox[linkKey] = entry;
+      S.ToyboxByID[id] = entry;
+      toyIDToCachedLink[id] = linkKey;
     end
   end
-  
+
   C_ToyBox.SetCollectedShown(true)
   C_ToyBox.SetAllSourceTypeFilters(true)
   C_ToyBox.SetFilterString("")
   local nTotal = C_ToyBox.GetNumTotalDisplayedToys();
-  
+
   if (nLearned <= 0) then
-    return;  -- Keep cached toys as fallback
+    return;
   end
 
   -- Load toys from live data, updating/overriding cached entries when available
-  -- Cache ALL toys (for speed), even if itemLink isn't available yet
   for i = 1, nTotal do
-      local num = C_ToyBox.GetToyFromIndex(i);
-      local id, name, icon = C_ToyBox.GetToyInfo(num);
-      if (id and PlayerHasToy(id)) then
-        local _, itemLink = C_Item.GetItemInfo(id);
-        if (itemLink) then
-          -- Live data available - update/override cached entry
-          S.Toybox[tostring(itemLink)] = {id, icon};
-        else
-          -- Live data not available - request loading
-          C_Item.RequestLoadItemDataByID(id);
-          
-          -- Use cached entry if exists (by toyID), otherwise use placeholder
-          local foundCached = false;
-          if (cache and cache.toybox) then
-            for cachedLink, cachedData in pairs(cache.toybox) do
-              if (cachedData[1] == id) then
-                -- Use cached entry (will update when ITEM_DATA_LOAD_RESULT fires)
-                S.Toybox[cachedLink] = {id, icon or cachedData[2]};
-                foundCached = true;
-                break;
-              end
-            end
-          end
-          
-          -- If no cached entry, use placeholder key (will be updated when ITEM_DATA_LOAD_RESULT fires)
-          if (not foundCached) then
-            local placeholder = "item:" .. tostring(id);
-            S.Toybox[placeholder] = {id, icon};
-          end
-        end
+    local num = C_ToyBox.GetToyFromIndex(i);
+    local id, name, icon = C_ToyBox.GetToyInfo(num);
+    if (id and PlayerHasToy(id)) then
+      local _, itemLink = C_Item.GetItemInfo(id);
+      if (itemLink) then
+        local entry = {id, icon};
+        S.Toybox[tostring(itemLink)] = entry;
+        S.ToyboxByID[id] = entry;
+      else
+        C_Item.RequestLoadItemDataByID(id);
+        local cachedLink = toyIDToCachedLink[id];
+        local cachedIcon = (cache and cache.toybox) and (cache.toybox[id] or (type(cache.toybox[cachedLink]) == "table" and cache.toybox[cachedLink][2]));
+        local entry = {id, icon or cachedIcon};
+        S.Toybox[cachedLink or ("item:" .. tostring(id))] = entry;
+        S.ToyboxByID[id] = entry;
       end
+    end
   end
 
   SMARTBUFF_AddMsgD("Toys initialized");

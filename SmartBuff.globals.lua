@@ -7,9 +7,12 @@ local SG = SMARTBUFF_GLOBALS;
 
 -- Expected items/spells from buffs.lua - built during init, used for cache sync
 -- Format: {items = {[varName] = itemID, ...}, spells = {[varName] = spellID, ...}}
+-- itemIDToVarName / spellIDToVarName: O(1) lookup in DATA_LOAD_RESULT handlers (avoids O(n) pairs per event)
 SMARTBUFF_ExpectedData = {
   items = {},
-  spells = {}
+  spells = {},
+  itemIDToVarName = {},
+  spellIDToVarName = {}
 };
 
 -- Buff List Cache Structure
@@ -60,14 +63,13 @@ if (not SmartBuffBuffRelationsCache) then
 end
 
 -- Toy Cache Structure (Global - all characters see all toys)
--- Stores cached toy list for faster initialization
--- Format: {[itemLink] = {toyID, icon}, ...} - fallback when live data not available
+-- Compact format: [toyID]=icon (no long itemLink keys). Legacy load supports [itemLink]={toyID,icon}.
 if (not SmartBuffToyCache) then
   SmartBuffToyCache = {
-    version = nil,  -- Will be set to SMARTBUFF_VERSION when cache is created/updated
-    lastUpdate = 0,  -- Timestamp of last successful update (GetTime())
-    toyCount = 0,  -- Last known toy count from C_ToyBox.GetNumLearnedDisplayedToys()
-    toybox = {}  -- Cached toy list: {[itemLink] = {toyID, icon}, ...}
+    version = nil,
+    lastUpdate = 0,
+    toyCount = 0,
+    toybox = {}  -- [toyID]=icon (compact); legacy [itemLink]={toyID,icon}
   };
 end
 

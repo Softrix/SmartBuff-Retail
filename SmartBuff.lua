@@ -786,80 +786,66 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
       SMARTBUFF_ReloadSpells();
     end
   elseif (event == "ITEM_DATA_LOAD_RESULT" or event == "SPELL_DATA_LOAD_RESULT") then
-    -- Item/Spell data finished loading (or failed) - validate, update cache, and rebuild buff list if needed
-    -- Following AllTheThings pattern: accept partial data, rebuild when data loads
+    -- Item/Spell data finished loading (or failed) - validate, update cache, and rebuild buff list only when we actually updated
     local dataID, success = ...;
     if (success and isInit and O and O.Toggle) then
-      -- Data loaded successfully - validate and update cache
       local cache = SmartBuffItemSpellCache;
+      local didUpdate = false;  -- Only trigger full rebuild when we actually wrote to cache (avoids rebuild spam)
       if (cache and cache.needsRefresh) then
         if (event == "ITEM_DATA_LOAD_RESULT") then
-          -- Find item variable by itemID and validate/update cache
-          for varName, itemId in pairs(SMARTBUFF_ExpectedData.items or {}) do
-            if (itemId == dataID) then
-              local itemName, itemLink, itemRarity, itemLevel, minLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, texture = C_Item.GetItemInfo(itemId);
-              if (itemLink and SMARTBUFF_ValidateItemData(itemLink, minLevel, texture)) then
-                -- Valid data - update cache
-                if (not cache.items) then cache.items = {}; end
-                if (not cache.itemIDs) then cache.itemIDs = {}; end
-                if (not cache.itemData) then cache.itemData = {}; end
-                cache.items[varName] = itemLink;
-                cache.itemIDs[varName] = itemId;
-                cache.itemData[varName] = {minLevel or 0, texture or 0};
-                cache.needsRefresh[varName] = false;  -- Mark as valid
-                _G[varName] = itemLink;  -- Update global variable
-                
-                -- Update placeholder entries in static tables (SMARTBUFF_SCROLL, SMARTBUFF_FOOD, etc.)
-                -- Replace "item:12345" placeholders with actual itemLink
-                local placeholder = "item:" .. tostring(itemId);
-                for _, buffTable in pairs({SMARTBUFF_SCROLL, SMARTBUFF_FOOD, SMARTBUFF_POTION, SMARTBUFF_WEAPON}) do
-                  if (buffTable) then
-                    for _, buff in pairs(buffTable) do
-                      if (buff[1] == placeholder) then
-                        buff[1] = itemLink;  -- Update placeholder to real itemLink
-                      end
-                    end
+          local varName = SMARTBUFF_ExpectedData.itemIDToVarName and SMARTBUFF_ExpectedData.itemIDToVarName[dataID];
+          if (varName) then
+            local itemName, itemLink, itemRarity, itemLevel, minLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, texture = C_Item.GetItemInfo(dataID);
+            if (itemLink and SMARTBUFF_ValidateItemData(itemLink, minLevel, texture)) then
+              if (not cache.items) then cache.items = {}; end
+              if (not cache.itemIDs) then cache.itemIDs = {}; end
+              if (not cache.itemData) then cache.itemData = {}; end
+              cache.items[varName] = itemLink;
+              cache.itemIDs[varName] = dataID;
+              cache.itemData[varName] = {minLevel or 0, texture or 0};
+              cache.needsRefresh[varName] = false;
+              _G[varName] = itemLink;
+              local placeholder = "item:" .. tostring(dataID);
+              for _, buffTable in pairs({SMARTBUFF_SCROLL, SMARTBUFF_FOOD, SMARTBUFF_POTION, SMARTBUFF_WEAPON}) do
+                if (buffTable) then
+                  for _, buff in pairs(buffTable) do
+                    if (buff[1] == placeholder) then buff[1] = itemLink; end
                   end
                 end
-                
-                -- Update S.Toybox placeholder entry to use real itemLink as key
-                if (SG.Toybox and SG.Toybox[placeholder]) then
-                  local toyData = SG.Toybox[placeholder];
-                  SG.Toybox[itemLink] = toyData;  -- Add entry with real itemLink
-                  SG.Toybox[placeholder] = nil;  -- Remove placeholder entry
-                end
-              else
-                -- Data incomplete - re-queue
-                cache.needsRefresh[varName] = true;
-                C_Item.RequestLoadItemDataByID(itemId);
               end
-              break;
+              if (SG.Toybox and SG.Toybox[placeholder]) then
+                local toyData = SG.Toybox[placeholder];
+                SG.Toybox[itemLink] = toyData;
+                SG.Toybox[placeholder] = nil;
+                if (SG.ToyboxByID) then
+                  SG.ToyboxByID[dataID] = toyData;
+                end
+              end
+              didUpdate = true;
+            else
+              cache.needsRefresh[varName] = true;
+              C_Item.RequestLoadItemDataByID(dataID);
             end
           end
         elseif (event == "SPELL_DATA_LOAD_RESULT") then
-          -- Find spell variable by spellID and validate/update cache
-          for varName, spellId in pairs(SMARTBUFF_ExpectedData.spells or {}) do
-            if (spellId == dataID) then
-              local spellInfo = C_Spell.GetSpellInfo(spellId);
-              if (spellInfo and SMARTBUFF_ValidateSpellData(spellInfo)) then
-                -- Valid data - update cache
-                if (not cache.spells) then cache.spells = {}; end
-                cache.spells[varName] = spellInfo;
-                cache.needsRefresh[varName] = false;  -- Mark as valid
-                _G[varName] = spellInfo;  -- Update global variable
-              else
-                -- Data incomplete - re-queue
-                cache.needsRefresh[varName] = true;
-                C_Spell.RequestLoadSpellData(spellId);
-              end
-              break;
+          local varName = SMARTBUFF_ExpectedData.spellIDToVarName and SMARTBUFF_ExpectedData.spellIDToVarName[dataID];
+          if (varName) then
+            local spellInfo = C_Spell.GetSpellInfo(dataID);
+            if (spellInfo and SMARTBUFF_ValidateSpellData(spellInfo)) then
+              if (not cache.spells) then cache.spells = {}; end
+              cache.spells[varName] = spellInfo;
+              cache.needsRefresh[varName] = false;
+              _G[varName] = spellInfo;
+              didUpdate = true;
+            else
+              cache.needsRefresh[varName] = true;
+              C_Spell.RequestLoadSpellData(dataID);
             end
           end
         end
       end
-      -- Trigger rebuild to include updated data
-      -- Use a small delay to batch multiple loads
-      if (not SMARTBUFF_DataLoadPendingRebuild) then
+      -- Only schedule one full rebuild when we actually updated cache (batch multiple loads)
+      if (didUpdate and not SMARTBUFF_DataLoadPendingRebuild) then
         SMARTBUFF_DataLoadPendingRebuild = true;
         C_Timer.After(0.5, function()
           SMARTBUFF_DataLoadPendingRebuild = false;
@@ -881,13 +867,13 @@ end
 
 function SMARTBUFF_OnUpdate(self, elapsed)
   if not self.Elapsed then
-    self.Elapsed = 0.2
+    self.Elapsed = 0.5  -- Throttle: 0.5s reduces CPU vs 0.2s (2 checks/sec vs 5)
   end
   self.Elapsed = self.Elapsed - elapsed
   if self.Elapsed > 0 then
     return
   end
-  self.Elapsed = 0.2
+  self.Elapsed = 0.5
 
   if (not isInit) then
     if (isLoaded and GetTime() > tAutoBuff + 0.5) then
@@ -942,10 +928,11 @@ function SMARTBUFF_AddMsgWarn(msg, force)
 end
 
 function SMARTBUFF_AddMsgD(msg, r, g, b)
+  if (not O or not O.Debug) then return; end  -- Early-out to avoid work when Debug off
   if (r == nil) then r = 0.5; end
   if (g == nil) then g = 0.8; end
   if (b == nil) then b = 1; end
-  if (DebugChatFrame and O and O.Debug) then
+  if (DebugChatFrame) then
     DebugChatFrame:AddMessage(msg, r, g, b);
   end
 end
@@ -1467,10 +1454,12 @@ function SMARTBUFF_SaveCache(counts, enabledBuffsSnapshot, toyCount)
     SmartBuffToyCache.lastUpdate = GetTime();
     
     -- Cache toybox data for fallback when live data not available
-    if (SG.Toybox) then
+    if (SG.ToyboxByID) then
       wipe(SmartBuffToyCache.toybox);
-      for itemLink, toyData in pairs(SG.Toybox) do
-        SmartBuffToyCache.toybox[itemLink] = {toyData[1], toyData[2]};  -- Copy {toyID, icon}
+      for id, toyData in pairs(SG.ToyboxByID) do
+        if (toyData and toyData[2]) then
+          SmartBuffToyCache.toybox[id] = toyData[2];
+        end
       end
     end
   end
@@ -2204,10 +2193,10 @@ function SMARTBUFF_PreCheck(mode, force)
 
   if (UnitAffectingCombat("player")) then
     isCombat = true;
-    SMARTBUFF_AddMsgD("In combat");
+    if (O.Debug) then SMARTBUFF_AddMsgD("In combat"); end
   else
     isCombat = false;
-    SMARTBUFF_AddMsgD("Out of combat");
+    if (O.Debug) then SMARTBUFF_AddMsgD("Out of combat"); end
   end
 
   sMsgWarning = "";
@@ -2550,7 +2539,7 @@ function SMARTBUFF_Check(mode, force)
     for spell in pairs(cBuffsCombat) do
       if (spell) then
         local ret, actionType, spellName, slot, unit, buffType = SMARTBUFF_BuffUnit("player", 0, mode, spell)
-        SMARTBUFF_AddMsgD("Check combat spell: " .. spell .. ", ret = " .. ret);
+        if (O.Debug) then SMARTBUFF_AddMsgD("Check combat spell: " .. spell .. ", ret = " .. ret); end
         if (ret and ret == 0) then
           IsChecking = false;
           return;
@@ -2595,7 +2584,7 @@ function SMARTBUFF_Check(mode, force)
       if (units) then
         for _, unit in pairs(units) do
           if (isSetBuffs) then break; end
-          SMARTBUFF_AddMsgD("Checking single unit = " .. unit);
+          if (O.Debug) then SMARTBUFF_AddMsgD("Checking single unit = " .. unit); end
           local spellName, actionType, slot, buffType;
           i, actionType, spellName, slot, _, buffType = SMARTBUFF_BuffUnit(unit, subgroup, mode);
 
@@ -3893,16 +3882,14 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
       end
     end
     
-    -- If no direct match and we have itemID, search S.Toybox by itemID (toy[1] is the itemID)
-    if (itemID and SG.Toybox) then
-      for cachedLink, toy in pairs(SG.Toybox) do
-        if (toy[1] == itemID) then
-          if (debug) then
-            SMARTBUFF_AddMsgD("FindItem: Found toy by itemID");
-          end
-          -- For toys: bag=999 (special marker), slot=toyID, firstCount=1, totalCount=1, id=toyID, texture=toyIcon
-          return 999, toy[1], 1, 1, toy[1], toy[2];
+    -- O(1) toy lookup by itemID via ToyboxByID index (avoids O(n) pairs over Toybox every check)
+    if (itemID and SG.ToyboxByID) then
+      local toy = SG.ToyboxByID[itemID];
+      if (toy) then
+        if (debug) then
+          SMARTBUFF_AddMsgD("FindItem: Found toy by itemID");
         end
+        return 999, toy[1], 1, 1, toy[1], toy[2];
       end
     end
   end
