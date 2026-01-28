@@ -1,6 +1,9 @@
 local _;
 local S = SMARTBUFF_GLOBALS;
 
+-- ---------------------------------------------------------------------------
+-- Globals and buff type constants (SMARTBUFF_PLAYERCLASS, SMARTBUFF_BUFFLIST, SMARTBUFF_CONST_*, S.CheckPet, S.Toybox, S.ToyboxByID)
+-- ---------------------------------------------------------------------------
 SMARTBUFF_PLAYERCLASS = nil;
 SMARTBUFF_BUFFLIST = nil;
 
@@ -29,6 +32,9 @@ S.Toybox = { };
 -- Index by itemID for O(1) toy lookup in FindItem (avoids O(n) pairs over Toybox every check)
 S.ToyboxByID = { };
 
+-- ---------------------------------------------------------------------------
+-- Helper functions: spell/item load (cache or API), validation, toybox population (S.Toybox, S.ToyboxByID)
+-- ---------------------------------------------------------------------------
 local function GetItems(items)
   local t = { };
   for _, id in pairs(items) do
@@ -564,11 +570,16 @@ local function AddItem(itemId, spellId, duration, link)
   InsertItem(SMARTBUFF_SCROLL, SMARTBUFF_CONST_SCROLL, itemId, spellId, duration, link);
 end
 
+-- ---------------------------------------------------------------------------
+-- Toybox: load collected toys into S.Toybox / S.ToyboxByID for TOY buff type
+-- Uses C_ToyBox; restores from SmartBuffToyCache when valid, then refreshes from live.
+-- ---------------------------------------------------------------------------
 function SMARTBUFF_LoadToys()
-  local cache = SmartBuffToyCache;  -- Use global toy cache
+  -- Populate S.Toybox (by link) and S.ToyboxByID (by itemID) from C_ToyBox; restore from cache first, then override with live data.
+  local cache = SmartBuffToyCache;
   local nLearned = C_ToyBox.GetNumLearnedDisplayedToys() or 0;
-  
-  -- Check if toys are already loaded and verified (skip reload if count matches)
+
+  -- Skip full reload if cache is valid and learned toy count matches (avoids re-scanning C_ToyBox every init)
   if (cache and cache.version and cache.toyCount > 0) then
     local currentToyCount = 0;
     if (S.Toybox) then
@@ -638,8 +649,11 @@ function SMARTBUFF_LoadToys()
   SMARTBUFF_AddMsgD("Toys initialized");
 end
 
+-- ---------------------------------------------------------------------------
+-- Init: item list (stones, oils, food items, scroll table, toys)
+-- ---------------------------------------------------------------------------
 function SMARTBUFF_InitItemList()
-  -- Stones and oils
+  -- Weapon enhancements: mana gems, sharpening stones, weightstones, oils (classic → TWW)
   -- Only call API if variable is not already set (optimization: skip if already loaded and verified)
   GetItemInfoIfNeeded("SMARTBUFF_MANAGEM", 36799); --"Mana Gem"
   GetItemInfoIfNeeded("SMARTBUFF_BRILLIANTMANAGEM", 81901); --"Brilliant Mana Gem"
@@ -710,7 +724,7 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance6_q2", 224106); -- Algari Mana Oil
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance6_q3", 224107); -- Algari Mana Oil
 
-  -- Food
+  -- Food (well-fed) item vars
 --  SMARTBUFF_KIBLERSBITS         = C_Item.GetItemInfo(33874); --"Kibler's Bits"
 --  SMARTBUFF_STORMCHOPS          = C_Item.GetItemInfo(33866); --"Stormchops"
   GetItemInfoIfNeeded("SMARTBUFF_JUICYBEARBURGER", 35565); --"Juicy Bear Burger"
@@ -794,7 +808,7 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_HoardOfDelicacies", 197795); -- Feast: Hoard of Draconic Delicacies (76 primary stat)
   GetItemInfoIfNeeded("SMARTBUFF_DeviouslyDeviledEgg", 204072); -- Deviously Deviled Eggs
 
-  -- Food item IDs
+  -- Well-fed food: item ID list (S.FoodItems) for buff checks (TWW / Midnight focus; legacy IDs commented)
   S.FoodItems = GetItems({
     -- WotLK -- Deprecating
     -- 39691, 34125, 42779, 42997, 42998, 42999, 43000, 34767, 42995, 34769, 34754, 34758, 34766, 42994, 42996, 34756, 34768, 42993, 34755, 43001, 34757, 34752, 34751, 34750, 34749, 34764, 34765, 34763, 34762, 42942, 43268, 34748,
@@ -826,7 +840,8 @@ function SMARTBUFF_InitItemList()
   --_,SMARTBUFF_BCPETFOOD1          = C_Item.GetItemInfo(33874); --"Kibler's Bits (Pet food)"
   --_,SMARTBUFF_WOTLKPETFOOD1       = C_Item.GetItemInfo(43005); --"Spiced Mammoth Treats (Pet food)"
 
-  -- Scrolls
+  -- Scroll table: register scroll item vars, then build SMARTBUFF_SCROLL via AddItem(...) below
+  -- Scrolls: Agility, Intellect, Stamina, Spirit, Strength, Protection (I–IX)
   GetItemInfoIfNeeded("SMARTBUFF_SOAGILITY1", 3012); --"Scroll of Agility I"
   GetItemInfoIfNeeded("SMARTBUFF_SOAGILITY2", 1477); --"Scroll of Agility II"
   GetItemInfoIfNeeded("SMARTBUFF_SOAGILITY3", 4425); --"Scroll of Agility III"
@@ -874,6 +889,7 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_SOSTRENGHT9", 63304); --"Scroll of Strength IX"
   GetItemInfoIfNeeded("SMARTBUFF_SOPROTECTION9", 63308); --"Scroll of Protection IX"
 
+  -- Misc consumables and one-off items (augment runes, toys, etc.; some used in SMARTBUFF_SCROLL)
   GetItemInfoIfNeeded("SMARTBUFF_MiscItem1", 178512); --"Celebration Package"
   GetItemInfoIfNeeded("SMARTBUFF_MiscItem2", 44986); --"Warts-B-Gone Lip Balm"
   GetItemInfoIfNeeded("SMARTBUFF_MiscItem3", 69775); --"Vrykul Drinking Horn"
@@ -1115,10 +1131,10 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN4", 241322); --"Flask of Magisters"
   GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN5", 241334); --"Vicious Thalassian Flask of Honor"
 
-  -- Draught of Ten Lands
+  -- Draught of Ten Lands (consumable)
   GetItemInfoIfNeeded("SMARTBUFF_EXP_POTION", 166750); --"Draught of Ten Lands"
 
-  -- fishing pole (special case: multiple return values)
+  -- Fishing pole: S.FishingPole for CHECKFISHINGPOLE (special case: 7th return from GetItemInfo)
   if (S.FishingPole == nil) then
     local _, _, _, _, _, _, fishingPole = C_Item.GetItemInfo(6256);
     if (fishingPole) then
@@ -1127,11 +1143,13 @@ function SMARTBUFF_InitItemList()
   end
 
   SMARTBUFF_AddMsgD("Item list initialized");
-  -- i still want to load them regardless of the option to turn them off/hide them
-  -- so that my settings are preserved and loaded should i turn it back on.
+  -- Load toybox so TOY buff type can resolve items; settings preserved even if option is off.
   SMARTBUFF_LoadToys();
 end
 
+-- ---------------------------------------------------------------------------
+-- Init: spell IDs and buff relationship tables (S.Link*, S.Chain*)
+-- ---------------------------------------------------------------------------
 function SMARTBUFF_InitSpellIDs()
   local isSpellBookBuff = true  -- true for spellbook spells, false for item spells
   -- Restore chains and links from cache first (AllTheThings pattern: use cache when live data not available)
@@ -1567,6 +1585,10 @@ function SMARTBUFF_InitSpellIDs()
   --SMARTBUFF_AddMsgD("Spell IDs initialized");
 end
 
+-- ---------------------------------------------------------------------------
+-- Init: per-class buff list (SMARTBUFF_BUFFLIST)
+-- Set SMARTBUFF_BUFFLIST for current class; each entry: { spellVar, duration, type, ... }.
+-- ---------------------------------------------------------------------------
 function SMARTBUFF_InitSpellList()
   if (SMARTBUFF_PLAYERCLASS == nil) then return; end
 
@@ -1945,7 +1967,7 @@ function SMARTBUFF_InitSpellList()
   end
   ]]
 
-  -- Scrolls
+  -- Build SMARTBUFF_SCROLL: fixed scroll/misc entries first, then AddItem(...) scrolls and toys below
   SMARTBUFF_SCROLL = {
     {SMARTBUFF_MiscItem17, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BMiscItem17, S.LinkFlaskLeg},
     {SMARTBUFF_MiscItem16, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BMiscItem16},
@@ -2025,7 +2047,8 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_TWWEtherealAugRune, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BTWWEtherealAugRune, S.LinkAugment},
   };
 
-  --  Toys:    ItemId, SpellId, Duration [min]
+  -- Viable toy buffs: each AddItem(itemId, spellId, duration) appends one entry to SMARTBUFF_SCROLL.
+  -- These are toys SmartBuff can track and suggest (CONST_SCROLL type; resolved via S.Toybox / item vars)
   AddItem(174906, 270058,  60); -- Lightning-Forged Augment Rune
   AddItem(153023, 224001,  60); -- Lightforged Augment Rune
   AddItem(160053, 270058,  60); --Battle-Scarred Augment Rune

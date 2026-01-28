@@ -11,10 +11,18 @@
 ## SavedVariablesPerCharacter: SMARTBUFF_Options, SMARTBUFF_Buffs, SmartBuffBuffListCache, SmartBuffValidSpells
 ## IconTexture: Interface\Addons\Smartbuff\Icons\IconEnabled.tga
 
+## Load order (do not reorder):
+## 1) Libs (Stub, CallbackHandler, SharedMedia)
+## 2) SmartBuff.globals.lua  - globals, SMARTBUFF_GLOBALS, SMARTBUFF_ExpectedData, cache structures
+## 3) SmartBuff.cache.lua    - cache load/save/invalidate helpers (uses globals)
+## 4) SmartBuff.xml         - localizations, SmartBuff.buffs.lua, SmartBuff.lua
+## 5) Broker (optional)     - LDB data broker
+
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 Libs\LibSharedMedia-3.0\LibSharedMedia-3.0.lua
 SmartBuff.globals.lua
+SmartBuff.cache.lua
 SmartBuff.xml
 
 Libs\Broker_SmartBuff\LibDataBroker-1.1.lua
