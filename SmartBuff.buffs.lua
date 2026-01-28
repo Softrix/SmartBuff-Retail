@@ -1186,7 +1186,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_REFRESHMENT", 42955, isSpellBookBuff); --"Conjure Refreshment"
   GetSpellInfoIfNeeded("SMARTBUFF_PRISBARRIER", 235450, isSpellBookBuff); --"Prismatic Barrier"
   GetSpellInfoIfNeeded("SMARTBUFF_BLAZBARRIER", 235313, isSpellBookBuff); --"Blazing Barrier"
-  GetSpellInfoIfNeeded("SMARTBUFF_SUMMONWATERELELEMENTAL", 31687, isSpellBookBuff) -- Summon Water Elemental
+  GetSpellInfoIfNeeded("SMARTBUFF_SUMMONWATERELELEMENTAL", 31687, isSpellBookBuff); -- Summon Water Elemental
 
   -- Mage buff links
  -- S.ChainMageArmor = { SMARTBUFF_FROSTARMOR, SMARTBUFF_MAGEARMOR, SMARTBUFF_MOLTENARMOR };
