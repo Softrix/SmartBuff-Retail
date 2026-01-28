@@ -1186,6 +1186,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_REFRESHMENT", 42955, isSpellBookBuff); --"Conjure Refreshment"
   GetSpellInfoIfNeeded("SMARTBUFF_PRISBARRIER", 235450, isSpellBookBuff); --"Prismatic Barrier"
   GetSpellInfoIfNeeded("SMARTBUFF_BLAZBARRIER", 235313, isSpellBookBuff); --"Blazing Barrier"
+  GetSpellInfoIfNeeded("SMARTBUFF_SUMMONWATERELELEMENTAL", 31687, isSpellBookBuff) -- Summon Water Elemental
 
   -- Mage buff links
  -- S.ChainMageArmor = { SMARTBUFF_FROSTARMOR, SMARTBUFF_MAGEARMOR, SMARTBUFF_MOLTENARMOR };
@@ -1630,6 +1631,7 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_COMBUSTION, -1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_PRESENCEOFMIND, 0.165, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_BLAZBARRIER, 1, SMARTBUFF_CONST_SELF},
+      {SMARTBUFF_SUMMONWATERELELEMENTAL, -1, SMARTBUFF_CONST_SELF, nil, S.CheckPet},
       {SMARTBUFF_REFRESHMENT, 0.03, SMARTBUFF_CONST_ITEM, nil, SMARTBUFF_CONJUREDMANA, nil, S.FoodMage},
     };
   end
