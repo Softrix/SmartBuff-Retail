@@ -2364,8 +2364,12 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
           cds = 0;
           if (cBuff.IDS) then
             local cooldown = C_Spell.GetSpellCooldown(buffnS);
-            cds = cooldown["startTime"];
-            cd = cooldown["duration"];
+            if cooldown and type(cooldown) == "table" then
+              cds = cooldown["startTime"];
+              cd = cooldown["duration"];
+            end
+            cds = (type(cds) == "number") and cds or 0;
+            cd = (type(cd) == "number") and cd or 0;
             cd = (cds + cd) - GetTime();
             if (cd < 0) then
               cd = 0;
@@ -2497,6 +2501,8 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                       buff = buffnS;
                       if (cBuff.Type == SMARTBUFF_CONST_ITEMGROUP or cBuff.Type == SMARTBUFF_CONST_SCROLL) then
                         cds, cd = C_Container.GetItemCooldown(iid);
+                        cds = (type(cds) == "number") and cds or 0;
+                        cd = (type(cd) == "number") and cd or 0;
                         cd = (cds + cd) - GetTime();
                         SMARTBUFF_AddMsgD(cr .. " " .. buffnS .. " found, cd = " .. cd);
                         if (cd > 0) then
@@ -3056,8 +3062,10 @@ function UnitBuffByBuffName(target, buffname, filter)
     local AuraData = C_UnitAuras.GetAuraDataByIndex(target, i, filter);
     if not AuraData then return end;
     local name = AuraData.name;
-    if not name then return end
-    if name == buffname then
+    -- Guard: name can be nil or secret value for other units (e.g. raid7) in combat/range
+    if not name or type(name) ~= "string" then
+      -- skip this aura, continue to next
+    elseif name == buffname then
       local icon = AuraData.icon;
       local charges = AuraData.charges or 0;
       local dispelName = AuraData.dispelName;
