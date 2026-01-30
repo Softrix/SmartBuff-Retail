@@ -2368,9 +2368,9 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
               cds = tonumber(cooldown["startTime"]) or 0;
               cd = tonumber(cooldown["duration"]) or 0;
             end
-            -- Force numeric: secret values may report type "number" but break arithmetic
-            cds = tonumber(cds) or 0;
-            cd = tonumber(cd) or 0;
+            -- Force numeric: secret values may survive tonumber(), validate with pcall before arithmetic
+            local ok, _ = pcall(function() return cds + cd end);
+            if not ok then cds = 0; cd = 0; end
             cd = (cds + cd) - GetTime();
             if (cd < 0) then
               cd = 0;
@@ -2504,6 +2504,8 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                         cds, cd = C_Container.GetItemCooldown(iid);
                         cds = tonumber(cds) or 0;
                         cd = tonumber(cd) or 0;
+                        local ok, _ = pcall(function() return cds + cd end);
+                        if not ok then cds = 0; cd = 0; end
                         cd = (cds + cd) - GetTime();
                         SMARTBUFF_AddMsgD(cr .. " " .. buffnS .. " found, cd = " .. cd);
                         if (cd > 0) then
@@ -3001,10 +3003,10 @@ end
 
 
 -- Casts a spell
-function SMARTBUFF_doCast(unit, id, spellName, levels, type)
+function SMARTBUFF_doCast(unit, id, spellName, levels, buffType)
   SMARTBUFF_AddMsgD("doCast spellName "..spellName);
   if (id == nil) then return 9; end
-  if (type == SMARTBUFF_CONST_TRACK and (GetTrackingTexture() ~= "Interface\\Minimap\\Tracking\\None")) then
+  if (buffType == SMARTBUFF_CONST_TRACK and (GetTrackingTexture() ~= "Interface\\Minimap\\Tracking\\None")) then
     --SMARTBUFF_AddMsgD("Track already enabled: " .. iconTrack);
     return 7;
   end
@@ -3016,6 +3018,9 @@ function SMARTBUFF_doCast(unit, id, spellName, levels, type)
     cd = cooldown["duration"];
   end
   cd = tonumber(cd) or 0;
+  -- Force numeric: secret values may survive tonumber(), validate with pcall before comparison
+  local ok, _ = pcall(function() return cd + 0 end);
+  if not ok then cd = 0; end
   if (cd > maxSkipCoolDown) then
     return 4;
   elseif (cd > 0) then
@@ -3024,7 +3029,7 @@ function SMARTBUFF_doCast(unit, id, spellName, levels, type)
 
   -- Rangecheck
   --SMARTBUFF_AddMsgD("Spell has range: "..spellName.." = "..ChkS(SpellHasRange(spellName)));
-  if (type == SMARTBUFF_CONST_GROUP or type == SMARTBUFF_CONST_ITEMGROUP) then
+  if (buffType == SMARTBUFF_CONST_GROUP or buffType == SMARTBUFF_CONST_ITEMGROUP) then
     if (C_Spell.SpellHasRange(spellName)) then
       if (not C_Spell.IsSpellInRange(spellName, unit)) then
         return 3;
@@ -3065,17 +3070,20 @@ function UnitBuffByBuffName(target, buffname, filter)
     local AuraData = C_UnitAuras.GetAuraDataByIndex(target, i, filter);
     if not AuraData then return end;
     local name = AuraData.name;
-    -- Guard: name can be nil or secret value for other units (e.g. raid7) in combat/range
-    if not name or type(name) ~= "string" then
+    -- Guard: name can be nil or secret value (type() may still report "string"); validate compare with pcall
+    if not name then
       -- skip this aura, continue to next
-    elseif name == buffname then
-      local icon = AuraData.icon;
-      local charges = AuraData.charges or 0;
-      local dispelName = AuraData.dispelName;
-      local duration = tonumber(AuraData.duration) or 0;
-      local expirationTime = tonumber(AuraData.expirationTime) or 0;
-      local source = AuraData.sourceUnit;
-      return name, icon, charges, dispelName, duration, expirationTime, source;
+    else
+      local ok, isMatch = pcall(function() return name == buffname end);
+      if ok and isMatch then
+        local icon = AuraData.icon;
+        local charges = AuraData.charges or 0;
+        local dispelName = AuraData.dispelName;
+        local duration = tonumber(AuraData.duration) or 0;
+        local expirationTime = tonumber(AuraData.expirationTime) or 0;
+        local source = AuraData.sourceUnit;
+        return name, icon, charges, dispelName, duration, expirationTime, source;
+      end
     end
   end
 end
@@ -3289,13 +3297,16 @@ function UnitAuraBySpellName(target, spellname, filter)
     local AuraData = C_UnitAuras.GetAuraDataByIndex(target, i, filter);
     if not AuraData then return end;
     local name = AuraData.name;
-    -- Guard: name can be nil or secret value for other units in combat/range
-    if not name or type(name) ~= "string" then
+    -- Guard: name can be nil or secret value (type() may still report "string"); validate compare with pcall
+    if not name then
       -- skip this aura, continue to next
-    elseif name == spellname then
-      local timeleft = tonumber(AuraData.expirationTime) or 0;
-      local caster = AuraData.sourceUnit;
-      return name, timeleft, caster;
+    else
+      local ok, isMatch = pcall(function() return name == spellname end);
+      if ok and isMatch then
+        local timeleft = tonumber(AuraData.expirationTime) or 0;
+        local caster = AuraData.sourceUnit;
+        return name, timeleft, caster;
+      end
     end
   end
 end
