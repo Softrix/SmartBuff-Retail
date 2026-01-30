@@ -2365,11 +2365,12 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
           if (cBuff.IDS) then
             local cooldown = C_Spell.GetSpellCooldown(buffnS);
             if cooldown and type(cooldown) == "table" then
-              cds = cooldown["startTime"];
-              cd = cooldown["duration"];
+              cds = tonumber(cooldown["startTime"]) or 0;
+              cd = tonumber(cooldown["duration"]) or 0;
             end
-            cds = (type(cds) == "number") and cds or 0;
-            cd = (type(cd) == "number") and cd or 0;
+            -- Force numeric: secret values may report type "number" but break arithmetic
+            cds = tonumber(cds) or 0;
+            cd = tonumber(cd) or 0;
             cd = (cds + cd) - GetTime();
             if (cd < 0) then
               cd = 0;
@@ -2501,8 +2502,8 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                       buff = buffnS;
                       if (cBuff.Type == SMARTBUFF_CONST_ITEMGROUP or cBuff.Type == SMARTBUFF_CONST_SCROLL) then
                         cds, cd = C_Container.GetItemCooldown(iid);
-                        cds = (type(cds) == "number") and cds or 0;
-                        cd = (type(cd) == "number") and cd or 0;
+                        cds = tonumber(cds) or 0;
+                        cd = tonumber(cd) or 0;
                         cd = (cds + cd) - GetTime();
                         SMARTBUFF_AddMsgD(cr .. " " .. buffnS .. " found, cd = " .. cd);
                         if (cd > 0) then
@@ -3010,10 +3011,12 @@ function SMARTBUFF_doCast(unit, id, spellName, levels, type)
 
   -- check if spell has cooldown
   local cooldown = C_Spell.GetSpellCooldown(spellName);
-  local cd = cooldown["duration"];
-  if (not cd) then
-    -- move on
-  elseif (cd > maxSkipCoolDown) then
+  local cd = nil;
+  if (cooldown and type(cooldown) == "table") then
+    cd = cooldown["duration"];
+  end
+  cd = tonumber(cd) or 0;
+  if (cd > maxSkipCoolDown) then
     return 4;
   elseif (cd > 0) then
     return 1;
@@ -3069,8 +3072,8 @@ function UnitBuffByBuffName(target, buffname, filter)
       local icon = AuraData.icon;
       local charges = AuraData.charges or 0;
       local dispelName = AuraData.dispelName;
-      local duration = AuraData.duration;
-      local expirationTime = AuraData.expirationTime;
+      local duration = tonumber(AuraData.duration) or 0;
+      local expirationTime = tonumber(AuraData.expirationTime) or 0;
       local source = AuraData.sourceUnit;
       return name, icon, charges, dispelName, duration, expirationTime, source;
     end
@@ -3160,7 +3163,7 @@ function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
           SMARTBUFF_AddMsgD("Check linked buff (" .. uname .. "): " .. v);
           buff, icon, count, _, duration, timeleft, caster = UnitBuffByBuffName(unit, v);
           if (buff) then
-            timeleft = timeleft - GetTime();
+            timeleft = (tonumber(timeleft) or 0) - GetTime();
             if (timeleft > 0) then
               timeleft = timeleft;
             else
@@ -3204,7 +3207,7 @@ function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
     SMARTBUFF_AddMsgD("Check default buff (" .. uname .. "): " .. defBuff);
     buff, icon, count, _, duration, timeleft, caster = UnitBuffByBuffName(unit, defBuff);
     if (buff) then
-      timeleft = timeleft - GetTime();
+      timeleft = (tonumber(timeleft) or 0) - GetTime();
       if (timeleft > 0) then
         timeleft = timeleft;
       else
@@ -3235,7 +3238,7 @@ function SMARTBUFF_CheckBuffLink(unit, defBuff, buffT, buffL)
           SMARTBUFF_AddMsgD("Check linked buff (" .. uname .. "): " .. v);
           buff, icon, count, _, duration, timeleft, caster = UnitBuffByBuffName(unit, v);
           if (buff) then
-            timeleft = timeleft - GetTime();
+            timeleft = (tonumber(timeleft) or 0) - GetTime();
             if (timeleft > 0) then
               timeleft = timeleft;
             else
@@ -3286,9 +3289,11 @@ function UnitAuraBySpellName(target, spellname, filter)
     local AuraData = C_UnitAuras.GetAuraDataByIndex(target, i, filter);
     if not AuraData then return end;
     local name = AuraData.name;
-    if not name then return end
-    if name == spellname then
-      local timeleft = AuraData.expirationTime;
+    -- Guard: name can be nil or secret value for other units in combat/range
+    if not name or type(name) ~= "string" then
+      -- skip this aura, continue to next
+    elseif name == spellname then
+      local timeleft = tonumber(AuraData.expirationTime) or 0;
       local caster = AuraData.sourceUnit;
       return name, timeleft, caster;
     end
@@ -3303,7 +3308,7 @@ function SMARTBUFF_CheckBuff(unit, buffName, isMine)
   if (buff) then
     SMARTBUFF_AddMsgD(UnitName(unit) .. " buff found: " .. buff, 0, 1, 0.5);
     if (buff == buffName) then
-      timeleft = timeleft - GetTime();
+      timeleft = (tonumber(timeleft) or 0) - GetTime();
       if (timeleft > 0) then
         timeleft = timeleft;
       else
@@ -3439,8 +3444,8 @@ function SMARTBUFF_IsDebuffTexture(unit, debufftex)
     local DebuffInfo = C_UnitAuras.GetDebuffDataByIndex(unit, i);
     name = DebuffInfo.name;
     icon = DebuffInfo.icon;
-    --SMARTBUFF_AddMsgD(i .. ". " .. name .. ", " .. icon);
-    if (string.find(icon, debufftex)) then
+    -- Guard: icon can be nil or secret value
+    if (icon and type(icon) == "string" and string.find(icon, debufftex)) then
       active = true;
       break
     end
