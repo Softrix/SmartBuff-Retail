@@ -3953,15 +3953,12 @@ function SMARTBUFF_InitActionButtonPos()
   --print(format("x = %.0f, y = %.0f", O.ActionBtnX, O.ActionBtnY));
 end
 
--- Reset all: OG, O, B, and all caches. Full clear; requires ReloadUI.
+-- Reset all: O, B, and all caches (keeps OG: account-level splash/tutorial). Full clear; requires ReloadUI.
 function SMARTBUFF_ResetAll()
   currentUnit = nil;
   currentSpell = nil;
   tCastRequested = 0;
   SMARTBUFF_InvalidateBuffCache();
-
-  wipe(SMARTBUFF_OptionsGlobal);
-  SMARTBUFF_OptionsGlobal = {};
 
   wipe(SMARTBUFF_Options);
   SMARTBUFF_Options = {};
@@ -4178,7 +4175,7 @@ function SMARTBUFF_command(msg)
     SMARTBUFF_AddMsg("sync     -  " .. "Sync buff timers with UI", true);
     SMARTBUFF_AddMsg("rb       -  " .. "Reset key/mouse bindings", true);
     SMARTBUFF_AddMsg("changes    -  " .. "Display changelog", true);
-    SMARTBUFF_AddMsg("reload    -  " .. "Reset buff list", true)
+    SMARTBUFF_AddMsg("reload    -  " .. "Reset buff list", true);
   end
 end
 
