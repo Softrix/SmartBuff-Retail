@@ -10,8 +10,8 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "250126"; -- EU Date: DDMMYY
-SMARTBUFF_VERSION            = "r36." .. SMARTBUFF_DATE;
+SMARTBUFF_DATE               = "010226"; -- EU Date: DDMMYY
+SMARTBUFF_VERSION            = "r37." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
@@ -112,6 +112,7 @@ local cFonts                 = { "NumberFontNormal", "NumberFontNormalLarge", "N
 
 local currentUnit            = nil;
 local currentSpell           = nil;
+local tCastRequested         = 0;
 local currentTemplate        = nil;
 local currentSpec            = nil;
 
@@ -705,6 +706,8 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
       end
     end
     currentUnit = nil;
+    currentSpell = nil;
+    tCastRequested = 0;
   elseif (event == "UNIT_SPELLCAST_SUCCEEDED") then
     if (arg1 and arg1 == "player") then
       local unit = nil;
@@ -749,6 +752,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
           SMARTBUFF_AddMsg(name .. ": " .. spell .. " " .. SMARTBUFF_MSG_BUFFED);
           currentUnit = nil;
           currentSpell = nil;
+          tCastRequested = 0;
         end
       end
 
@@ -1557,8 +1561,12 @@ function SMARTBUFF_SetBuff(buff, i, ia)
       local minLevel, texture = nil, nil;
       local cache = SmartBuffItemSpellCache;
       if (cache and cache.itemData) then
-        -- Find varName by itemLink
+        -- Find varName by itemLink; cap iterations to avoid "script ran too long"
+        local seen = 0;
+        local maxCacheScan = 64;
         for varName, itemLink in pairs(cache.items or {}) do
+          seen = seen + 1;
+          if (seen > maxCacheScan) then break; end
           if (itemLink == cBuffs[i].BuffS) then
             local itemData = cache.itemData[varName];
             if (itemData) then
@@ -1598,8 +1606,12 @@ function SMARTBUFF_SetBuff(buff, i, ia)
       local minLevel, texture = nil, nil;
       local cache = SmartBuffItemSpellCache;
       if (cache and cache.itemData) then
-        -- Find varName by itemLink
+        -- Find varName by itemLink; cap iterations to avoid "script ran too long"
+        local seen = 0;
+        local maxCacheScan = 64;
         for varName, itemLink in pairs(cache.items or {}) do
+          seen = seen + 1;
+          if (seen > maxCacheScan) then break; end
           if (itemLink == cBuffs[i].BuffS) then
             local itemData = cache.itemData[varName];
             if (itemData) then
@@ -2764,6 +2776,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                     if (r == 0) then
                       currentUnit = unit;
                       currentSpell = buffnS;
+                      tCastRequested = GetTime();
                     end
                   end
 
@@ -3082,7 +3095,7 @@ function UnitBuffByBuffName(target, buffname, filter)
         local duration = tonumber(AuraData.duration) or 0;
         local expirationTime = tonumber(AuraData.expirationTime) or 0;
         local source = AuraData.sourceUnit;
-        return name, icon, charges, dispelName, duration, expirationTime, source;
+        return buffname, icon, charges, dispelName, duration, expirationTime, source;
       end
     end
   end
@@ -3305,7 +3318,7 @@ function UnitAuraBySpellName(target, spellname, filter)
       if ok and isMatch then
         local timeleft = tonumber(AuraData.expirationTime) or 0;
         local caster = AuraData.sourceUnit;
-        return name, timeleft, caster;
+        return spellname, timeleft, caster;
       end
     end
   end
@@ -5012,6 +5025,25 @@ function SMARTBUFF_OnPreClick(self, button, down)
     end
   end
 
+  local td;
+  if (lastBuffType == "") then
+    td = 0.8;
+  else
+    td = GlobalCd;
+  end
+  -- If we requested a cast but never got SUCCEEDED/FAILED (cast never went off), expire cooldown so scroll can retry. Do not expire while player is casting (e.g. long pet summon). Safe if combat interrupts (FAILED fires) or cast started then combat (SUCCEEDED/FAILED when done).
+  local isCasting = false;
+  do
+    local ok, name = pcall(UnitCastingInfo, "player");
+    if ok and name then isCasting = true; end
+  end
+  if ((currentUnit or currentSpell) and tCastRequested > 0 and (GetTime() - tCastRequested) > 2 and not isCasting) then
+    tAutoBuff = GetTime() - td - 0.1;
+    currentUnit = nil;
+    currentSpell = nil;
+    tCastRequested = 0;
+  end
+
   if (not InCombatLockdown()) then
     self:SetAttribute("type", nil);
     self:SetAttribute("unit", nil);
@@ -5041,12 +5073,6 @@ function SMARTBUFF_OnPreClick(self, button, down)
     end
   end
 
-  local td;
-  if (lastBuffType == "") then
-    td = 0.8;
-  else
-    td = GlobalCd;
-  end
   --SMARTBUFF_AddMsgD("Last buff type: " .. lastBuffType .. ", set cd: " .. td);
 
   if (UnitCastingInfo("player")) then
@@ -5062,6 +5088,7 @@ function SMARTBUFF_OnPreClick(self, button, down)
   lastBuffType = "";
   currentUnit = nil;
   currentSpell = nil;
+  tCastRequested = 0;
 
   if (not InCombatLockdown()) then
     local ret, actionType, spellName, slot, unit, buffType = SMARTBUFF_Check(mode);
@@ -5082,6 +5109,7 @@ function SMARTBUFF_OnPreClick(self, button, down)
         if (cBuffIndex[spellName]) then
           currentUnit = unit;
           currentSpell = spellName;
+          tCastRequested = GetTime();
         end
       elseif (actionType == SMARTBUFF_ACTION_ITEM and slot) then
         self:SetAttribute("item", spellName);
