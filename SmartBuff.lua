@@ -1893,7 +1893,7 @@ end
 -- END SMARTBUFF_CheckUnitBuffTimers
 
 
--- Reset the buff timers and set them to running out soon
+-- Reset BT: clear buff timers only (runtime cBuffTimer; no saved vars).
 function SMARTBUFF_ResetBuffTimers()
   if (not isInit) then return; end
 
@@ -3953,22 +3953,68 @@ function SMARTBUFF_InitActionButtonPos()
   --print(format("x = %.0f, y = %.0f", O.ActionBtnX, O.ActionBtnY));
 end
 
--- Reset all options, buffs and window position
+-- Reset all: OG, O, B, and all caches. Full clear; requires ReloadUI.
 function SMARTBUFF_ResetAll()
+  currentUnit = nil;
+  currentSpell = nil;
+  tCastRequested = 0;
   SMARTBUFF_InvalidateBuffCache();
-  wipe(SMARTBUFF_Buffs);
+
+  wipe(SMARTBUFF_OptionsGlobal);
+  SMARTBUFF_OptionsGlobal = {};
+
   wipe(SMARTBUFF_Options);
+  SMARTBUFF_Options = {};
+
+  wipe(SMARTBUFF_Buffs);
+  SMARTBUFF_Buffs = {};
+
+  SmartBuffBuffListCache = {
+    version = nil,
+    lastUpdate = 0,
+    expectedCounts = { SCROLL = 0, FOOD = 0, POTION = 0, SELF = 0, GROUP = 0, ITEM = 0, TOTAL = 0 },
+    enabledBuffs = {}
+  };
+  SmartBuffItemSpellCache = {
+    version = nil,
+    lastUpdate = 0,
+    items = {},
+    spells = {},
+    itemIDs = {},
+    itemData = {},
+    needsRefresh = {}
+  };
+  SmartBuffBuffRelationsCache = {
+    version = nil,
+    lastUpdate = 0,
+    chains = {},
+    links = {}
+  };
+  SmartBuffToyCache = {
+    version = nil,
+    lastUpdate = 0,
+    toyCount = 0,
+    toybox = {}
+  };
+  SmartBuffValidSpells = {
+    version = nil,
+    lastUpdate = 0,
+    spells = {}
+  };
+
   ReloadUI();
 end
 
--- Reset only buffs. Useful for upgrades, keep UI options
--- Don't reload UI. Since buffs are after reset
+-- Reset only buffs: character buff profiles/settings. Keeps SMARTBUFF_Options and caches (verification/lookups).
 function SMARTBUFF_ResetBuffs()
+  currentUnit = nil;
+  currentSpell = nil;
+  tCastRequested = 0;
   SMARTBUFF_InvalidateBuffCache();
   wipe(SMARTBUFF_Buffs);
-  SMARTBUFF_SetTemplate()
+  SMARTBUFF_SetTemplate();
   InitBuffOrder(true);
-  SMARTBUFF_OptionsFrame_Close(true)
+  SMARTBUFF_OptionsFrame_Close(true);
 end
 
 function SMARTBUFF_SetButtonPos(self)
@@ -5407,6 +5453,7 @@ function SMARTBUFF_BuffOrderBtnOnDragStop(i, n)
   SMARTBUFF_BuffOrderOnScroll();
 end
 
+-- Reset List: buff order/sorting only (B[].Order); no options or buff profiles.
 function SMARTBUFF_BuffOrderReset()
   SMARTBUFF_InvalidateBuffCache();
   InitBuffOrder(true);
