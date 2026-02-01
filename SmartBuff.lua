@@ -4030,6 +4030,8 @@ function SMARTBUFF_SetButtonPos(self)
 end
 
 function SMARTBUFF_RebindKeys()
+  -- Keybinding APIs are protected during combat; skip so we don't trigger ADDON_ACTION_BLOCKED
+  if (InCombatLockdown()) then return; end
   ClearOverrideBindings(SmartBuffFrame);
   local i;
   isRebinding = true;
