@@ -59,9 +59,11 @@ Right click on buff checkbox: opens buff setup frame
 
 ## Macro Usage
 
-If you prefer to use Smartbuff in a macro rather than scrolling your mouse or using the action button then simply use: 
+/click functionality  has been disabled in the latest API 
 
-/click SmartBuff_KeyButton
+~~If you prefer to use Smartbuff in a macro rather than scrolling your mouse or using the action button then simply use:~~
+
+~~/click SmartBuff_KeyButton~~
 
 
 ## Contact / Support
