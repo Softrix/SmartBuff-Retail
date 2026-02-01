@@ -558,6 +558,10 @@ function SMARTBUFF_OnEvent(self, event, ...)
 local arg1, arg2, arg3, arg4, arg5 = ...;
 
   if ((event == "UNIT_NAME_UPDATE" and arg1 == "player") or event == "PLAYER_ENTERING_WORLD") then
+    -- Clear valid-spells on login/reload so next buff list build re-validates (runs before isInit return so combat doesn't skip it)
+    if (event == "PLAYER_ENTERING_WORLD" and (arg1 or arg2) and SmartBuffValidSpells) then
+      SMARTBUFF_ClearValidSpells();
+    end
     if IsPlayerInGuild() and event == "PLAYER_ENTERING_WORLD" then
       C_ChatInfo.SendAddonMessage(SmartbuffPrefix, SMARTBUFF_VERSION, "GUILD")
     end
@@ -784,6 +788,8 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
       end
     end
   elseif (event == "SPELLS_CHANGED" or event == "PLAYER_LEVEL_UP" or event == "PLAYER_SPECIALIZATION_CHANGED") then
+    -- Clear valid-spells cache so next buff list build re-validates (level-up, spec change, false negatives)
+    SMARTBUFF_ClearValidSpells();
     if (O.Toggle) then
       -- Reload spells when spells change, level up, or spec changes
       -- Only reload spell IDs, not static tables from buffs.lua
@@ -4009,6 +4015,8 @@ function SMARTBUFF_ResetBuffs()
   tCastRequested = 0;
   SMARTBUFF_InvalidateBuffCache();
   wipe(SMARTBUFF_Buffs);
+  -- Clear valid-spells cache so next build re-validates castable spells; ensures .spells is a table
+  SMARTBUFF_ClearValidSpells();
   SMARTBUFF_SetTemplate();
   InitBuffOrder(true);
   SMARTBUFF_OptionsFrame_Close(true);

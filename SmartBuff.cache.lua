@@ -74,7 +74,31 @@ function SMARTBUFF_LoadCache()
     wipe(SmartBuffBuffRelationsCache.links);
   end
 
+  -- ValidSpells: invalidate on addon version change so stale true/false from previous version is cleared
+  if (not SmartBuffValidSpells) then
+    SmartBuffValidSpells = { version = nil, lastUpdate = 0, spells = {} };
+  end
+  if (SmartBuffValidSpells.version and SmartBuffValidSpells.version ~= SMARTBUFF_VERSION) then
+    SMARTBUFF_ClearValidSpells();
+  end
+
   return SmartBuffBuffListCache;
+end
+
+-- Clear ValidSpells cache and ensure .spells is a table so the next buff list build re-validates.
+-- Used on version change (LoadCache), spell-change events, login/reload (PLAYER_ENTERING_WORLD), and Reset Buffs.
+function SMARTBUFF_ClearValidSpells()
+  if (not SmartBuffValidSpells) then
+    SmartBuffValidSpells = { version = nil, lastUpdate = 0, spells = {} };
+    return;
+  end
+  SmartBuffValidSpells.version = nil;
+  SmartBuffValidSpells.lastUpdate = 0;
+  if (SmartBuffValidSpells.spells) then
+    wipe(SmartBuffValidSpells.spells);
+  end
+  -- Ensure .spells exists so the filter block in SetBuff always runs (no skip when .spells is nil)
+  SmartBuffValidSpells.spells = SmartBuffValidSpells.spells or {};
 end
 
 -- Sync item/spell cache with expected list from buffs.lua (remove extras, add missing, flag needsRefresh)
