@@ -16,7 +16,7 @@ SMARTBUFF_VERSION            = "r37." .. SMARTBUFF_DATE;
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
 -- Profile logic changes and buff definition updates are handled automatically without requiring version bumps.
-SMARTBUFF_VERSIONNR          = 120000;
+SMARTBUFF_VERSIONNR          = 120001;
 -- End of version info
 
 SMARTBUFF_TITLE              = "SmartBuff";
