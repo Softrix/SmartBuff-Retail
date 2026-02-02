@@ -63,30 +63,41 @@ function SMARTBUFF_WipeAndInitValidSpells()
   SmartBuffValidSpells = defaultValidSpells();
 end
 
--- Load cache from SavedVariables (init structures, invalidate on version change)
+-- Load cache from SavedVariables (init structures, invalidate on version change or wrong structure)
+-- Wrong structure (e.g. pre-cache upgrade) triggers WipeAndInit so we don't keep broken data.
 function SMARTBUFF_LoadCache()
   SMARTBUFF_InitBuffListCache();
   if (SmartBuffBuffListCache.version and SmartBuffBuffListCache.version ~= SMARTBUFF_VERSION) then
+    SMARTBUFF_WipeAndInitBuffListCache();
+  elseif (type(SmartBuffBuffListCache.expectedCounts) ~= "table" or SmartBuffBuffListCache.expectedCounts.TOTAL == nil) then
     SMARTBUFF_WipeAndInitBuffListCache();
   end
 
   SMARTBUFF_InitToyCache();
   if (SmartBuffToyCache.version and SmartBuffToyCache.version ~= SMARTBUFF_VERSION) then
     SMARTBUFF_WipeAndInitToyCache();
+  elseif (type(SmartBuffToyCache.toybox) ~= "table") then
+    SMARTBUFF_WipeAndInitToyCache();
   end
 
   SMARTBUFF_InitItemSpellCache();
   if (SmartBuffItemSpellCache.version and SmartBuffItemSpellCache.version ~= SMARTBUFF_VERSION) then
+    SMARTBUFF_WipeAndInitItemSpellCache();
+  elseif (type(SmartBuffItemSpellCache.items) ~= "table" or type(SmartBuffItemSpellCache.spells) ~= "table") then
     SMARTBUFF_WipeAndInitItemSpellCache();
   end
 
   SMARTBUFF_InitBuffRelationsCache();
   if (SmartBuffBuffRelationsCache.version and SmartBuffBuffRelationsCache.version ~= SMARTBUFF_VERSION) then
     SMARTBUFF_WipeAndInitBuffRelationsCache();
+  elseif (type(SmartBuffBuffRelationsCache.chains) ~= "table" or type(SmartBuffBuffRelationsCache.links) ~= "table") then
+    SMARTBUFF_WipeAndInitBuffRelationsCache();
   end
 
   SMARTBUFF_InitValidSpells();
   if (SmartBuffValidSpells.version and SmartBuffValidSpells.version ~= SMARTBUFF_VERSION) then
+    SMARTBUFF_WipeAndInitValidSpells();
+  elseif (type(SmartBuffValidSpells.spells) ~= "table") then
     SMARTBUFF_WipeAndInitValidSpells();
   end
 

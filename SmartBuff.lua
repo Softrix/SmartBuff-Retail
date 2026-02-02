@@ -3813,9 +3813,9 @@ function SMARTBUFF_Options_Init(self)
 
   SMARTBUFF_PLAYERCLASS = sPlayerClass;
 
-  if (not SMARTBUFF_Buffs) then SMARTBUFF_Buffs = {}; end
+  if (type(SMARTBUFF_Buffs) ~= "table") then SMARTBUFF_Buffs = {}; end
   B = SMARTBUFF_Buffs;
-  if (not SMARTBUFF_Options) then SMARTBUFF_Options = {}; end
+  if (type(SMARTBUFF_Options) ~= "table") then SMARTBUFF_Options = {}; end
   O = SMARTBUFF_Options;
 
   SMARTBUFF_BROKER_SetIcon();
@@ -3981,7 +3981,7 @@ function SMARTBUFF_Options_Init(self)
   end
   -- TODO: Bring back major reset of everything but also there's a UI button still to do it
 
-  if (SMARTBUFF_OptionsGlobal == nil) then
+  if (type(SMARTBUFF_OptionsGlobal) ~= "table") then
     SMARTBUFF_OptionsGlobal = {};
     SMARTBUFF_BuffOrderReset();
   end
