@@ -10,13 +10,13 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "010226"; -- EU Date: DDMMYY
+SMARTBUFF_DATE               = "020226"; -- EU Date: DDMMYY
 SMARTBUFF_VERSION            = "r37." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
 -- Profile logic changes and buff definition updates are handled automatically without requiring version bumps.
-SMARTBUFF_VERSIONNR          = 120001;
+SMARTBUFF_VERSIONNR          = 120000;
 -- End of version info
 
 SMARTBUFF_TITLE              = "SmartBuff";
@@ -1460,6 +1460,93 @@ local function ExtractItemID(item)
     return tonumber(string.match(item, "item:(%d+)"));
   end
   return nil;
+end
+
+-- Helper for UI display: resolve spell/item IDs and varNames to display names using cache first, then API
+local function GetBuffDisplayName(buffName)
+  if (buffName == nil) then return nil; end
+
+  local cache = SmartBuffItemSpellCache;
+  local expected = SMARTBUFF_ExpectedData;
+
+  if (type(buffName) == "number") then
+    -- Try spell first (spellID), then item (itemID)
+    local varName = expected and expected.spellIDToVarName and expected.spellIDToVarName[buffName];
+    if (varName and cache and cache.spells and cache.spells[varName]) then
+      local spellInfo = cache.spells[varName];
+      if (spellInfo and spellInfo.name) then
+        return spellInfo.name;
+      end
+    end
+    varName = expected and expected.itemIDToVarName and expected.itemIDToVarName[buffName];
+    if (varName and cache and cache.items and cache.items[varName]) then
+      return cache.items[varName];
+    end
+    -- Fallback: assume item (spell IDs not in cache would need C_Spell.GetSpellName)
+    local itemName, itemLink = C_Item.GetItemInfo(buffName);
+    if (itemLink) then
+      return itemLink;
+    end
+    if (itemName) then
+      return itemName;
+    end
+    local spellName = C_Spell.GetSpellName(buffName);
+    if (spellName) then
+      return spellName;
+    end
+    C_Item.RequestLoadItemDataByID(buffName);
+    return tostring(buffName);
+  elseif (type(buffName) == "string") then
+    -- Full item link (colored) should remain unchanged
+    if (string.match(buffName, "^|c")) then
+      return buffName;
+    end
+
+    -- VarName -> spell or item from cache first
+    if (cache and cache.spells and cache.spells[buffName]) then
+      local spellInfo = cache.spells[buffName];
+      if (spellInfo and spellInfo.name) then
+        return spellInfo.name;
+      end
+    end
+    if (cache and cache.items and cache.items[buffName]) then
+      return cache.items[buffName];
+    end
+
+    local itemID = nil;
+    if (string.match(buffName, "^item:%d+")) then
+      itemID = ExtractItemID(buffName);
+    else
+      local num = tonumber(buffName);
+      if (num and tostring(num) == buffName) then
+        itemID = num;
+      end
+    end
+
+    if (itemID) then
+      local varName = expected and expected.spellIDToVarName and expected.spellIDToVarName[itemID];
+      if (varName and cache and cache.spells and cache.spells[varName]) then
+        local spellInfo = cache.spells[varName];
+        if (spellInfo and spellInfo.name) then
+          return spellInfo.name;
+        end
+      end
+      varName = expected and expected.itemIDToVarName and expected.itemIDToVarName[itemID];
+      if (varName and cache and cache.items and cache.items[varName]) then
+        return cache.items[varName];
+      end
+      local itemName, itemLink = C_Item.GetItemInfo(itemID);
+      if (itemLink) then
+        return itemLink;
+      end
+      if (itemName) then
+        return itemName;
+      end
+      C_Item.RequestLoadItemDataByID(itemID);
+    end
+  end
+
+  return buffName;
 end
 
 function SMARTBUFF_SetBuff(buff, i, ia)
@@ -3972,51 +4059,27 @@ function SMARTBUFF_ResetAll()
   wipe(SMARTBUFF_Buffs);
   SMARTBUFF_Buffs = {};
 
-  SmartBuffBuffListCache = {
-    version = nil,
-    lastUpdate = 0,
-    expectedCounts = { SCROLL = 0, FOOD = 0, POTION = 0, SELF = 0, GROUP = 0, ITEM = 0, TOTAL = 0 },
-    enabledBuffs = {}
-  };
-  SmartBuffItemSpellCache = {
-    version = nil,
-    lastUpdate = 0,
-    items = {},
-    spells = {},
-    itemIDs = {},
-    itemData = {},
-    needsRefresh = {}
-  };
-  SmartBuffBuffRelationsCache = {
-    version = nil,
-    lastUpdate = 0,
-    chains = {},
-    links = {}
-  };
-  SmartBuffToyCache = {
-    version = nil,
-    lastUpdate = 0,
-    toyCount = 0,
-    toybox = {}
-  };
-  SmartBuffValidSpells = {
-    version = nil,
-    lastUpdate = 0,
-    spells = {}
-  };
+  SMARTBUFF_WipeAndInitBuffListCache();
+  SMARTBUFF_WipeAndInitItemSpellCache();
+  SMARTBUFF_WipeAndInitBuffRelationsCache();
+  SMARTBUFF_WipeAndInitToyCache();
+  SMARTBUFF_WipeAndInitValidSpells();
 
   ReloadUI();
 end
 
--- Reset only buffs: character buff profiles/settings. Keeps SMARTBUFF_Options and caches (verification/lookups).
+-- Reset only buffs: wipe all buff-related saved vars and reinit to safe defaults. Keeps SMARTBUFF_Options and global caches.
 function SMARTBUFF_ResetBuffs()
   currentUnit = nil;
   currentSpell = nil;
   tCastRequested = 0;
   SMARTBUFF_InvalidateBuffCache();
+
   wipe(SMARTBUFF_Buffs);
-  -- Clear valid-spells cache so next build re-validates castable spells; ensures .spells is a table
+  SMARTBUFF_Buffs = {};
+
   SMARTBUFF_ClearValidSpells();
+
   SMARTBUFF_SetTemplate();
   InitBuffOrder(true);
   SMARTBUFF_OptionsFrame_Close(true);
@@ -4422,7 +4485,7 @@ function SmartBuff_BuffSetup_Show(i)
 
     local obj = SmartBuff_BuffSetup_BuffText;
     if (name) then
-      obj:SetText(name);
+      obj:SetText(GetBuffDisplayName(name));
       --SMARTBUFF_AddMsgD(name);
     else
       obj:SetText("");
@@ -5407,7 +5470,7 @@ local function OnScroll(self, cData, sBtnName)
       if (n <= num and t ~= nil) then
         btn:SetNormalFontObject("GameFontNormalSmall");
         btn:SetHighlightFontObject("GameFontHighlightSmall");
-        btn:SetText(cData[n]);
+        btn:SetText(GetBuffDisplayName(cData[n]));
         if (t[cData[n]] ~= nil) then
           btn:SetChecked(t[cData[n]].EnableS);
         end

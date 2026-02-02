@@ -187,9 +187,7 @@ local function GetSpellInfoIfNeeded(varName, spellId, isSpellbookSpell)
     
     -- Valid API response - update variable and cache
     _G[varName] = spellInfo;
-    if (not SmartBuffItemSpellCache) then
-      SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-    end
+    SMARTBUFF_InitItemSpellCache();
     if (not SmartBuffItemSpellCache.spells) then
       SmartBuffItemSpellCache.spells = {};
     end
@@ -202,9 +200,7 @@ local function GetSpellInfoIfNeeded(varName, spellId, isSpellbookSpell)
     SmartBuffItemSpellCache.lastUpdate = GetTime();
   else
     -- API call failed - request loading, cache will be repopulated when SPELL_DATA_LOAD_RESULT fires
-    if (not SmartBuffItemSpellCache) then
-      SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-    end
+    SMARTBUFF_InitItemSpellCache();
     if (not SmartBuffItemSpellCache.needsRefresh) then
       SmartBuffItemSpellCache.needsRefresh = {};
     end
@@ -297,9 +293,7 @@ local function GetSpellInfoDirectIfNeeded(varName, spellId, isSpellbookSpell)
     -- Valid API response received - update the variable and cache
     _G[varName] = spellInfo;
     -- Save to cache for persistence
-    if (not SmartBuffItemSpellCache) then
-      SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-    end
+    SMARTBUFF_InitItemSpellCache();
     if (not SmartBuffItemSpellCache.spells) then
       SmartBuffItemSpellCache.spells = {};
     end
@@ -312,9 +306,7 @@ local function GetSpellInfoDirectIfNeeded(varName, spellId, isSpellbookSpell)
     SmartBuffItemSpellCache.lastUpdate = GetTime();
   else
     -- API call failed - request loading, cache will be repopulated when SPELL_DATA_LOAD_RESULT fires
-    if (not SmartBuffItemSpellCache) then
-      SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-    end
+    SMARTBUFF_InitItemSpellCache();
     if (not SmartBuffItemSpellCache.needsRefresh) then
       SmartBuffItemSpellCache.needsRefresh = {};
     end
@@ -384,9 +376,7 @@ local function GetItemInfoIfNeeded(varName, itemId)
     if (not SMARTBUFF_ValidateItemData(itemLink, minLevel, texture)) then
       C_Item.RequestLoadItemDataByID(itemId);
       -- Still mark in cache as needing refresh
-      if (not SmartBuffItemSpellCache) then
-        SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-      end
+      SMARTBUFF_InitItemSpellCache();
       if (not SmartBuffItemSpellCache.needsRefresh) then
         SmartBuffItemSpellCache.needsRefresh = {};
       end
@@ -396,9 +386,7 @@ local function GetItemInfoIfNeeded(varName, itemId)
     -- Valid API response received - update the variable and cache
     _G[varName] = itemLink;
     -- Save to cache for persistence (including minLevel and texture)
-    if (not SmartBuffItemSpellCache) then
-      SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-    end
+    SMARTBUFF_InitItemSpellCache();
     if (not SmartBuffItemSpellCache.items) then
       SmartBuffItemSpellCache.items = {};
     end
@@ -419,9 +407,7 @@ local function GetItemInfoIfNeeded(varName, itemId)
     SmartBuffItemSpellCache.lastUpdate = GetTime();
   else
     -- API call failed - request loading, will update when ITEM_DATA_LOAD_RESULT fires
-    if (not SmartBuffItemSpellCache) then
-      SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-    end
+    SMARTBUFF_InitItemSpellCache();
     if (not SmartBuffItemSpellCache.needsRefresh) then
       SmartBuffItemSpellCache.needsRefresh = {};
     end
@@ -464,9 +450,7 @@ local function InsertItem(t, type, itemId, spellId, duration, link)
     
     -- Cache if valid
     if (item and SMARTBUFF_ValidateItemData(item, minLevel, texture)) then
-      if (not SmartBuffItemSpellCache) then
-        SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-      end
+      SMARTBUFF_InitItemSpellCache();
       if (not SmartBuffItemSpellCache.items) then SmartBuffItemSpellCache.items = {}; end
       if (not SmartBuffItemSpellCache.itemIDs) then SmartBuffItemSpellCache.itemIDs = {}; end
       if (not SmartBuffItemSpellCache.itemData) then SmartBuffItemSpellCache.itemData = {}; end
@@ -477,17 +461,13 @@ local function InsertItem(t, type, itemId, spellId, duration, link)
       SmartBuffItemSpellCache.needsRefresh[varName] = false;
     elseif (item) then
       -- Item link exists but data incomplete - mark for refresh
-      if (not SmartBuffItemSpellCache) then
-        SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-      end
+      SMARTBUFF_InitItemSpellCache();
       if (not SmartBuffItemSpellCache.needsRefresh) then SmartBuffItemSpellCache.needsRefresh = {}; end
       SmartBuffItemSpellCache.needsRefresh[varName] = true;
       C_Item.RequestLoadItemDataByID(itemId);
     else
       -- Item not loaded - request loading
-      if (not SmartBuffItemSpellCache) then
-        SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-      end
+      SMARTBUFF_InitItemSpellCache();
       if (not SmartBuffItemSpellCache.needsRefresh) then SmartBuffItemSpellCache.needsRefresh = {}; end
       SmartBuffItemSpellCache.needsRefresh[varName] = true;
       C_Item.RequestLoadItemDataByID(itemId);
@@ -516,26 +496,20 @@ local function InsertItem(t, type, itemId, spellId, duration, link)
   if (not spell) then
     spell = C_Spell.GetSpellInfo(spellId);
     if (spell and SMARTBUFF_ValidateSpellData(spell)) then
-      if (not SmartBuffItemSpellCache) then
-        SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-      end
+      SMARTBUFF_InitItemSpellCache();
       if (not SmartBuffItemSpellCache.spells) then SmartBuffItemSpellCache.spells = {}; end
       if (not SmartBuffItemSpellCache.needsRefresh) then SmartBuffItemSpellCache.needsRefresh = {}; end
       SmartBuffItemSpellCache.spells[spellVarName] = spell;
       SmartBuffItemSpellCache.needsRefresh[spellVarName] = false;
     elseif (spell) then
       -- Spell exists but incomplete - mark for refresh
-      if (not SmartBuffItemSpellCache) then
-        SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-      end
+      SMARTBUFF_InitItemSpellCache();
       if (not SmartBuffItemSpellCache.needsRefresh) then SmartBuffItemSpellCache.needsRefresh = {}; end
       SmartBuffItemSpellCache.needsRefresh[spellVarName] = true;
       C_Spell.RequestLoadSpellData(spellId);
     else
       -- Spell not loaded - request loading
-      if (not SmartBuffItemSpellCache) then
-        SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-      end
+      SMARTBUFF_InitItemSpellCache();
       if (not SmartBuffItemSpellCache.needsRefresh) then SmartBuffItemSpellCache.needsRefresh = {}; end
       SmartBuffItemSpellCache.needsRefresh[spellVarName] = true;
       C_Spell.RequestLoadSpellData(spellId);
@@ -692,12 +666,12 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_BuzzingRune_q1", 194821); -- Buzzing Rune (Quality 1)
   GetItemInfoIfNeeded("SMARTBUFF_BuzzingRune_q2", 194822); -- Buzzing Rune (Quality 2)
   GetItemInfoIfNeeded("SMARTBUFF_BuzzingRune_q3", 194823); -- Buzzing Rune (Quality 3)
-  GetItemInfoIfNeeded("SMARTBUFF_ChirpingRune_q1", 194824); -- Buzzing Rune (Quality 1)
-  GetItemInfoIfNeeded("SMARTBUFF_ChirpingRune_q2", 194825); -- Buzzing Rune (Quality 2)
-  GetItemInfoIfNeeded("SMARTBUFF_ChirpingRune_q3", 194826); -- Buzzing Rune (Quality 3)
-  GetItemInfoIfNeeded("SMARTBUFF_HowlingRune_q1", 194821); -- Buzzing Rune (Quality 1)
-  GetItemInfoIfNeeded("SMARTBUFF_HowlingRune_q2", 194822); -- Buzzing Rune (Quality 2)
-  GetItemInfoIfNeeded("SMARTBUFF_HowlingRune_q3", 194820); -- Buzzing Rune (Quality 3)
+  GetItemInfoIfNeeded("SMARTBUFF_ChirpingRune_q1", 194824); -- Chirping Rune (Quality 1)
+  GetItemInfoIfNeeded("SMARTBUFF_ChirpingRune_q2", 194825); -- Chirping Rune (Quality 2)
+  GetItemInfoIfNeeded("SMARTBUFF_ChirpingRune_q3", 194826); -- Chirping Rune (Quality 3)
+  GetItemInfoIfNeeded("SMARTBUFF_HowlingRune_q1", 194821); -- Howling Rune (Quality 1)
+  GetItemInfoIfNeeded("SMARTBUFF_HowlingRune_q2", 194822); -- Howling Rune (Quality 2)
+  GetItemInfoIfNeeded("SMARTBUFF_HowlingRune_q3", 194820); -- Howling Rune (Quality 3)
   GetItemInfoIfNeeded("SMARTBUFF_PrimalWeighstone_q1", 191943); -- Primal Weighstone (Quality 1)
   GetItemInfoIfNeeded("SMARTBUFF_PrimalWeighstone_q2", 191944); -- Primal Weighstone (Quality 2)
   GetItemInfoIfNeeded("SMARTBUFF_PrimalWeighstone_q3", 191945); -- Primal Weighstone (Quality 3)
@@ -2079,7 +2053,6 @@ function SMARTBUFF_InitSpellList()
   AddItem(122117, 179872,  15); --Cursed Feather of Ikzan
   AddItem( 54653,  75532,  30); -- Darkspear Pride
   AddItem(108743, 160688,  10); --Deceptia's Smoldering Boots
-  AddItem(129149, 193333,  30); --Death's Door Charm
   AddItem(159753, 279366,   5); --Desert Flute
   AddItem(164373, 281298,  10); --Enchanted Soup Stone
   AddItem(140780, 224992,   5); --Fal'dorei Egg
@@ -2094,7 +2067,7 @@ function SMARTBUFF_InitSpellList()
   AddItem(138900, 217708,  10); --Gravil Goldbraid's Famous Sausage Hat
   AddItem(159749, 277572,   5); --Haw'li's Hot & Spicy Chili
   AddItem(163742, 279997,  60); --Heartsbane Grimoire
-  AddItem(129149, 193333,  60); -- Helheim Spirit Memory
+  AddItem(129149, 193333,  60); -- Death's Door Charm
   AddItem(140325, 223446,  10); --Home Made Party Mask
   AddItem(136855, 210642,0.25); --Hunter's Call
   AddItem( 43499,  58501,  10); -- Iron Boot Flask

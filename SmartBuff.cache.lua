@@ -5,81 +5,89 @@
 
 local SG = SMARTBUFF_GLOBALS;
 
+-- Safe default structures (single source of truth for wipe-and-init)
+local function defaultBuffListCache()
+  return {
+    version = nil,
+    lastUpdate = 0,
+    expectedCounts = { SCROLL = 0, FOOD = 0, POTION = 0, SELF = 0, GROUP = 0, ITEM = 0, TOTAL = 0 },
+    enabledBuffs = {}
+  };
+end
+local function defaultToyCache()
+  return { version = nil, lastUpdate = 0, toyCount = 0, toybox = {} };
+end
+local function defaultItemSpellCache()
+  return { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
+end
+local function defaultBuffRelationsCache()
+  return { version = nil, lastUpdate = 0, chains = {}, links = {} };
+end
+local function defaultValidSpells()
+  return { version = nil, lastUpdate = 0, spells = {} };
+end
+
+-- Ensure cache exists (create if nil). Call before use when cache might not exist.
+function SMARTBUFF_InitBuffListCache()
+  if (not SmartBuffBuffListCache) then SmartBuffBuffListCache = defaultBuffListCache(); end
+end
+function SMARTBUFF_InitToyCache()
+  if (not SmartBuffToyCache) then SmartBuffToyCache = defaultToyCache(); end
+end
+function SMARTBUFF_InitItemSpellCache()
+  if (not SmartBuffItemSpellCache) then SmartBuffItemSpellCache = defaultItemSpellCache(); end
+  if (not SmartBuffItemSpellCache.itemData) then SmartBuffItemSpellCache.itemData = {}; end
+  if (not SmartBuffItemSpellCache.needsRefresh) then SmartBuffItemSpellCache.needsRefresh = {}; end
+end
+function SMARTBUFF_InitBuffRelationsCache()
+  if (not SmartBuffBuffRelationsCache) then SmartBuffBuffRelationsCache = defaultBuffRelationsCache(); end
+end
+function SMARTBUFF_InitValidSpells()
+  if (not SmartBuffValidSpells) then SmartBuffValidSpells = defaultValidSpells(); end
+end
+
+-- Wipe and re-init to safe default (for version change or reset). Replaces global with fresh table.
+function SMARTBUFF_WipeAndInitBuffListCache()
+  SmartBuffBuffListCache = defaultBuffListCache();
+end
+function SMARTBUFF_WipeAndInitToyCache()
+  SmartBuffToyCache = defaultToyCache();
+end
+function SMARTBUFF_WipeAndInitItemSpellCache()
+  SmartBuffItemSpellCache = defaultItemSpellCache();
+end
+function SMARTBUFF_WipeAndInitBuffRelationsCache()
+  SmartBuffBuffRelationsCache = defaultBuffRelationsCache();
+end
+function SMARTBUFF_WipeAndInitValidSpells()
+  SmartBuffValidSpells = defaultValidSpells();
+end
+
 -- Load cache from SavedVariables (init structures, invalidate on version change)
 function SMARTBUFF_LoadCache()
-  if (not SmartBuffBuffListCache) then
-    SmartBuffBuffListCache = {
-      version = nil,
-      lastUpdate = 0,
-      expectedCounts = {
-        SCROLL = 0,
-        FOOD = 0,
-        POTION = 0,
-        SELF = 0,
-        GROUP = 0,
-        ITEM = 0,
-        TOTAL = 0
-      },
-      enabledBuffs = {}
-    };
-  end
-
+  SMARTBUFF_InitBuffListCache();
   if (SmartBuffBuffListCache.version and SmartBuffBuffListCache.version ~= SMARTBUFF_VERSION) then
-    SmartBuffBuffListCache.version = nil;
-    SmartBuffBuffListCache.lastUpdate = 0;
-    wipe(SmartBuffBuffListCache.expectedCounts);
-    wipe(SmartBuffBuffListCache.enabledBuffs);
+    SMARTBUFF_WipeAndInitBuffListCache();
   end
 
-  if (not SmartBuffToyCache) then
-    SmartBuffToyCache = { version = nil, lastUpdate = 0, toyCount = 0, toybox = {} };
-  end
-
+  SMARTBUFF_InitToyCache();
   if (SmartBuffToyCache.version and SmartBuffToyCache.version ~= SMARTBUFF_VERSION) then
-    SmartBuffToyCache.version = nil;
-    SmartBuffToyCache.lastUpdate = 0;
-    SmartBuffToyCache.toyCount = 0;
-    wipe(SmartBuffToyCache.toybox);
+    SMARTBUFF_WipeAndInitToyCache();
   end
 
-  if (not SmartBuffItemSpellCache) then
-    SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-  end
-
-  if (not SmartBuffItemSpellCache.itemData) then
-    SmartBuffItemSpellCache.itemData = {};
-  end
-  if (not SmartBuffItemSpellCache.needsRefresh) then
-    SmartBuffItemSpellCache.needsRefresh = {};
-  end
-
+  SMARTBUFF_InitItemSpellCache();
   if (SmartBuffItemSpellCache.version and SmartBuffItemSpellCache.version ~= SMARTBUFF_VERSION) then
-    SmartBuffItemSpellCache.version = nil;
-    SmartBuffItemSpellCache.lastUpdate = 0;
-    wipe(SmartBuffItemSpellCache.items);
-    wipe(SmartBuffItemSpellCache.spells);
-    wipe(SmartBuffItemSpellCache.itemIDs);
-    wipe(SmartBuffItemSpellCache.itemData);
-    wipe(SmartBuffItemSpellCache.needsRefresh);
+    SMARTBUFF_WipeAndInitItemSpellCache();
   end
 
-  if (not SmartBuffBuffRelationsCache) then
-    SmartBuffBuffRelationsCache = { version = nil, lastUpdate = 0, chains = {}, links = {} };
-  end
-
+  SMARTBUFF_InitBuffRelationsCache();
   if (SmartBuffBuffRelationsCache.version and SmartBuffBuffRelationsCache.version ~= SMARTBUFF_VERSION) then
-    SmartBuffBuffRelationsCache.version = nil;
-    SmartBuffBuffRelationsCache.lastUpdate = 0;
-    wipe(SmartBuffBuffRelationsCache.chains);
-    wipe(SmartBuffBuffRelationsCache.links);
+    SMARTBUFF_WipeAndInitBuffRelationsCache();
   end
 
-  -- ValidSpells: invalidate on addon version change so stale true/false from previous version is cleared
-  if (not SmartBuffValidSpells) then
-    SmartBuffValidSpells = { version = nil, lastUpdate = 0, spells = {} };
-  end
+  SMARTBUFF_InitValidSpells();
   if (SmartBuffValidSpells.version and SmartBuffValidSpells.version ~= SMARTBUFF_VERSION) then
-    SMARTBUFF_ClearValidSpells();
+    SMARTBUFF_WipeAndInitValidSpells();
   end
 
   return SmartBuffBuffListCache;
@@ -88,29 +96,21 @@ end
 -- Clear ValidSpells cache and ensure .spells is a table so the next buff list build re-validates.
 -- Used on version change (LoadCache), spell-change events, login/reload (PLAYER_ENTERING_WORLD), and Reset Buffs.
 function SMARTBUFF_ClearValidSpells()
-  if (not SmartBuffValidSpells) then
-    SmartBuffValidSpells = { version = nil, lastUpdate = 0, spells = {} };
-    return;
-  end
+  SMARTBUFF_InitValidSpells();
   SmartBuffValidSpells.version = nil;
   SmartBuffValidSpells.lastUpdate = 0;
   if (SmartBuffValidSpells.spells) then
     wipe(SmartBuffValidSpells.spells);
   end
-  -- Ensure .spells exists so the filter block in SetBuff always runs (no skip when .spells is nil)
   SmartBuffValidSpells.spells = SmartBuffValidSpells.spells or {};
 end
 
 -- Sync item/spell cache with expected list from buffs.lua (remove extras, add missing, flag needsRefresh)
 function SMARTBUFF_SyncItemSpellCache()
-  if (not SmartBuffItemSpellCache) then
-    SmartBuffItemSpellCache = { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
-  end
+  SMARTBUFF_InitItemSpellCache();
   if (not SmartBuffItemSpellCache.items) then SmartBuffItemSpellCache.items = {}; end
   if (not SmartBuffItemSpellCache.spells) then SmartBuffItemSpellCache.spells = {}; end
   if (not SmartBuffItemSpellCache.itemIDs) then SmartBuffItemSpellCache.itemIDs = {}; end
-  if (not SmartBuffItemSpellCache.itemData) then SmartBuffItemSpellCache.itemData = {}; end
-  if (not SmartBuffItemSpellCache.needsRefresh) then SmartBuffItemSpellCache.needsRefresh = {}; end
 
   local cache = SmartBuffItemSpellCache;
   local expected = SMARTBUFF_ExpectedData;
@@ -185,9 +185,7 @@ end
 
 -- Save buff relationships (chains and links) to cache
 function SMARTBUFF_SaveBuffRelationsCache()
-  if (not SmartBuffBuffRelationsCache) then
-    SmartBuffBuffRelationsCache = { version = nil, lastUpdate = 0, chains = {}, links = {} };
-  end
+  SMARTBUFF_InitBuffRelationsCache();
 
   local cache = SmartBuffBuffRelationsCache;
   cache.version = SMARTBUFF_VERSION;
@@ -241,9 +239,7 @@ function SMARTBUFF_SaveCache(counts, enabledBuffsSnapshot, toyCount)
   end
 
   if (toyCount ~= nil) then
-    if (not SmartBuffToyCache) then
-      SmartBuffToyCache = { version = nil, lastUpdate = 0, toyCount = 0, toybox = {} };
-    end
+    SMARTBUFF_InitToyCache();
     SmartBuffToyCache.toyCount = toyCount;
     SmartBuffToyCache.version = SMARTBUFF_VERSION;
     SmartBuffToyCache.lastUpdate = GetTime();
@@ -337,36 +333,10 @@ function SMARTBUFF_PrintCacheStats(cBuffs)
   addMsg("=== End Cache Statistics ===", true);
 end
 
--- Invalidate all buff-related caches (version cleared so next load repopulates)
+-- Invalidate all buff-related caches (wipe and re-init to safe defaults so next load repopulates)
 function SMARTBUFF_InvalidateBuffCache()
-  if (SmartBuffBuffListCache) then
-    SmartBuffBuffListCache.version = nil;
-    SmartBuffBuffListCache.lastUpdate = 0;
-    wipe(SmartBuffBuffListCache.expectedCounts);
-    wipe(SmartBuffBuffListCache.enabledBuffs);
-  end
-
-  if (SmartBuffToyCache) then
-    SmartBuffToyCache.version = nil;
-    SmartBuffToyCache.lastUpdate = 0;
-    SmartBuffToyCache.toyCount = 0;
-    wipe(SmartBuffToyCache.toybox);
-  end
-
-  if (SmartBuffItemSpellCache) then
-    SmartBuffItemSpellCache.version = nil;
-    SmartBuffItemSpellCache.lastUpdate = 0;
-    wipe(SmartBuffItemSpellCache.items);
-    wipe(SmartBuffItemSpellCache.spells);
-    wipe(SmartBuffItemSpellCache.itemIDs);
-    if (SmartBuffItemSpellCache.itemData) then wipe(SmartBuffItemSpellCache.itemData); end
-    if (SmartBuffItemSpellCache.needsRefresh) then wipe(SmartBuffItemSpellCache.needsRefresh); end
-  end
-
-  if (SmartBuffBuffRelationsCache) then
-    SmartBuffBuffRelationsCache.version = nil;
-    SmartBuffBuffRelationsCache.lastUpdate = 0;
-    wipe(SmartBuffBuffRelationsCache.chains);
-    wipe(SmartBuffBuffRelationsCache.links);
-  end
+  SMARTBUFF_WipeAndInitBuffListCache();
+  SMARTBUFF_WipeAndInitToyCache();
+  SMARTBUFF_WipeAndInitItemSpellCache();
+  SMARTBUFF_WipeAndInitBuffRelationsCache();
 end
