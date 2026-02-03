@@ -3554,9 +3554,12 @@ end
 ---@return boolean returns `true` if the player is eating or drinking, `false` otherwise
 function SMARTBUFF_IsPicnic(unit)
   if not unit then unit = "player" end
-  if AuraUtil.FindAuraByName( SMARTBUFF_EatingAura.name, unit) or
-      AuraUtil.FindAuraByName( SMARTBUFF_DrinkingAura.name, unit) or
-      AuraUtil.FindAuraByName( SMARTBUFF_FoodDrinkAura.name, unit) then
+  local nameE = SMARTBUFF_EatingAura and SMARTBUFF_EatingAura.name;
+  local nameD = SMARTBUFF_DrinkingAura and SMARTBUFF_DrinkingAura.name;
+  local nameFD = SMARTBUFF_FoodDrinkAura and SMARTBUFF_FoodDrinkAura.name;
+  if (nameE and AuraUtil.FindAuraByName(nameE, unit, "HELPFUL")) or
+      (nameD and AuraUtil.FindAuraByName(nameD, unit, "HELPFUL")) or
+      (nameFD and AuraUtil.FindAuraByName(nameFD, unit, "HELPFUL")) then
     return true
   end
   return false
@@ -3567,8 +3570,10 @@ end
 ---@return boolean returns `true` if the player is well fed, `false` otherwise
 function SMARTBUFF_IsWellFed(unit)
   if not unit then unit = "player" end
-  if AuraUtil.FindAuraByName( SMARTBUFF_WellFedAura.name, unit) or
-      AuraUtil.FindAuraByName( SMARTBUFF_HeartyFedAura.name, unit) then
+  local nameW = SMARTBUFF_WellFedAura and SMARTBUFF_WellFedAura.name;
+  local nameH = SMARTBUFF_HeartyFedAura and SMARTBUFF_HeartyFedAura.name;
+  if (nameW and AuraUtil.FindAuraByName(nameW, unit, "HELPFUL")) or
+      (nameH and AuraUtil.FindAuraByName(nameH, unit, "HELPFUL")) then
     return true
   end
   return false
