@@ -71,6 +71,7 @@ local sShapename             = "";
 local tStartZone             = 0;
 local tTicker                = 0;
 local tSync                  = 0;
+local setBuffsPending        = false;  -- SMARTBUFF_ScheduleSetBuffs: one timer at a time
 
 local sRealmName             = nil;
 local sPlayerName            = nil;
@@ -517,7 +518,6 @@ function SMARTBUFF_OnLoad(self)
   self:RegisterEvent("PLAYER_LEVEL_UP");
   self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED");
   -- Cache-related events for partial reloads
-  self:RegisterEvent("TOYS_UPDATED");
   self:RegisterEvent("NEW_TOY_ADDED");
   self:RegisterEvent("BAG_UPDATE");
   self:RegisterEvent("ITEM_DATA_LOAD_RESULT");
@@ -666,10 +666,10 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
         B[currentSpec] = {};
       end
       SMARTBUFF_AddMsg(format(SMARTBUFF_MSG_SPECCHANGED, tostring(currentSpec)), true);
-      isSetBuffs = true;
+      SMARTBUFF_ScheduleSetBuffs();
     end
   elseif (event == "SPELLS_CHANGED" or event == "ACTIONBAR_HIDEGRID") then
-    isSetBuffs = true;
+    SMARTBUFF_ScheduleSetBuffs();
   end
 
   if (not isInit or O == nil) then
@@ -769,9 +769,9 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
 
   -- Cache-related event handlers for partial reloads
   -- Note: These handlers are after isInit check, so isInit and O are guaranteed to be valid
-  if (event == "TOYS_UPDATED" or event == "NEW_TOY_ADDED") then
+  if (event == "NEW_TOY_ADDED") then
     if (O.Toggle) then
-      -- Reload toys when collection changes (only reload toys, not static tables)
+      -- Reload toys when a new toy is added (full rebuild; toyID not always guaranteed)
       SMARTBUFF_ReloadToys();
     end
   elseif (event == "BAG_UPDATE") then
@@ -854,15 +854,9 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
           end
         end
       end
-      -- Only schedule one full rebuild when we actually updated cache (batch multiple loads)
-      if (didUpdate and not SMARTBUFF_DataLoadPendingRebuild) then
-        SMARTBUFF_DataLoadPendingRebuild = true;
-        C_Timer.After(0.5, function()
-          SMARTBUFF_DataLoadPendingRebuild = false;
-          if (not InCombatLockdown() and isInit and O and O.Toggle) then
-            isSetBuffs = true;
-          end
-        end);
+      -- Schedule one full rebuild when we actually updated cache (coalesced via ScheduleSetBuffs)
+      if (didUpdate) then
+        SMARTBUFF_ScheduleSetBuffs();
       end
     end
   end
@@ -1276,13 +1270,13 @@ end
 -- These functions only update what's needed without rebuilding static tables from buffs.lua
 -- Static tables (SMARTBUFF_SCROLL, SMARTBUFF_FOOD, etc.) are only rebuilt on initial load or reset
 
--- Reload toys only (called when TOYS_UPDATED or NEW_TOY_ADDED fires)
+-- Reload toys only (called when NEW_TOY_ADDED fires)
 -- Only reloads toy collection, does NOT rebuild static tables
 function SMARTBUFF_ReloadToys()
   if (InCombatLockdown()) then return; end
   SMARTBUFF_LoadToys();
   -- Trigger rebuild of cBuffs from existing static tables to include new toys
-  isSetBuffs = true;
+  SMARTBUFF_ScheduleSetBuffs();
 end
 
 -- Reload items from inventory (called when BAG_UPDATE fires for character bags)
@@ -1291,7 +1285,7 @@ function SMARTBUFF_ReloadItems()
   if (InCombatLockdown()) then return; end
   -- Trigger rebuild of cBuffs - SMARTBUFF_SetBuff() will check bags via SMARTBUFF_FindItem()
   -- Don't call SMARTBUFF_InitItemList() as that rebuilds static item variables unnecessarily
-  isSetBuffs = true;
+  SMARTBUFF_ScheduleSetBuffs();
 end
 
 -- Reload spells (called when SPELLS_CHANGED, PLAYER_LEVEL_UP, or PLAYER_SPECIALIZATION_CHANGED fires)
@@ -1301,7 +1295,24 @@ function SMARTBUFF_ReloadSpells()
   -- Only reload spell IDs - static tables from buffs.lua don't change during gameplay
   SMARTBUFF_InitSpellIDs();
   -- Trigger rebuild of cBuffs from existing static tables with updated spell IDs
+  SMARTBUFF_ScheduleSetBuffs();
+end
+
+-- Schedule a single full buff list rebuild after 0.5s. Only one timer at a time: further calls
+-- while pending are ignored, so a burst of events yields one run 0.5s after the first. PreCheck
+-- no longer calls SetBuffs from OnUpdate, so this avoids high CPU/memory after login/reload.
+function SMARTBUFF_ScheduleSetBuffs()
+  if (setBuffsPending) then return; end
+  setBuffsPending = true;
   isSetBuffs = true;
+  C_Timer.After(0.5, function()
+    setBuffsPending = false;
+    isSetBuffs = false;
+    if (not InCombatLockdown() and isInit and O and O.Toggle) then
+      SMARTBUFF_SetBuffs();
+      isSyncReq = true;
+    end
+  end);
 end
 
 -- Set the buff array
@@ -1372,7 +1383,7 @@ function SMARTBUFF_SetBuffs()
       end
     end
     -- Don't reload toys if already verified via cache
-    -- Toys will only reload when TOYS_UPDATED/NEW_TOY_ADDED events fire
+    -- Toys will only reload when NEW_TOY_ADDED event fires
   end
 
   if (B[CS()][ct] == nil) then
@@ -1870,12 +1881,7 @@ function SMARTBUFF_PreCheck(mode, force)
     return false;
   end
 
-  -- Check if buffs need to be set up BEFORE mount/other checks
-  -- This ensures buffs are initialized even when mounted (setup, not casting)
-  if (isSetBuffs and not UnitAffectingCombat("player")) then
-    SMARTBUFF_SetBuffs();
-    isSyncReq = true;
-  end
+  -- Buff list rebuild is now scheduled via SMARTBUFF_ScheduleSetBuffs() only (no SetBuffs from OnUpdate).
 
   if ((mode == 1 and not O.ToggleAuto) or IsMounted() or IsFlying() or LootFrame:IsVisible()
         or UnitOnTaxi("player") or UnitIsDeadOrGhost("player") or UnitIsCorpse("player")
