@@ -347,18 +347,30 @@ local function CT()
 end
 
 local function GetBuffSettings(buff)
-  if (B and buff) then
-    return B[CS()][CT()][buff];
+  if (not B or not buff) then return nil; end
+  local cBuff = B[CS()][CT()][buff];
+  -- Item-type keys can be full link or "item:ID"; try canonical key so settings persist across load order
+  if (not cBuff and type(buff) == "string") then
+    local id = tonumber(string.match(buff, "item:(%d+)"));
+    if (id) then
+      cBuff = B[CS()][CT()]["item:" .. tostring(id)];
+    end
   end
-  return nil;
+  return cBuff;
 end
 
 local function InitBuffSettings(cBI, reset)
   local buff = cBI.BuffS;
   local cBuff = GetBuffSettings(buff);
   if (cBuff == nil) then
-    B[CS()][CT()][buff] = {};
-    cBuff = B[CS()][CT()][buff];
+    -- Use canonical key for item-type buffs so link vs placeholder doesn't lose saved settings
+    local key = buff;
+    if (type(buff) == "string") then
+      local id = tonumber(string.match(buff, "item:(%d+)"));
+      if (id) then key = "item:" .. tostring(id); end
+    end
+    B[CS()][CT()][key] = {};
+    cBuff = B[CS()][CT()][key];
     reset = true;
   end
 
@@ -1824,6 +1836,11 @@ function SMARTBUFF_SetBuff(buff, i, ia)
   end
   ]] --
   cBuffIndex[cBuffs[i].BuffS] = i;
+  -- Register canonical item key so B[][][] iteration (e.g. SetInCombatBuffs) finds this buff when key is "item:ID"
+  local itemID = ExtractItemID(cBuffs[i].BuffS);
+  if (itemID) then
+    cBuffIndex["item:" .. tostring(itemID)] = i;
+  end
   if (cBuffs[i].IDG ~= nil) then
     cBuffIndex[cBuffs[i].BuffG] = i;
   end
