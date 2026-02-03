@@ -683,6 +683,14 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
             break;
           end
         end
+      else
+        -- In-combat option off: clear button so we don't show a stale out-of-combat reminder in combat
+        SmartBuff_KeyButton:SetAttribute("type", nil);
+        SmartBuff_KeyButton:SetAttribute("unit", nil);
+        SmartBuff_KeyButton:SetAttribute("spell", nil);
+        SmartBuff_KeyButton:SetAttribute("item", nil);
+        SmartBuff_KeyButton:SetAttribute("macrotext", nil);
+        SmartBuff_KeyButton:SetAttribute("action", nil);
       end
       SMARTBUFF_SyncBuffTimers();
       SMARTBUFF_Check(1, true);
@@ -2338,15 +2346,21 @@ function SMARTBUFF_Check(mode, force)
 
   SMARTBUFF_checkBlacklist();
 
-  -- 1. check in combat buffs
-  if (InCombatLockdown()) then -- and O.InCombat
+  -- In combat, all reminder/buff logic is disabled unless O.InCombat is enabled
+  if (InCombatLockdown() and not O.InCombat) then
+    IsChecking = false;
+    return;
+  end
+
+  -- 1. check in combat buffs (logic when O.InCombat; surface notification only when O.ToggleAutoCombat too)
+  if (InCombatLockdown() and O.InCombat) then
     for spell in pairs(cBuffsCombat) do
       if (spell) then
         local ret, actionType, spellName, slot, unit, buffType = SMARTBUFF_BuffUnit("player", 0, mode, spell)
         if (O.Debug) then SMARTBUFF_AddMsgD("Check combat spell: " .. spell .. ", ret = " .. ret); end
-        if (ret and ret == 0) then
+        if (ret and ret == 0 and O.ToggleAutoCombat) then
           IsChecking = false;
-          return;
+          return ret, actionType, spellName, slot, unit, buffType;
         end
       end
     end
@@ -2393,14 +2407,17 @@ function SMARTBUFF_Check(mode, force)
           i, actionType, spellName, slot, _, buffType = SMARTBUFF_BuffUnit(unit, subgroup, mode);
 
           if (i <= 1) then
-            if (i == 0 and mode ~= 1) then
-              --tLastCheck = GetTime() - O.AutoTimer + GlobalCd;
-              if (actionType == SMARTBUFF_ACTION_ITEM) then
-                --tLastCheck = tLastCheck + 2;
+            -- Logic gated by O.InCombat (early exit); in combat surface notification only when both O.InCombat and O.ToggleAutoCombat
+            if (not InCombatLockdown() or (O.InCombat and O.ToggleAutoCombat)) then
+              if (i == 0 and mode ~= 1) then
+                --tLastCheck = GetTime() - O.AutoTimer + GlobalCd;
+                if (actionType == SMARTBUFF_ACTION_ITEM) then
+                  --tLastCheck = tLastCheck + 2;
+                end
               end
+              IsChecking = false;
+              return i, actionType, spellName, slot, unit, buffType;
             end
-            IsChecking = false;
-            return i, actionType, spellName, slot, unit, buffType;
           end
         end
       end
@@ -2536,7 +2553,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
       if (bUsable and bs.EnableS and (cBuff.IDS ~= nil or SMARTBUFF_IsItem(cBuff.Type) or cBuff.Type == SMARTBUFF_CONST_TRACK)
             and ((mode ~= 1 and ((isCombat and bs.CIn) or (not isCombat and bs.COut)))
               or (mode == 1 and bs.Reminder and ((not isCombat and bs.COut)
-                or (isCombat and (bs.CIn or O.ToggleAutoCombat)))))) then
+                or (isCombat and bs.CIn))))) then
         --print("Check: "..buffnS)
 
         if (not bs.SelfOnly or (bs.SelfOnly and SMARTBUFF_IsPlayer(unit))) then

@@ -130,7 +130,7 @@ SMARTBUFF_OFT_ICONSIZE       = "Icon Size";
 SMARTBUFF_OFTT               = "Toggles SmartBuff On/Off";
 SMARTBUFF_OFTT_AUTO          = "Toggles the buff reminder On/Off";
 SMARTBUFF_OFTT_AUTOTIMER     = "Delay in seconds between two checks.";
-SMARTBUFF_OFTT_AUTOCOMBAT    = "Run the check also in combat.";
+SMARTBUFF_OFTT_AUTOCOMBAT    = "Run the check also in combat.\nAll reminder logic is disabled in combat unless the main \"in combat\" option (in the options frame, not this one) is enabled.";
 SMARTBUFF_OFTT_AUTOCHAT      = "Displays missing buffs as chat message.";
 SMARTBUFF_OFTT_AUTOSPLASH    = "Displays missing buffs as splash message\nin the middle of the screen.";
 SMARTBUFF_OFTT_AUTOSOUND     = "Plays a sound if buffs are missing.";
@@ -177,7 +177,7 @@ SMARTBUFF_BST_MANALIMIT      = "Lower bound";
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Buffs only your character.";
 SMARTBUFF_BSTT_SELFNOT       = "Buffs all other selected classes,\nexcept your character.";
-SMARTBUFF_BSTT_COMBATIN      = "Buffs if you are in combat.";
+SMARTBUFF_BSTT_COMBATIN      = "Buffs if you are in combat.\nAll in-combat logic is disabled unless the main \"in combat\" option (in the options frame) is enabled.";
 SMARTBUFF_BSTT_COMBATOUT     = "Buffs if you are out of combat.";
 SMARTBUFF_BSTT_MAINHAND      = "Buffs the Main Hand.";
 SMARTBUFF_BSTT_OFFHAND       = "Buffs the Off Hand.";

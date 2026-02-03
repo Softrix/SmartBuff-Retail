@@ -1157,7 +1157,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_COMBUSTION", 190319, isSpellBookBuff); --"Combustion"
   GetSpellInfoIfNeeded("SMARTBUFF_PRESENCEOFMIND", 205025, isSpellBookBuff); --"Presence of Mind"
   GetSpellInfoIfNeeded("SMARTBUFF_SLOWFALL", 130, isSpellBookBuff); --"Slow Fall"
-  GetSpellInfoIfNeeded("SMARTBUFF_REFRESHMENT", 42955, isSpellBookBuff); --"Conjure Refreshment"
+  GetSpellInfoIfNeeded("SMARTBUFF_REFRESHMENT", 190336, isSpellBookBuff); --"Conjure Refreshment"
   GetSpellInfoIfNeeded("SMARTBUFF_PRISBARRIER", 235450, isSpellBookBuff); --"Prismatic Barrier"
   GetSpellInfoIfNeeded("SMARTBUFF_BLAZBARRIER", 235313, isSpellBookBuff); --"Blazing Barrier"
   GetSpellInfoIfNeeded("SMARTBUFF_SUMMONWATERELELEMENTAL", 31687, isSpellBookBuff); -- Summon Water Elemental

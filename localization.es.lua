@@ -114,7 +114,7 @@ SMARTBUFF_OFT_REQ_RELOAD     = "Las nuevas versiones requieren una recarga de la
 SMARTBUFF_OFTT               = "Alterna SmartBuff On/Off";
 SMARTBUFF_OFTT_AUTO          = "Alterna el recordatorio de buff On/Off";
 SMARTBUFF_OFTT_AUTOTIMER     = "Retraso en segundos entre dos comprobaciones.";
-SMARTBUFF_OFTT_AUTOCOMBAT    = "Ejecutar comprobaci\195\179n tambi\195\169n en combate.";
+SMARTBUFF_OFTT_AUTOCOMBAT    = "Ejecutar comprobaci\195\179n tambi\195\169n en combate.\nToda la l\195\179gica de recordatorio en combate est\195\161 desactivada a menos que la opci\195\179n principal \"en combate\" (en la ventana de opciones, no esta) est\195\169 activada.";
 SMARTBUFF_OFTT_AUTOCHAT      = "Muestra los buffs perdidos como mensajes en el chat.";
 SMARTBUFF_OFTT_AUTOSPLASH    = "Muestra los buffs perdidos como mensajes en medio de la pantalla.";
 SMARTBUFF_OFTT_AUTOSOUND     = "Toca un sonido cuando se pierden los buffs.";
@@ -167,7 +167,7 @@ SMARTBUFF_BST_MANALIMIT      = "M\195\173nimo obligado";
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Buffar s\195\179lo tu personaje.";
 SMARTBUFF_BSTT_SELFNOT       = "Buffar todas las clases seleccionadas excepto tu personaje.";
-SMARTBUFF_BSTT_COMBATIN      = "Buffar si est\195\161s en combate.";
+SMARTBUFF_BSTT_COMBATIN      = "Buffar si est\195\161s en combate.\nToda la l\195\179gica en combate est\195\161 desactivada a menos que la opci\195\179n principal \"en combate\" (en la ventana de opciones) est\195\169 activada.";
 SMARTBUFF_BSTT_COMBATOUT     = "Buffar si est\195\161s fuera de combate.";
 SMARTBUFF_BSTT_MAINHAND      = "Buffar Mano principal.";
 SMARTBUFF_BSTT_OFFHAND       = "Buffar Una mano.";
