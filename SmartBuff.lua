@@ -349,9 +349,19 @@ end
 local function GetBuffSettings(buff)
   if (not B or not buff) then return nil; end
   local cBuff = B[CS()][CT()][buff];
+  local id = (type(buff) == "string") and tonumber(string.match(buff, "item:(%d+)"));
+  -- If found via direct key and key is a full item link (not canonical), migrate to canonical so
+  -- SavedVariables persist next session (link string can differ between sessions).
+  if (cBuff and id and type(buff) == "string") then
+    local canKey = "item:" .. tostring(id);
+    if (buff ~= canKey) then
+      B[CS()][CT()][canKey] = cBuff;
+      B[CS()][CT()][buff] = nil;
+    end
+  end
   -- Item-type keys can be full link or "item:ID"; try canonical key so settings persist across load order
   if (not cBuff and type(buff) == "string") then
-    local id = tonumber(string.match(buff, "item:(%d+)"));
+    if (not id) then id = tonumber(string.match(buff, "item:(%d+)")); end
     if (id) then
       cBuff = B[CS()][CT()]["item:" .. tostring(id)];
       -- Last session may have saved under full link; find any key that refers to this item
@@ -359,7 +369,14 @@ local function GetBuffSettings(buff)
         for k, v in pairs(B[CS()][CT()]) do
           if (type(k) == "string" and type(v) == "table") then
             local kid = tonumber(string.match(k, "item:(%d+)"));
-            if (kid == id) then cBuff = v; break; end
+            if (kid == id) then
+              cBuff = v;
+              -- Migrate to canonical key so future lookups and saves use one key
+              local canKey = "item:" .. tostring(id);
+              B[CS()][CT()][canKey] = v;
+              B[CS()][CT()][k] = nil;
+              break;
+            end
           end
         end
       end
@@ -371,11 +388,12 @@ end
 local function InitBuffSettings(cBI, reset)
   local buff = cBI.BuffS;
   local cBuff = GetBuffSettings(buff);
+  local id = (type(buff) == "string") and tonumber(string.match(buff, "item:(%d+)"));
   if (cBuff == nil) then
     -- Use canonical key for item-type buffs so link vs placeholder doesn't lose saved settings
     local key = buff;
     if (type(buff) == "string") then
-      local id = tonumber(string.match(buff, "item:(%d+)"));
+      if (not id) then id = tonumber(string.match(buff, "item:(%d+)")); end
       if (id) then key = "item:" .. tostring(id); end
     end
     B[CS()][CT()][key] = {};
@@ -403,6 +421,16 @@ local function InitBuffSettings(cBI, reset)
           cBuff[cClasses[n]] = true;
         else
           cBuff[cClasses[n]] = false;
+        end
+      end
+    end
+    -- Restore EnableS from cache when we had to create (e.g. B was missing this key; user had it enabled last session)
+    if (SmartBuffBuffListCache and SmartBuffBuffListCache.enabledBuffs) then
+      if (not id) then id = (type(buff) == "string") and tonumber(string.match(buff, "item:(%d+)")); end
+      for _, en in ipairs(SmartBuffBuffListCache.enabledBuffs) do
+        if (en == buff or (id and type(en) == "string" and (("item:" .. tostring(id)) == en or tonumber(string.match(en, "item:(%d+)")) == id))) then
+          cBuff.EnableS = true;
+          break;
         end
       end
     end
@@ -1466,11 +1494,25 @@ function SMARTBUFF_SetBuffs()
   -- This is expected - they'll be added when ITEM_DATA_LOAD_RESULT/SPELL_DATA_LOAD_RESULT fires
   
   -- Save cache with current state (accept partial data like AllTheThings)
+  -- For items use only canonical key "item:ID" and that entry's state so duplicate keys (link vs canonical) don't both get added
   local enabledBuffsSnapshot = {};
+  local seenItemIDs = {};
   if (B[CS()] and B[CS()][ct]) then
     for buffName, settings in pairs(B[CS()][ct]) do
       if (type(settings) == "table" and (settings.EnableS or settings.EnableG)) then
-        tinsert(enabledBuffsSnapshot, buffName);
+        local id = (type(buffName) == "string") and tonumber(string.match(buffName, "item:(%d+)"));
+        if (id) then
+          if (not seenItemIDs[id]) then
+            seenItemIDs[id] = true;
+            local canonical = "item:" .. tostring(id);
+            local entry = B[CS()][ct][canonical] or settings;
+            if (type(entry) == "table" and (entry.EnableS or entry.EnableG)) then
+              tinsert(enabledBuffsSnapshot, canonical);
+            end
+          end
+        else
+          tinsert(enabledBuffsSnapshot, buffName);
+        end
       end
     end
   end
@@ -5501,7 +5543,7 @@ local function OnScroll(self, cData, sBtnName)
   end
 
   FauxScrollFrame_Update(self, num, floor(numToDisplay / 3 + 0.5), ScrLineHeight);
-  -- [B]ufflist for current spec, current template
+  -- [B]ufflist for current spec, current template; use GetBuffSettings so item keys (link vs item:ID) resolve to same entry
   local t = B[CS()][CT()];
   for i = 1, maxScrollButtons, 1 do
     n = i + FauxScrollFrame_GetOffset(self);
@@ -5511,8 +5553,11 @@ local function OnScroll(self, cData, sBtnName)
         btn:SetNormalFontObject("GameFontNormalSmall");
         btn:SetHighlightFontObject("GameFontHighlightSmall");
         btn:SetText(GetBuffDisplayName(cData[n]));
-        if (t[cData[n]] ~= nil) then
-          btn:SetChecked(t[cData[n]].EnableS);
+        local bs = GetBuffSettings(cData[n]);
+        if (bs) then
+          btn:SetChecked(bs.EnableS);
+        else
+          btn:SetChecked(false);
         end
         btn:Show();
       else
