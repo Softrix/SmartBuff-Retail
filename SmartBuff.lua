@@ -10,7 +10,7 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "020226"; -- EU Date: DDMMYY
+SMARTBUFF_DATE               = "030226"; -- EU Date: DDMMYY
 SMARTBUFF_VERSION            = "r37." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
