@@ -354,6 +354,15 @@ local function GetBuffSettings(buff)
     local id = tonumber(string.match(buff, "item:(%d+)"));
     if (id) then
       cBuff = B[CS()][CT()]["item:" .. tostring(id)];
+      -- Last session may have saved under full link; find any key that refers to this item
+      if (not cBuff) then
+        for k, v in pairs(B[CS()][CT()]) do
+          if (type(k) == "string" and type(v) == "table") then
+            local kid = tonumber(string.match(k, "item:(%d+)"));
+            if (kid == id) then cBuff = v; break; end
+          end
+        end
+      end
     end
   end
   return cBuff;
@@ -2038,13 +2047,14 @@ function SMARTBUFF_ResetBuffTimers()
             buff = nil;
             rbTime = 0;
             buffS = cBuffs[i].BuffS;
+            local bs = GetBuffSettings(buffS);
 
-            rbTime = B[CS()][ct][buffS].RBTime;
+            if (bs) then rbTime = bs.RBTime or 0; end
             if (rbTime <= 0) then
               rbTime = O.RebuffTimer;
             end
 
-            if (cBuffs[i].BuffG and B[CS()][ct][buffS].EnableG and cBuffs[i].IDG ~= nil and cBuffs[i].DurationG > 0) then
+            if (bs and cBuffs[i].BuffG and bs.EnableG and cBuffs[i].IDG ~= nil and cBuffs[i].DurationG > 0) then
               d = cBuffs[i].DurationG;
               buff = cBuffs[i].BuffG;
               obj = subgroup;
@@ -2058,8 +2068,8 @@ function SMARTBUFF_ResetBuffTimers()
             end
 
             buff = nil;
-            if (buffS and B[CS()][ct][buffS].EnableS and cBuffs[i].IDS ~= nil and cBuffs[i].DurationS > 0
-                  and uc and B[CS()][ct][buffS][uc]) then
+            if (buffS and bs and bs.EnableS and cBuffs[i].IDS ~= nil and cBuffs[i].DurationS > 0
+                  and uc and bs[uc]) then
               d = cBuffs[i].DurationS;
               buff = buffS;
               obj = unit;
@@ -2110,9 +2120,10 @@ function SMARTBUFF_ShowBuffTimers()
           i = i + 1;
         end
 
-        if (buffS and B[CS()][ct][buffS] ~= nil) then
+        local bs = buffS and GetBuffSettings(buffS);
+        if (buffS and bs) then
           if (d > 0) then
-            rbTime = B[CS()][ct][buffS].RBTime;
+            rbTime = bs.RBTime or 0;
             if (rbTime <= 0) then
               rbTime = O.RebuffTimer;
             end
@@ -2174,16 +2185,16 @@ function SMARTBUFF_SyncBuffTimers()
           while (cBuffs[i] and cBuffs[i].BuffS) do
             rbTime = 0;
             buffS = cBuffs[i].BuffS;
+            local bs = GetBuffSettings(buffS);
 
-            -- CHECK FOR NOT NIL; possible overkill with double check
-            if (B[CS()][ct][buffS] ~= nil) and (B[CS()][ct][buffS].RBTime ~= nil) then
-              rbTime = B[CS()][ct][buffS].RBTime;
+            if (bs and bs.RBTime ~= nil) then
+              rbTime = bs.RBTime;
               if (rbTime <= 0) then
                 rbTime = O.RebuffTimer;
               end
             end
 
-            if (buffS and (B[CS()][ct][buffS] ~= nil) and B[CS()][ct][buffS].EnableS and cBuffs[i].IDS ~= nil and cBuffs[i].DurationS > 0) then
+            if (buffS and bs and bs.EnableS and cBuffs[i].IDS ~= nil and cBuffs[i].DurationS > 0) then
               if (cBuffs[i].Type ~= SMARTBUFF_CONST_SELF or (cBuffs[i].Type == SMARTBUFF_CONST_SELF and SMARTBUFF_IsPlayer(unit))) then
                 SMARTBUFF_SyncBuffTimer(unit, unit, cBuffs[i]);
               end
@@ -4605,9 +4616,11 @@ function SmartBuff_BuffSetup_ManaLimitChanged(self)
   if (i <= 0) then
     return;
   end
-  local ct = currentTemplate;
   local name = cBuffs[i].BuffS;
-  B[CS()][ct][name].ManaLimit = self:GetNumber();
+  local cBuff = GetBuffSettings(name);
+  if (cBuff) then
+    cBuff.ManaLimit = self:GetNumber();
+  end
 end
 
 function SmartBuff_BuffSetup_OnClick()
@@ -4999,12 +5012,16 @@ function SmartBuff_PS_GetList()
 
   local name = cBuffs[iLastBuffSetup].BuffS;
   if (name) then
-    if (iCurrentList == 1) then
-      return B[CS()][currentTemplate][name].AddList;
-    else
-      return B[CS()][currentTemplate][name].IgnoreList;
+    local cBuff = GetBuffSettings(name);
+    if (cBuff) then
+      if (iCurrentList == 1) then
+        return cBuff.AddList or {};
+      else
+        return cBuff.IgnoreList or {};
+      end
     end
   end
+  return {};
 end
 
 function SmartBuff_PS_GetUnitList()
