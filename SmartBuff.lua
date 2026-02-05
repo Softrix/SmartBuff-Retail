@@ -5602,6 +5602,7 @@ function SMARTBUFF_BuffOrderOnScroll(self, arg1)
     CreateScrollButtons(self, cScrBtnBO, name, SMARTBUFF_BuffOrderBtnOnClick, SMARTBUFF_BuffOrderBtnOnDragStop);
   end
 
+  if not B[CS()] then B[CS()] = {} end
   if (B[CS()].Order == nil) then
     B[CS()].Order = {};
   end
