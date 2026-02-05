@@ -385,6 +385,61 @@ local function GetBuffSettings(buff)
   return cBuff;
 end
 
+-- Remove duplicate item-type keys in B[spec][template]: keep only canonical "item:ID", migrate or drop link/name orphans so SavedVariables stay clean and we avoid confused state.
+local function CleanBuffSettingsCruftOneTable(t)
+  if (not t or type(t) ~= "table") then return; end
+  local expected = SMARTBUFF_ExpectedData;
+  if (not expected or not expected.items) then return; end
+  local toRemove = {};
+  local toMigrate = {};
+  for k, v in pairs(t) do
+    if (k ~= "SelfFirst" and type(v) == "table") then
+      local id = (type(k) == "string") and tonumber(string.match(k, "item:(%d+)"));
+      if (id) then
+        local canKey = "item:" .. tostring(id);
+        if (k == canKey) then
+          -- already canonical, keep
+        else
+          if (t[canKey]) then
+            toRemove[k] = true;
+          else
+            toMigrate[k] = canKey;
+          end
+        end
+      else
+        for varName, itemId in pairs(expected.items) do
+          if (_G[varName] == k) then
+            local canKey = "item:" .. tostring(itemId);
+            if (t[canKey]) then
+              toRemove[k] = true;
+            else
+              toMigrate[k] = canKey;
+            end
+            break;
+          end
+        end
+      end
+    end
+  end
+  for k, canKey in pairs(toMigrate) do
+    t[canKey] = t[k];
+    t[k] = nil;
+  end
+  for k in pairs(toRemove) do
+    t[k] = nil;
+  end
+end
+
+local function CleanBuffSettingsCruft()
+  if (not B or not B[CS()]) then return; end
+  if (not SMARTBUFF_ExpectedData or not SMARTBUFF_ExpectedData.items) then return; end
+  for ctKey, ctTbl in pairs(B[CS()]) do
+    if (ctKey ~= "Order" and type(ctTbl) == "table") then
+      CleanBuffSettingsCruftOneTable(ctTbl);
+    end
+  end
+end
+
 local function InitBuffSettings(cBI, reset)
   local buff = cBI.BuffS;
   local cBuff = GetBuffSettings(buff);
@@ -394,6 +449,12 @@ local function InitBuffSettings(cBI, reset)
     local key = buff;
     if (type(buff) == "string") then
       if (not id) then id = tonumber(string.match(buff, "item:(%d+)")); end
+      -- Item-type buffs: resolve id from ExpectedData when buff has no "item:ID" (e.g. init timing / name) so we use canonical key and restore EnableS from cache
+      if (not id and SMARTBUFF_ExpectedData and SMARTBUFF_ExpectedData.items) then
+        for varName, itemId in pairs(SMARTBUFF_ExpectedData.items) do
+          if (_G[varName] == buff) then id = itemId; break; end
+        end
+      end
       if (id) then key = "item:" .. tostring(id); end
     end
     B[CS()][CT()][key] = {};
@@ -427,6 +488,11 @@ local function InitBuffSettings(cBI, reset)
     -- Restore EnableS from cache when we had to create (e.g. B was missing this key; user had it enabled last session)
     if (SmartBuffBuffListCache and SmartBuffBuffListCache.enabledBuffs) then
       if (not id) then id = (type(buff) == "string") and tonumber(string.match(buff, "item:(%d+)")); end
+      if (not id and SMARTBUFF_ExpectedData and SMARTBUFF_ExpectedData.items) then
+        for varName, itemId in pairs(SMARTBUFF_ExpectedData.items) do
+          if (_G[varName] == buff) then id = itemId; break; end
+        end
+      end
       for _, en in ipairs(SmartBuffBuffListCache.enabledBuffs) do
         if (en == buff or (id and type(en) == "string" and (("item:" .. tostring(id)) == en or tonumber(string.match(en, "item:(%d+)")) == id))) then
           cBuff.EnableS = true;
@@ -1447,6 +1513,8 @@ function SMARTBUFF_SetBuffs()
     B[CS()][ct] = {};
     B[CS()][ct].SelfFirst = false;
   end
+
+  CleanBuffSettingsCruft();
 
   wipe(cBuffs);
   wipe(cBuffIndex);
