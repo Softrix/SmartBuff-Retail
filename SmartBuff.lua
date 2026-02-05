@@ -10,7 +10,7 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "030226"; -- EU Date: DDMMYY
+SMARTBUFF_DATE               = "050226"; -- EU Date: DDMMYY
 SMARTBUFF_VERSION            = "r37." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
@@ -1670,11 +1670,12 @@ function SMARTBUFF_SetBuff(buff, i, ia)
           cBuffs[i] = nil;
           return i;
         end
-        -- For class spells, verify they're known (item spells are always valid if they exist)
-        if (cBuffs[i].Type == SMARTBUFF_CONST_SELF or cBuffs[i].Type == SMARTBUFF_CONST_GROUP) then
+        -- For spellbook spells (all class/spec spells), verify they're known; skip for items/track/toys
+        local isSpellbookType = not SMARTBUFF_IsItem(cBuffs[i].Type) and cBuffs[i].Type ~= SMARTBUFF_CONST_TRACK and cBuffs[i].Type ~= SMARTBUFF_CONST_TOY;
+        if (isSpellbookType) then
           local isKnown = C_SpellBook.IsSpellKnownOrInSpellBook(cBuffs[i].IDS);
           if (not isKnown) then
-            -- Spell not known - mark as invalid
+            -- Spell not known for this class/spec - mark as invalid
             if (not SmartBuffValidSpells.spells) then SmartBuffValidSpells.spells = {}; end
             SmartBuffValidSpells.spells[cBuffs[i].IDS] = false;
             cBuffs[i] = nil;
