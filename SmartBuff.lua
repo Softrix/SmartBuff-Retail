@@ -39,6 +39,14 @@ local O                      = nil; -- Options local
 local B                      = nil; -- Buff settings local
 local _;
 
+-- Ensure SavedVariables exist when nil (new install or deleted SavedVariables)
+if (type(SMARTBUFF_Options) ~= "table") then SMARTBUFF_Options = {}; end
+if (type(SMARTBUFF_Buffs) ~= "table") then SMARTBUFF_Buffs = {}; end
+if (type(SMARTBUFF_OptionsGlobal) ~= "table") then
+  SMARTBUFF_OptionsGlobal = {};
+  SMARTBUFF_OptionsGlobal.FirstStart = "V0";  -- so Options_Init sees version "changed" and pops options + news
+end
+
 local GlobalCd               = 1.5;
 local maxSkipCoolDown        = 3;
 local maxRaid                = 40;
@@ -543,6 +551,27 @@ local function InitBuffOrder(reset)
     SMARTBUFF_AddMsgD("Reset buff order");
   end
 
+  -- Normalize Order: item-type keys to canonical "item:ID" and dedupe (single source of truth; avoids link vs placeholder duplicates on reload)
+  do
+    local function idFrom(s) return (type(s) == "string") and tonumber(string.match(s, "item:(%d+)")) or nil; end
+    for k, v in pairs(ord) do
+      if (v and type(v) == "string") then
+        local id = idFrom(v);
+        if (id) then ord[k] = "item:" .. tostring(id); end
+      end
+    end
+    local seen, newOrd = {}, {};
+    for idx = 1, #ord do
+      local key = ord[idx];
+      if (key and not seen[key]) then
+        seen[key] = true;
+        tinsert(newOrd, key);
+      end
+    end
+    wipe(ord);
+    for _, key in ipairs(newOrd) do tinsert(ord, key); end
+  end
+
   -- Remove not longer existing buffs in the order list
   -- Also remove toys if IncludeToys is disabled
   local toRemove = {};
@@ -676,7 +705,7 @@ function SMARTBUFF_OnLoad(self)
 
   SMARTBUFF_InitSpellIDs();
   SMARTBUFF_InitItemList();
-  SMARTBUFF_InitSpellList();
+  -- BuildItemTables and InitSpellList run only in SetBuffs when SMARTBUFF_BUFFLIST == nil (single init path, avoids duplicate potion/flask entries)
 
   --DEFAULT_CHAT_FRAME:AddMessage("SB OnLoad");
 end
@@ -704,7 +733,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     if (event == "PLAYER_ENTERING_WORLD" and isLoaded and isPlayer and not isInit and not InCombatLockdown()) then
       SMARTBUFF_Options_Init(self);
     end
-  elseif (event == "ADDON_LOADED" and arg1 == SMARTBUFF_TITLE) then
+  elseif (event == "ADDON_LOADED" and arg1 and (arg1 == SMARTBUFF_TITLE or strfind(arg1, "SmartBuff") == 1)) then
     isLoaded = true;
   end
 
@@ -1480,9 +1509,17 @@ function SMARTBUFF_SetBuffs()
     SMARTBUFF_InitItemList();
     -- Sync cache with expected list (remove extras, add missing, flag all as needsRefresh)
     SMARTBUFF_SyncItemSpellCache();
+    SMARTBUFF_BuildItemTables();
     SMARTBUFF_InitSpellList();
     -- Load toys on initial setup
     SMARTBUFF_LoadToys();
+    -- Retry once after a delay so item data (flasks, toys) that was not yet loaded can be picked up
+    C_Timer.After(1.5, function()
+      if (isInit and O and O.Toggle and not InCombatLockdown() and B) then
+        SMARTBUFF_LoadToys();
+        SMARTBUFF_SetBuffs();
+      end
+    end);
   elseif (SMARTBUFF_PLAYERCLASS ~= sPlayerClass) then
     -- Player class changed (shouldn't happen, but be safe)
     SMARTBUFF_ExpectedData.items = {};
@@ -1610,7 +1647,10 @@ function SMARTBUFF_SetBuffs()
   end
   SMARTBUFF_SaveCache(currentCounts, enabledBuffsSnapshot, toyCount);
   InitBuffOrder(false);
-  
+
+  -- Redraw options buff list if open so item/spell names appear when data loads (no close/reopen needed)
+  if (SmartBuffOptionsFrame and SmartBuffOptionsFrame:IsVisible()) then SMARTBUFF_BuffOrderOnScroll(); end
+
   -- Note: If items/spells are still loading, ITEM_DATA_LOAD_RESULT/SPELL_DATA_LOAD_RESULT events will trigger rebuild
   -- This follows AllTheThings pattern: accept partial data, mark what's missing, let events handle updates
 
@@ -1709,10 +1749,10 @@ local function GetBuffDisplayName(buffName, buffType)
         if (varName and cache and cache.items and cache.items[varName]) then
           return cache.items[varName];
         end
-        local itemName, itemLink = C_Item.GetItemInfo(itemID);
-        if (itemLink) then return itemLink; end
-        if (itemName) then return itemName; end
-        C_Item.RequestLoadItemDataByID(itemID);
+      local itemName, itemLink = C_Item.GetItemInfo(itemID);
+      if (itemLink) then return itemLink; end
+      if (itemName) then return itemName; end
+      C_Item.RequestLoadItemDataByID(itemID);
         return tostring(itemID);
       end
       if (forceSpell) then
@@ -1740,24 +1780,44 @@ local function GetBuffDisplayName(buffName, buffType)
         return cache.items[varName];
       end
       local itemName, itemLink = C_Item.GetItemInfo(itemID);
-      if (itemLink) then return itemLink; end
       if (itemName) then return itemName; end
+      if (itemLink) then return itemLink; end
       C_Item.RequestLoadItemDataByID(itemID);
+      return ("Item " .. tostring(itemID));
     end
   end
 
+  -- Never show raw "item:ID" to user (splash, chat, UI) – only if we didn't handle it above
+  local id = (type(buffName) == "string") and tonumber(string.match(buffName, "item:(%d+)"));
+  if (id) then
+    local itemName, itemLink = C_Item.GetItemInfo(id);
+    if (itemName) then return itemName; end
+    if (itemLink) then return itemLink; end
+    return ("Item " .. tostring(id));
+  end
   return buffName;
 end
 
 function SMARTBUFF_SetBuff(buff, i, ia)
   if (buff == nil or buff[1] == nil) then return i; end
+  local isItemType = (SMARTBUFF_IsItem(buff[3]) or buff[3] == SMARTBUFF_CONST_WEAPON);
+  local key = (type(buff[1]) == "string") and buff[1] or nil;
+  local itemID = (type(buff[1]) == "string") and ExtractItemID(buff[1]) or nil;
+  -- Dedupe item-type buffs: same key or same canonical item ID (avoids duplicate potion/flask entries)
+  if (key and isItemType and cBuffIndex[key]) then return i; end
+  if (itemID and isItemType and cBuffIndex["item:" .. tostring(itemID)]) then return i; end
   cBuffs[i] = nil;
   cBuffs[i] = {};
   if (type(buff[1]) == "table")
   then
     cBuffs[i].BuffS = buff[1].name;
   else
-    cBuffs[i].BuffS = buff[1];
+    -- Item-type buffs: store canonical "item:ID" only so Order and B[][][] use one key (no link vs placeholder split)
+    if (itemID and isItemType) then
+      cBuffs[i].BuffS = "item:" .. tostring(itemID);
+    else
+      cBuffs[i].BuffS = buff[1];
+    end
   end
   cBuffs[i].DurationS = ceil(buff[2] * 60);
   cBuffs[i].Type = buff[3];
@@ -2662,10 +2722,10 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
         local isUsable, notEnoughMana = C_Spell.IsSpellUsable(buffnS);
         if (notEnoughMana) then
           bUsable = false;
-          SMARTBUFF_AddMsgD("Buff " .. cBuff.BuffS .. ", not enough mana!");
+          SMARTBUFF_AddMsgD("Buff " .. (GetBuffDisplayName(cBuff.BuffS, cBuff.Type) or cBuff.BuffS) .. ", not enough mana!");
         elseif (mode ~= 1 and isUsable == nil and buffnS ~= SMARTBUFF_PWS.name) then
           bUsable = false;
-          SMARTBUFF_AddMsgD("Buff " .. cBuff.BuffS .. " is not usable!");
+          SMARTBUFF_AddMsgD("Buff " .. (GetBuffDisplayName(cBuff.BuffS, cBuff.Type) or cBuff.BuffS) .. " is not usable!");
         end
       end
 
@@ -3198,6 +3258,9 @@ function SMARTBUFF_IsInList(unit, unitname, list)
 end
 
 function SMARTBUFF_SetMissingBuffMessage(target, buff, icon, bCanCharge, nCharges, tBuffTimeLeft, bExpire)
+  -- Resolve "item:ID" to display name/link for splash and chat (canonical key is stored; show name to user)
+  local displayBuff = (buff and GetBuffDisplayName(buff, nil)) or buff;
+
   local f = SmartBuffSplashFrame;
   -- show splash buff message
   if (f and O.ToggleAutoSplash and not SmartBuffOptionsFrame:IsVisible()) then
@@ -3212,7 +3275,7 @@ function SMARTBUFF_SetMissingBuffMessage(target, buff, icon, bCanCharge, nCharge
       end
       si = string.format("\124T%s:%d:%d:1:0\124t ", icon, n, n) or "";
     end
-    if (OG.SplashMsgShort and si == "") then si = buff end
+    if (OG.SplashMsgShort and si == "") then si = displayBuff end
     if (O.AutoTimer < 4) then
       sd = 1;
       f:Clear();
@@ -3226,7 +3289,7 @@ function SMARTBUFF_SetMissingBuffMessage(target, buff, icon, bCanCharge, nCharge
       else
         s = target ..
         "\n" .. SMARTBUFF_MSG_REBUFF ..
-        " " .. si .. buff .. ": " .. format(ITEM_SPELL_CHARGES, nCharges) .. " " .. SMARTBUFF_MSG_LEFT;
+        " " .. si .. displayBuff .. ": " .. format(ITEM_SPELL_CHARGES, nCharges) .. " " .. SMARTBUFF_MSG_LEFT;
       end
     elseif (bExpire) then
       if (OG.SplashMsgShort) then
@@ -3234,13 +3297,13 @@ function SMARTBUFF_SetMissingBuffMessage(target, buff, icon, bCanCharge, nCharge
       else
         s = target ..
         "\n" .. SMARTBUFF_MSG_REBUFF .. " " ..
-        si .. buff .. ": " .. format(SECONDS_ABBR, tBuffTimeLeft) .. " " .. SMARTBUFF_MSG_LEFT;
+        si .. displayBuff .. ": " .. format(SECONDS_ABBR, tBuffTimeLeft) .. " " .. SMARTBUFF_MSG_LEFT;
       end
     else
       if (OG.SplashMsgShort) then
         s = target .. " > " .. si;
       else
-        s = target .. " " .. SMARTBUFF_MSG_NEEDS .. " " .. si .. buff;
+        s = target .. " " .. SMARTBUFF_MSG_NEEDS .. " " .. si .. displayBuff;
       end
     end
     f:AddMessage(s, O.ColSplashFont.r, O.ColSplashFont.g, O.ColSplashFont.b, 1.0);
@@ -3251,14 +3314,14 @@ function SMARTBUFF_SetMissingBuffMessage(target, buff, icon, bCanCharge, nCharge
     if (O.CheckCharges and bCanCharge and nCharges > 0 and nCharges <= O.MinCharges and bExpire) then
       SMARTBUFF_AddMsgWarn(
       target ..
-      ": " .. SMARTBUFF_MSG_REBUFF .. " " .. buff .. ", " ..
+      ": " .. SMARTBUFF_MSG_REBUFF .. " " .. displayBuff .. ", " ..
       format(ITEM_SPELL_CHARGES, nCharges) .. " " .. SMARTBUFF_MSG_LEFT, true);
     elseif (bExpire) then
       SMARTBUFF_AddMsgWarn(
-      target .. ": " .. SMARTBUFF_MSG_REBUFF .. " " .. buff ..
+      target .. ": " .. SMARTBUFF_MSG_REBUFF .. " " .. displayBuff .. " " ..
       format(SECONDS_ABBR, tBuffTimeLeft) .. " " .. SMARTBUFF_MSG_LEFT, true);
     else
-      SMARTBUFF_AddMsgWarn(target .. " " .. SMARTBUFF_MSG_NEEDS .. " " .. buff, true);
+      SMARTBUFF_AddMsgWarn(target .. " " .. SMARTBUFF_MSG_NEEDS .. " " .. displayBuff, true);
     end
   end
 
