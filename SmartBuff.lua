@@ -10,7 +10,7 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "050226"; -- EU Date: DDMMYY
+SMARTBUFF_DATE               = "060226"; -- EU Date: DDMMYY
 SMARTBUFF_VERSION            = "r37." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
@@ -386,20 +386,31 @@ local function GetBuffSettings(buff)
 end
 
 -- Remove duplicate item-type keys in B[spec][template]: keep only canonical "item:ID", migrate or drop link/name orphans so SavedVariables stay clean and we avoid confused state.
-local function CleanBuffSettingsCruftOneTable(t)
+-- Rate-limited to CRUFT_CLEANUP_CHUNK keys per iteration; continues next frame if more keys remain.
+local CRUFT_CLEANUP_CHUNK = 500;
+local function CleanBuffSettingsCruftOneTable(t, keys, startIdx)
   if (not t or type(t) ~= "table") then return; end
   local expected = SMARTBUFF_ExpectedData;
   if (not expected or not expected.items) then return; end
+  if (not keys) then
+    keys = {};
+    for k, v in pairs(t) do
+      if (k ~= "SelfFirst" and type(v) == "table") then
+        tinsert(keys, k);
+      end
+    end
+    startIdx = 1;
+  end
   local toRemove = {};
   local toMigrate = {};
-  for k, v in pairs(t) do
-    if (k ~= "SelfFirst" and type(v) == "table") then
+  local last = math.min(startIdx + CRUFT_CLEANUP_CHUNK - 1, #keys);
+  for i = startIdx, last do
+    local k = keys[i];
+    if (k and t[k] ~= nil) then
       local id = (type(k) == "string") and tonumber(string.match(k, "item:(%d+)"));
       if (id) then
         local canKey = "item:" .. tostring(id);
-        if (k == canKey) then
-          -- already canonical, keep
-        else
+        if (k ~= canKey) then
           if (t[canKey]) then
             toRemove[k] = true;
           else
@@ -427,6 +438,11 @@ local function CleanBuffSettingsCruftOneTable(t)
   end
   for k in pairs(toRemove) do
     t[k] = nil;
+  end
+  if (last < #keys) then
+    C_Timer.After(0, function()
+      CleanBuffSettingsCruftOneTable(t, keys, last + 1);
+    end);
   end
 end
 
@@ -1612,59 +1628,72 @@ local function ExtractItemID(item)
   return nil;
 end
 
--- Helper for UI display: resolve spell/item IDs and varNames to display names using cache first, then API
-local function GetBuffDisplayName(buffName)
+-- Helper for UI display: resolve spell/item IDs and varNames to display names using cache first, then API.
+-- buffType (optional): when provided and SMARTBUFF_IsItem(buffType), resolve numeric/ID as item only; when spell-like, spell only; when nil, keep current fallback.
+local function GetBuffDisplayName(buffName, buffType)
   if (buffName == nil) then return nil; end
 
   local cache = SmartBuffItemSpellCache;
   local expected = SMARTBUFF_ExpectedData;
+  local forceItem = (buffType ~= nil) and SMARTBUFF_IsItem(buffType);
+  local forceSpell = (buffType ~= nil) and not SMARTBUFF_IsItem(buffType);
 
   if (type(buffName) == "number") then
-    -- Try spell first (spellID), then item (itemID)
-    local varName = expected and expected.spellIDToVarName and expected.spellIDToVarName[buffName];
-    if (varName and cache and cache.spells and cache.spells[varName]) then
-      local spellInfo = cache.spells[varName];
-      if (spellInfo and spellInfo.name) then
-        return spellInfo.name;
+    if (not forceItem) then
+      local varName = expected and expected.spellIDToVarName and expected.spellIDToVarName[buffName];
+      if (varName and cache and cache.spells and cache.spells[varName]) then
+        local spellInfo = cache.spells[varName];
+        if (spellInfo and spellInfo.name) then
+          return spellInfo.name;
+        end
+      end
+      if (forceSpell) then
+        local spellName = C_Spell.GetSpellName(buffName);
+        if (spellName) then return spellName; end
+        return tostring(buffName);
       end
     end
-    varName = expected and expected.itemIDToVarName and expected.itemIDToVarName[buffName];
-    if (varName and cache and cache.items and cache.items[varName]) then
-      return cache.items[varName];
+    if (not forceSpell) then
+      local varName = expected and expected.itemIDToVarName and expected.itemIDToVarName[buffName];
+      if (varName and cache and cache.items and cache.items[varName]) then
+        return cache.items[varName];
+      end
+      local itemName, itemLink = C_Item.GetItemInfo(buffName);
+      if (itemLink) then return itemLink; end
+      if (itemName) then return itemName; end
+      if (forceItem) then
+        C_Item.RequestLoadItemDataByID(buffName);
+        return tostring(buffName);
+      end
     end
-    -- Fallback: assume item (spell IDs not in cache would need C_Spell.GetSpellName)
-    local itemName, itemLink = C_Item.GetItemInfo(buffName);
-    if (itemLink) then
-      return itemLink;
+    if (buffType == nil) then
+      local spellName = C_Spell.GetSpellName(buffName);
+      if (spellName) then return spellName; end
+      C_Item.RequestLoadItemDataByID(buffName);
     end
-    if (itemName) then
-      return itemName;
-    end
-    local spellName = C_Spell.GetSpellName(buffName);
-    if (spellName) then
-      return spellName;
-    end
-    C_Item.RequestLoadItemDataByID(buffName);
     return tostring(buffName);
   elseif (type(buffName) == "string") then
-    -- Full item link (colored) should remain unchanged
     if (string.match(buffName, "^|c")) then
       return buffName;
     end
 
-    -- VarName -> spell or item from cache first
-    if (cache and cache.spells and cache.spells[buffName]) then
-      local spellInfo = cache.spells[buffName];
-      if (spellInfo and spellInfo.name) then
-        return spellInfo.name;
+    if (not forceItem) then
+      if (cache and cache.spells and cache.spells[buffName]) then
+        local spellInfo = cache.spells[buffName];
+        if (spellInfo and spellInfo.name) then
+          return spellInfo.name;
+        end
       end
     end
-    if (cache and cache.items and cache.items[buffName]) then
-      return cache.items[buffName];
+    if (not forceSpell) then
+      if (cache and cache.items and cache.items[buffName]) then
+        return cache.items[buffName];
+      end
     end
 
     local itemID = nil;
-    if (string.match(buffName, "^item:%d+")) then
+    local isItemKey = string.match(buffName, "^item:%d+");
+    if (isItemKey) then
       itemID = ExtractItemID(buffName);
     else
       local num = tonumber(buffName);
@@ -1674,6 +1703,31 @@ local function GetBuffDisplayName(buffName)
     end
 
     if (itemID) then
+      -- "item:ID" format: always resolve as item only
+      if (isItemKey or forceItem) then
+        local varName = expected and expected.itemIDToVarName and expected.itemIDToVarName[itemID];
+        if (varName and cache and cache.items and cache.items[varName]) then
+          return cache.items[varName];
+        end
+        local itemName, itemLink = C_Item.GetItemInfo(itemID);
+        if (itemLink) then return itemLink; end
+        if (itemName) then return itemName; end
+        C_Item.RequestLoadItemDataByID(itemID);
+        return tostring(itemID);
+      end
+      if (forceSpell) then
+        local varName = expected and expected.spellIDToVarName and expected.spellIDToVarName[itemID];
+        if (varName and cache and cache.spells and cache.spells[varName]) then
+          local spellInfo = cache.spells[varName];
+          if (spellInfo and spellInfo.name) then
+            return spellInfo.name;
+          end
+        end
+        local spellName = C_Spell.GetSpellName(itemID);
+        if (spellName) then return spellName; end
+        return tostring(itemID);
+      end
+      -- buffType == nil: current fallback (spell then item)
       local varName = expected and expected.spellIDToVarName and expected.spellIDToVarName[itemID];
       if (varName and cache and cache.spells and cache.spells[varName]) then
         local spellInfo = cache.spells[varName];
@@ -1686,12 +1740,8 @@ local function GetBuffDisplayName(buffName)
         return cache.items[varName];
       end
       local itemName, itemLink = C_Item.GetItemInfo(itemID);
-      if (itemLink) then
-        return itemLink;
-      end
-      if (itemName) then
-        return itemName;
-      end
+      if (itemLink) then return itemLink; end
+      if (itemName) then return itemName; end
       C_Item.RequestLoadItemDataByID(itemID);
     end
   end
@@ -4652,7 +4702,7 @@ function SmartBuff_BuffSetup_Show(i)
 
     local obj = SmartBuff_BuffSetup_BuffText;
     if (name) then
-      obj:SetText(GetBuffDisplayName(name));
+      obj:SetText(GetBuffDisplayName(name, btype));
       --SMARTBUFF_AddMsgD(name);
     else
       obj:SetText("");
@@ -5643,7 +5693,9 @@ local function OnScroll(self, cData, sBtnName)
       if (n <= num and t ~= nil) then
         btn:SetNormalFontObject("GameFontNormalSmall");
         btn:SetHighlightFontObject("GameFontHighlightSmall");
-        btn:SetText(GetBuffDisplayName(cData[n]));
+        local idx = cBuffIndex[cData[n]];
+        local btype = (idx and cBuffs[idx]) and cBuffs[idx].Type or nil;
+        btn:SetText(GetBuffDisplayName(cData[n], btype));
         local bs = GetBuffSettings(cData[n]);
         if (bs) then
           btn:SetChecked(bs.EnableS);
