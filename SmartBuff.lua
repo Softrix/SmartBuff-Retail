@@ -2199,6 +2199,12 @@ function SMARTBUFF_PreCheck(mode, force)
     if (O.Debug) then SMARTBUFF_AddMsgD("Out of combat"); end
   end
 
+  -- Don't run the check loop until buff list is ready (missing B/Order, or Order has entries but cBuffs wasn't built)
+  if (not B or not B[CS()] or not B[CS()].Order or (numBuffs == 0 and next(B[CS()].Order))) then
+    SMARTBUFF_ScheduleSetBuffs();
+    return false;
+  end
+
   sMsgWarning = "";
   isFirstError = true;
 
