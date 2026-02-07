@@ -1650,10 +1650,33 @@ function SMARTBUFF_BuildItemTables()
     {SMARTBUFF_DeviouslyDeviledEgg, 60, SMARTBUFF_CONST_FOOD},
   };
 
+  -- Helper: item ID from value (number, "item:ID", or link)
+  local function itemIdFrom(val)
+    if (type(val) == "number" and val > 0) then return val; end
+    if (type(val) == "string") then return tonumber(string.match(val, "item:(%d+)")); end
+    return nil;
+  end
+  local function foodAlreadyHasItemId(id)
+    if (not id) then return false; end
+    for _, entry in pairs(SMARTBUFF_FOOD) do
+      if (entry and entry[1] and itemIdFrom(entry[1]) == id) then return true; end
+    end
+    return false;
+  end
+  -- Add from S.FoodItems using canonical "item:ID" only and dedupe by ID so we never get two rows for the same item
+  local seenFoodIds = {};
   for n, name in pairs(S.FoodItems) do
     if (name) then
-      --print("Adding: "..n..". "..name);
-      tinsert(SMARTBUFF_FOOD, 1, {name, 60, SMARTBUFF_CONST_FOOD});
+      local id = itemIdFrom(name);
+      if (id) then
+        if (not seenFoodIds[id] and not foodAlreadyHasItemId(id)) then
+          seenFoodIds[id] = true;
+          tinsert(SMARTBUFF_FOOD, 1, {"item:" .. tostring(id), 60, SMARTBUFF_CONST_FOOD});
+        end
+      else
+        -- Fallback if we couldn't get an ID (unexpected)
+        tinsert(SMARTBUFF_FOOD, 1, {name, 60, SMARTBUFF_CONST_FOOD});
+      end
     end
   end
 

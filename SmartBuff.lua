@@ -10,7 +10,7 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "060226"; -- EU Date: DDMMYY
+SMARTBUFF_DATE               = "070226"; -- EU Date: DDMMYY
 SMARTBUFF_VERSION            = "r37." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
@@ -552,10 +552,15 @@ local function InitBuffOrder(reset)
   end
 
   -- Normalize Order: item-type keys to canonical "item:ID" and dedupe (single source of truth; avoids link vs placeholder duplicates on reload)
+  -- Also normalize numeric item IDs (corrupt/old saved state) so they don't show as separate rows
   do
-    local function idFrom(s) return (type(s) == "string") and tonumber(string.match(s, "item:(%d+)")) or nil; end
+    local function idFrom(s)
+      if (type(s) == "number" and s > 0) then return s; end
+      if (type(s) == "string") then return tonumber(string.match(s, "item:(%d+)")); end
+      return nil;
+    end
     for k, v in pairs(ord) do
-      if (v and type(v) == "string") then
+      if (v ~= nil) then
         local id = idFrom(v);
         if (id) then ord[k] = "item:" .. tostring(id); end
       end
@@ -1801,9 +1806,15 @@ end
 function SMARTBUFF_SetBuff(buff, i, ia)
   if (buff == nil or buff[1] == nil) then return i; end
   local isItemType = (SMARTBUFF_IsItem(buff[3]) or buff[3] == SMARTBUFF_CONST_WEAPON);
+  -- For item-type buffs, always resolve canonical itemID (from number, "item:ID", or link) so we dedupe and store one key only
+  local itemID = nil;
+  if (type(buff[1]) == "number" and buff[1] > 0) then
+    itemID = buff[1];
+  elseif (type(buff[1]) == "string") then
+    itemID = ExtractItemID(buff[1]);
+  end
   local key = (type(buff[1]) == "string") and buff[1] or nil;
-  local itemID = (type(buff[1]) == "string") and ExtractItemID(buff[1]) or nil;
-  -- Dedupe item-type buffs: same key or same canonical item ID (avoids duplicate potion/flask entries)
+  -- Dedupe item-type buffs: same key or same canonical item ID (avoids duplicate potion/flask/food entries)
   if (key and isItemType and cBuffIndex[key]) then return i; end
   if (itemID and isItemType and cBuffIndex["item:" .. tostring(itemID)]) then return i; end
   cBuffs[i] = nil;
@@ -1812,7 +1823,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
   then
     cBuffs[i].BuffS = buff[1].name;
   else
-    -- Item-type buffs: store canonical "item:ID" only so Order and B[][][] use one key (no link vs placeholder split)
+    -- Item-type buffs: store canonical "item:ID" only so Order and B[][][] use one key (no link vs placeholder vs number split)
     if (itemID and isItemType) then
       cBuffs[i].BuffS = "item:" .. tostring(itemID);
     else
