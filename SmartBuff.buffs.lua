@@ -1204,7 +1204,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_WATERSHIELD", 52127, isSpellBookBuff); --"Water Shield"
   GetSpellInfoIfNeeded("SMARTBUFF_EARTHSHIELD", 974, isSpellBookBuff); --"Earth Shield"
   GetSpellInfoIfNeeded("SMARTBUFF_WATERWALKING", 546, isSpellBookBuff); --"Water Walking"
-  GetSpellInfoIfNeeded("SMARTBUFF_EMASTERY", 16166, isSpellBookBuff); --"Elemental Mastery"
+  --GetSpellInfoIfNeeded("SMARTBUFF_EMASTERY", 16166, isSpellBookBuff); --"Elemental Mastery"
   GetSpellInfoIfNeeded("SMARTBUFF_ASCENDANCE_ELE", 114050, isSpellBookBuff); --"Ascendance (Elemental)"
   GetSpellInfoIfNeeded("SMARTBUFF_ASCENDANCE_ENH", 114051, isSpellBookBuff); --"Ascendance (Enhancement)"
   GetSpellInfoIfNeeded("SMARTBUFF_ASCENDANCE_RES", 114052, isSpellBookBuff); --"Ascendance (Restoration)"
@@ -1212,7 +1212,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_FLAMETONGUEW", 318038, isSpellBookBuff); --"Flametongue Weapon"
   GetSpellInfoIfNeeded("SMARTBUFF_EVERLIVINGW", 382021, isSpellBookBuff); --"Everliving Weapon"
   GetSpellInfoIfNeeded("SMARTBUFF_SKYFURY", 462854, isSpellBookBuff); --"Skyfury"
-  GetSpellInfoIfNeeded("SMARTBUFF_TSWARD", 462742, isSpellBookBuff); --"Thunderstrike Ward" -- Shield
+  GetSpellInfoIfNeeded("SMARTBUFF_TSWARD", 462760, isSpellBookBuff); --"Thunderstrike Ward" -- Shield
   GetSpellInfoIfNeeded("SMARTBUFF_TIDEGUARD", 457481, isSpellBookBuff); --"Tidecaller's Guard" -- Shield. Replaces Flametongue Weapon
 
   -- Shaman buff links
@@ -2197,7 +2197,7 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_ASCENDANCE_ELE, 0.25, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_ASCENDANCE_ENH, 0.25, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_ASCENDANCE_RES, 0.25, SMARTBUFF_CONST_SELF},
-      {SMARTBUFF_EMASTERY, 0.5, SMARTBUFF_CONST_SELF},
+      --{SMARTBUFF_EMASTERY, 0.5, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_SKYFURY, 10, SMARTBUFF_CONST_GROUP, {16}},
       {SMARTBUFF_WATERWALKING, 10, SMARTBUFF_CONST_GROUP, {28}}
     };
