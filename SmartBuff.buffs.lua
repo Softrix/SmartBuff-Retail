@@ -1770,6 +1770,16 @@ function SMARTBUFF_BuildItemTables()
 
   -- Viable toy buffs: each AddItem(itemId, spellId, duration) appends one entry to SMARTBUFF_SCROLL.
   -- These are toys SmartBuff can track and suggest (CONST_SCROLL type; resolved via S.Toybox / item vars)
+  -- Shadowlands
+  AddItem(212525, 432001,  15); -- Delicate Ebony Parasol
+  AddItem(182694, 341678,  15); -- Stylish Black Parasol
+  -- Dragonflight
+  AddItem(199902, 388275,  30); -- Wayfarer's Compass
+  AddItem(202019, 396172,  30); -- Golden Dragon Goblet
+  AddItem(198857, 385941,  30); -- Lucky Duck
+  -- TWW
+  AddItem(212518, 431709, 60);  -- Vial of Endless Draconic Scales
+  -- Other Toys
   AddItem(174906, 270058,  60); -- Lightning-Forged Augment Rune
   AddItem(153023, 224001,  60); -- Lightforged Augment Rune
   AddItem(160053, 270058,  60); --Battle-Scarred Augment Rune
@@ -1859,15 +1869,6 @@ function SMARTBUFF_BuildItemTables()
   AddItem(167698, 293671,  60); --Secret Fish Goggles
   AddItem(169109, 299445,  60); --Beeholder's Goggles
   AddItem(191341, 371172,  30); -- Tepid Q3
-  -- Shadowlands
-  AddItem(212525, 432001,  15); -- Delicate Ebony Parasol
-  AddItem(182694, 341678,  15); -- Stylish Black Parasol
-  -- Dragonflight
-  AddItem(199902, 388275,  30); -- Wayfarer's Compass
-  AddItem(202019, 396172,  30); -- Golden Dragon Goblet
-  AddItem(198857, 385941,  30); -- Lucky Duck
-  -- TWW
-  AddItem(212518, 431709, 60);  -- Vial of Endless Draconic Scales
 
   -- Potions... but really it's flasks :)
   SMARTBUFF_POTION = {
