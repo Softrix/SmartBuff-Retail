@@ -1,4 +1,4 @@
-﻿-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 -- Taiwan Localization
 -- Big thanks to:
 -- 血之谷-萬年卡奴
@@ -120,7 +120,7 @@ SMARTBUFF_OFT_SPLASHMSGSHORT = "簡短訊息";
 SMARTBUFF_OFTT               = "SmarBuff 開/關";
 SMARTBUFF_OFTT_AUTO          = "Buff提示 開/關";
 SMARTBUFF_OFTT_AUTOTIMER     = "Buff監視時間的間隔";
-SMARTBUFF_OFTT_AUTOCOMBAT    = "戰鬥時保持監視";
+SMARTBUFF_OFTT_AUTOCOMBAT    = "戰鬥時保持監視。\n除非在選項視窗中啟用主「戰鬥中」選項（非本項），否則戰鬥中所有提醒邏輯均不執行。";
 SMARTBUFF_OFTT_AUTOCHAT      = "Buff消失訊息 - 聊天視窗訊息";
 SMARTBUFF_OFTT_AUTOSPLASH    = "Buff消失訊息 - 螢幕中央閃爍訊息";
 SMARTBUFF_OFTT_AUTOSOUND     = "Buff消失訊息 - 聲音提示";
@@ -173,7 +173,7 @@ SMARTBUFF_BST_MANALIMIT      = "力能底線";--力能是技能施放來源,如�
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "僅對自己施法,不對其他隊友施法.";
 SMARTBUFF_BSTT_SELFNOT       = "除了自己,buff所有勾選職業.";
-SMARTBUFF_BSTT_COMBATIN      = "在戰鬥狀態時保持自動觸發技能.";
+SMARTBUFF_BSTT_COMBATIN      = "在戰鬥狀態時保持自動觸發技能。\n除非在選項視窗中啟用主「戰鬥中」選項，否則戰鬥中所有邏輯均不執行。";
 SMARTBUFF_BSTT_COMBATOUT     = "在非戰鬥狀態時保持自動觸發技能.";
 SMARTBUFF_BSTT_MAINHAND      = "Buff主手.";
 SMARTBUFF_BSTT_OFFHAND       = "Buff副手.";

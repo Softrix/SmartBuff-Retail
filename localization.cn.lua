@@ -344,7 +344,7 @@ SMARTBUFF_OFT_OKAY           = "继续"
 SMARTBUFF_OFTT               = "启用智能施法";
 SMARTBUFF_OFTT_AUTO          = "启用BUFF信息提示";
 SMARTBUFF_OFTT_AUTOTIMER     = "BUFF监视时间的间隔";
-SMARTBUFF_OFTT_AUTOCOMBAT    = "战斗时仍保持监视";
+SMARTBUFF_OFTT_AUTOCOMBAT    = "战斗时仍保持监视。\n除非在选项窗口中启用主「战斗中」选项（非本项），否则战斗中所有提醒逻辑均不执行。";
 SMARTBUFF_OFTT_AUTOCHAT      = "在聊天窗口中显示施法有关信息";
 SMARTBUFF_OFTT_AUTOSPLASH    = "在游戏屏幕的中央以闪烁方式显示施法失败的有关信息";
 SMARTBUFF_OFTT_AUTOSOUND     = "声音提示施法失败事件";
@@ -395,7 +395,7 @@ SMARTBUFF_BST_MANALIMIT      = "最低值";
 -- BUFF设置提示信息内容
 SMARTBUFF_BSTT_SELFONLY      = "仅BUFF自己，不给其他队友BUFF。"; 
 SMARTBUFF_BSTT_SELFNOT       = "BUFF所有其他选择的职业，但是不BUFF自己。";
-SMARTBUFF_BSTT_COMBATIN      = "在战斗状态时仍保持自动触发技能";
+SMARTBUFF_BSTT_COMBATIN      = "在战斗状态时仍保持自动触发技能。\n除非在选项窗口中启用主「战斗中」选项，否则战斗中所有逻辑均不执行。";
 SMARTBUFF_BSTT_COMBATOUT     = "在非战斗状态时保持自动触发技能";
 SMARTBUFF_BSTT_MAINHAND      = "给主手武器施放BUFF。";
 SMARTBUFF_BSTT_OFFHAND       = "给副手武器施放BUFF。";

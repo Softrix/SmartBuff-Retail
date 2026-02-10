@@ -118,7 +118,7 @@ SMARTBUFF_OFT_SPLASHMSGSHORT = "Kurze Meldung";
 SMARTBUFF_OFTT               = "Schaltet SmartBuff An/Aus";
 SMARTBUFF_OFTT_AUTO          = "Schaltet die Erinnerung an fehlende Buffs An/Aus";
 SMARTBUFF_OFTT_AUTOTIMER     = "Verzögerung in Sekunden zwischen zwei Checks.";
-SMARTBUFF_OFTT_AUTOCOMBAT    = "Check auch während dem Kampf durchführen.";
+SMARTBUFF_OFTT_AUTOCOMBAT    = "Check auch während dem Kampf durchführen.\nAlle Erinnerungslogik im Kampf ist deaktiviert, sofern die Hauptoption \"im Kampf\" (im Optionenfenster, nicht diese) nicht aktiviert ist.";
 SMARTBUFF_OFTT_AUTOCHAT      = "Zeigt fehlende Buffs als Chat-Meldung an.";
 SMARTBUFF_OFTT_AUTOSPLASH    = "Zeigt fehlende Buffs als Splash-Meldung\nin der mitte des Bildschirms an.";
 SMARTBUFF_OFTT_AUTOSOUND     = "Bei fehlende Buffs erklingt ein Ton.";
@@ -170,7 +170,7 @@ SMARTBUFF_BST_MANALIMIT      = "Grenzwert";
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Bufft nur deinen eigenen Charakter."; 
 SMARTBUFF_BSTT_SELFNOT       = "Bufft alle anderen selektierte Klassen,\nausser deinen eigenen Charakter.";
-SMARTBUFF_BSTT_COMBATIN      = "Bufft innerhalb des Kampfes.";
+SMARTBUFF_BSTT_COMBATIN      = "Bufft innerhalb des Kampfes.\nAlle Kampflogik ist deaktiviert, sofern die Hauptoption \"im Kampf\" (im Optionenfenster) nicht aktiviert ist.";
 SMARTBUFF_BSTT_COMBATOUT     = "Bufft ausserhalb des Kampfes.";
 SMARTBUFF_BSTT_MAINHAND      = "Bufft die Haupthand.";
 SMARTBUFF_BSTT_OFFHAND       = "Bufft die Schildhand.";
