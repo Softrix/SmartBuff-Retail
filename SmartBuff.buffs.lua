@@ -591,9 +591,13 @@ function SMARTBUFF_LoadToys()
     end
   end
 
-  C_ToyBox.SetCollectedShown(true)
-  C_ToyBox.SetAllSourceTypeFilters(true)
-  C_ToyBox.SetFilterString("")
+  -- Reset toybox filters so indexing sees all toys (user may have e.g. expansion source set to none)
+  if (C_ToyBoxInfo and C_ToyBoxInfo.SetDefaultFilters) then
+    C_ToyBoxInfo.SetDefaultFilters();
+  end
+  C_ToyBox.SetCollectedShown(true);
+  C_ToyBox.SetAllSourceTypeFilters(true);
+  C_ToyBox.SetFilterString("");
   local nTotal = C_ToyBox.GetNumTotalDisplayedToys();
 
   if (nLearned <= 0) then
