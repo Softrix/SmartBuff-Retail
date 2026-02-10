@@ -10,7 +10,7 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "090226"; -- EU Date: DDMMYY
+SMARTBUFF_DATE               = "100226"; -- EU Date: DDMMYY
 SMARTBUFF_VERSION            = "r37." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
@@ -1138,7 +1138,8 @@ function SMARTBUFF_SetTemplate(force)
   -- Only block in combat (not when mounted) - setup should work when mounted
   -- Mount check only blocks actual buff checking/casting, not data structure setup
   if (not force and InCombatLockdown()) then return end
-  if (SmartBuffOptionsFrame:IsVisible()) then return end
+  -- When force (e.g. from Options_Init), always run SetBuffs so reminder loop has state even if version prompt left options open
+  if (not force and SmartBuffOptionsFrame:IsVisible()) then return end
 
   -- Ensure currentTemplate is set (fallback to Solo if nil)
   if (currentTemplate == nil) then
@@ -4267,17 +4268,7 @@ function SMARTBUFF_Options_Init(self)
     end
   end
 
-  -- Do a reset of buff data on changes
-  O.VersionNr = O.VersionNr or SMARTBUFF_VERSIONNR -- don't reset if O.VersionNr == nil
-  if (O.VersionNr ~= SMARTBUFF_VERSIONNR) then
-    O.VersionNr = SMARTBUFF_VERSIONNR;
-    StaticPopup_Show("SMARTBUFF_BUFFS_PURGE");
-    SMARTBUFF_SetTemplate()
-    InitBuffOrder(true);
-    SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION, true);
-  end
-  -- TODO: Bring back major reset of everything but also there's a UI button still to do it
-
+  -- Show version prompt (What's New) before any rebuild so user always sees it even if rebuild errors
   if (type(SMARTBUFF_OptionsGlobal) ~= "table") then
     SMARTBUFF_OptionsGlobal = {};
     SMARTBUFF_BuffOrderReset();
@@ -4289,6 +4280,7 @@ function SMARTBUFF_Options_Init(self)
 
   SMARTBUFF_Splash_ChangeFont(0);
 
+  -- Version prompt uses SMARTBUFF_VERSION (string); often only this is bumped, not SMARTBUFF_VERSIONNR
   if (OG.FirstStart ~= SMARTBUFF_VERSION) then
     SMARTBUFF_OptionsFrame_Open(true);
     OG.FirstStart = SMARTBUFF_VERSION;
@@ -4310,6 +4302,18 @@ function SMARTBUFF_Options_Init(self)
       end);
     end
   end
+
+  -- Buff data reset uses O.VersionNr / SMARTBUFF_VERSIONNR (number); only when that changes (purge + rebuild)
+  O.VersionNr = O.VersionNr or SMARTBUFF_VERSIONNR -- don't reset if O.VersionNr == nil
+  if (O.VersionNr ~= SMARTBUFF_VERSIONNR) then
+    O.VersionNr = SMARTBUFF_VERSIONNR;
+    StaticPopup_Show("SMARTBUFF_BUFFS_PURGE");
+    SMARTBUFF_SetTemplate()
+    InitBuffOrder(true);
+    SMARTBUFF_AddMsg("Upgraded SmartBuff to " .. SMARTBUFF_VERSION, true);
+  end
+  -- TODO: Bring back major reset of everything but also there's a UI button still to do it
+
   if (not IsVisibleToPlayer(SmartBuff_KeyButton)) then
     SmartBuff_KeyButton:ClearAllPoints();
     SmartBuff_KeyButton:SetPoint("CENTER", UIParent, "CENTER", 0, 100);
