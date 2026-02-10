@@ -1243,7 +1243,7 @@ function SMARTBUFF_InitSpellIDs()
   -- Poisons
   GetSpellInfoIfNeeded("SMARTBUFF_WOUNDPOISON", 8679, isSpellBookBuff); --"Wound Poison"
   GetSpellInfoIfNeeded("SMARTBUFF_CRIPPLINGPOISON", 3408, isSpellBookBuff); --"Crippling Poison"
---  SMARTBUFF_DEADLYPOISON        = getSpellBookItemByName(2823);   --"Deadly Poison"
+  GetSpellInfoIfNeeded("SMARTBUFF_DEADLYPOISON", 2823, isSpellBookBuff); --"Deadly Poison"
 --  SMARTBUFF_LEECHINGPOISON      = getSpellBookItemByName(108211); --"Leeching Poison"
   GetSpellInfoIfNeeded("SMARTBUFF_INSTANTPOISON", 315584, isSpellBookBuff); --"Instant Poison"
   GetSpellInfoIfNeeded("SMARTBUFF_NUMBINGPOISON", 5761, isSpellBookBuff); --"Numbing Poison"
@@ -1251,7 +1251,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_ATROPHICPOISON", 381637, isSpellBookBuff); --"Atrophic Poison"
 
   -- Rogue buff links
-  S.ChainRoguePoisonsLethal     = { SMARTBUFF_WOUNDPOISON, SMARTBUFF_INSTANTPOISON, SMARTBUFF_AMPLIFYPOISON };
+  S.ChainRoguePoisonsLethal     = { SMARTBUFF_WOUNDPOISON, SMARTBUFF_INSTANTPOISON, SMARTBUFF_AMPLIFYPOISON, SMARTBUFF_DEADLYPOISON};
   S.ChainRoguePoisonsNonLethal  = { SMARTBUFF_CRIPPLINGPOISON, SMARTBUFF_NUMBINGPOISON, SMARTBUFF_ATROPHICPOISON };
 
   -- Paladin
@@ -2231,6 +2231,7 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_NUMBINGPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsNonLethal},
       {SMARTBUFF_CRIPPLINGPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsNonLethal},
       {SMARTBUFF_ATROPHICPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsNonLethal},
+      {SMARTBUFF_DEADLYPOISON, 60, SMARTBUFF_CONST_SELF, nil, S.CheckFishingPole, nil, S.ChainRoguePoisonsLethal},
     };
   end
 
