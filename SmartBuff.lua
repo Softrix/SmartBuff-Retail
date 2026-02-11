@@ -10,8 +10,8 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "100226"; -- EU Date: DDMMYY
-SMARTBUFF_VERSION            = "r37." .. SMARTBUFF_DATE;
+SMARTBUFF_DATE               = "110226"; -- EU Date: DDMMYY
+SMARTBUFF_VERSION            = "r38." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
@@ -313,6 +313,37 @@ local function tfind(t, s)
       if (v and v == s) then
         return k;
       end
+    end
+  end
+  return false;
+end
+
+-- Chain/link entries: spell ID (number), spell name (string), or spell info table (.name). Order can be string or table (saved state).
+-- Resolve numeric IDs at use time so chains/links don't depend on globals being set when assembled.
+local function ResolveChainOrLinkEntry(entry)
+  if (type(entry) == "number") then
+    local name = C_Spell.GetSpellName(entry);
+    if (name and name ~= "") then return name; end
+    return "item:" .. tostring(entry);
+  end
+  if (type(entry) == "table" and entry.name) then return entry.name; end
+  return type(entry) == "string" and entry or nil;
+end
+
+local function ChainContains(chain, buffName)
+  if (not chain or type(chain) ~= "table" or not buffName) then return false; end
+  local nameToMatch = (type(buffName) == "table" and buffName.name) or buffName;
+  if (not nameToMatch) then return false; end
+  if (type(nameToMatch) == "string" and cBuffIndex[nameToMatch] and cBuffs[cBuffIndex[nameToMatch]] and cBuffs[cBuffIndex[nameToMatch]].IDS) then
+    local resolved = C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(cBuffs[cBuffIndex[nameToMatch]].IDS);
+    if (resolved and resolved ~= "") then nameToMatch = resolved; end
+  end
+  for _, entry in ipairs(chain) do
+    if (not entry) then
+    elseif (entry == nameToMatch) then return true;
+    elseif (type(entry) == "table" and entry.name == nameToMatch) then return true;
+    elseif (type(entry) == "number") then
+      if (ResolveChainOrLinkEntry(entry) == nameToMatch) then return true; end
     end
   end
   return false;
@@ -3008,7 +3039,8 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                 if (charges == nil) then charges = -1; end
                 if (charges > 1) then cBuff.CanCharge = true; end
 
-                if (unit ~= "target" and buff == nil and cBuff.DurationS >= 1 and rbTime > 0) then
+                -- Only consider rebuff when the *same* buff (or linked) is on; index > 0 means chained/linked buff found - do not cast another in chain
+                if (unit ~= "target" and buff == nil and (not index or index == 0) and cBuff.DurationS >= 1 and rbTime > 0) then
                   if (SMARTBUFF_IsPlayer(unit)) then
                     if (cBuffTimer[unit] ~= nil and cBuffTimer[unit][buffnS] ~= nil) then
                       local tbt = cBuff.DurationS - (time - cBuffTimer[unit][buffnS]);
@@ -3520,7 +3552,7 @@ function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
         --SMARTBUFF_AddMsgD("Check chained stance: "..defBuff);
         for i = 1, #t, 1 do
           --print("Check for chained stance: "..t[i]);
-          if (t[i] and tfind(buffC, t[i])) then
+          if (t[i] and ChainContains(buffC, t[i])) then
             v = GetBuffSettings(t[i]);
             if (v and v.EnableS) then
               for n = 1, GetNumShapeshiftForms(), 1 do
@@ -3561,11 +3593,7 @@ function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
       -- Do not check linked group buffs
     else
       for n, vt in pairs(buffL) do
-        if (type(vt) == "table") then
-          v = vt.name;
-        else
-          v = vt;
-        end
+        v = ResolveChainOrLinkEntry(vt);
         if (v and v ~= defBuff) then
           SMARTBUFF_AddMsgD("Check linked buff (" .. uname .. "): " .. v);
           buff, icon, count, _, duration, timeleft, caster = UnitBuffByBuffName(unit, v);
@@ -3584,24 +3612,27 @@ function SMARTBUFF_CheckUnitBuffs(unit, buffN, buffT, buffL, buffC)
     end
   end
 
-  -- Check chained buffs
+  -- Check chained buffs (skip rogue poison chains when Dragon-Tempered Blades allows 2 of each type)
   if (defBuff and buffC and #buffC > 1) then
-    local t = B[CS()].Order;
-    if (t and #t > 1) then
-      --SMARTBUFF_AddMsgD("Check chained buff ("..uname.."): "..defBuff);
-      for i = 1, #t, 1 do
-        if (t[i] and tfind(buffC, t[i])) then
-          v = GetBuffSettings(t[i]);
-          local cBI = cBuffs[cBuffIndex[t[i]]];
-          if (v and v.EnableS and cBI) then
-            local b, tl, im = SMARTBUFF_CheckBuff(unit, t[i]);
-            if (b and im) then
-              --SMARTBUFF_AddMsgD("Chained buff found: "..t[i]..", "..tl);
-              if (SMARTBUFF_CheckBuffLink(unit, t[i], cBI.Type, cBI.Links)) then
-                return nil, i, defBuff, tl, -1;
+    local skipRoguePoisonChain = SMARTBUFF_RogueHasDragonTemperedBlades() and SMARTBUFF_IsRoguePoisonChain(buffC);
+    if (not skipRoguePoisonChain) then
+      local t = B[CS()].Order;
+      if (t and #t > 1) then
+        --SMARTBUFF_AddMsgD("Check chained buff ("..uname.."): "..defBuff);
+        for i = 1, #t, 1 do
+          if (t[i] and ChainContains(buffC, t[i])) then
+            v = GetBuffSettings(t[i]);
+            local cBI = cBuffs[cBuffIndex[t[i]]];
+            if (v and v.EnableS and cBI) then
+              local b, tl, im = SMARTBUFF_CheckBuff(unit, t[i]);
+              if (b and im) then
+                --SMARTBUFF_AddMsgD("Chained buff found: "..t[i]..", "..tl);
+                if (SMARTBUFF_CheckBuffLink(unit, t[i], cBI.Type, cBI.Links)) then
+                  return nil, i, defBuff, tl, -1;
+                end
+              elseif (not b and t[i] == defBuff) then
+                return defBuff, nil, nil, nil, nil;
               end
-            elseif (not b and t[i] == defBuff) then
-              return defBuff, nil, nil, nil, nil;
             end
           end
         end
@@ -3641,9 +3672,10 @@ function SMARTBUFF_CheckBuffLink(unit, defBuff, buffT, buffL)
       -- Do not check linked group buffs
     else
       for n, v in pairs(buffL) do
-        if (v and v ~= defBuff) then
-          SMARTBUFF_AddMsgD("Check linked buff (" .. uname .. "): " .. v);
-          buff, icon, count, _, duration, timeleft, caster = UnitBuffByBuffName(unit, v);
+        local linkName = ResolveChainOrLinkEntry(v);
+        if (linkName and linkName ~= defBuff) then
+          SMARTBUFF_AddMsgD("Check linked buff (" .. (UnitName(unit) or "?") .. "): " .. linkName);
+          buff, icon, count, _, duration, timeleft, caster = UnitBuffByBuffName(unit, linkName);
           if (buff) then
             timeleft = (tonumber(timeleft) or 0) - GetTime();
             if (timeleft > 0) then
@@ -3664,15 +3696,18 @@ end
 function SMARTBUFF_CheckBuffChain(unit, buff, chain)
   local i;
   if (buff and chain and #chain > 1) then
-    local t = B[CS()].Order;
-    if (t and #t > 1) then
-      SMARTBUFF_AddMsgD("Check chained buff: " .. buff);
-      for i = 1, #t, 1 do
-        if (t[i] and t[i] ~= buff and tfind(chain, t[i])) then
-          local b, tl, im = SMARTBUFF_CheckBuff(unit, t[i], true);
-          if (b and im) then
-            SMARTBUFF_AddMsgD("Chained buff found: " .. t[i]);
-            return nil, i, buff, tl, -1;
+    local skipRoguePoisonChain = SMARTBUFF_RogueHasDragonTemperedBlades() and SMARTBUFF_IsRoguePoisonChain(chain);
+    if (not skipRoguePoisonChain) then
+      local t = B[CS()].Order;
+      if (t and #t > 1) then
+        SMARTBUFF_AddMsgD("Check chained buff: " .. buff);
+        for i = 1, #t, 1 do
+          if (t[i] and t[i] ~= buff and ChainContains(chain, t[i])) then
+            local b, tl, im = SMARTBUFF_CheckBuff(unit, t[i], true);
+            if (b and im) then
+              SMARTBUFF_AddMsgD("Chained buff found: " .. t[i]);
+              return nil, i, buff, tl, -1;
+            end
           end
         end
       end

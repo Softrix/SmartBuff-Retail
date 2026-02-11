@@ -1199,7 +1199,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_CALL_PET_4", 83244, isSpellBookBuff); -- "Call Pet 4"
   GetSpellInfoIfNeeded("SMARTBUFF_CALL_PET_5", 83245, isSpellBookBuff); -- "Call Pet 5"
   -- Hunter buff links
-  S.LinkAspects  = { SMARTBUFF_AOTC, SMARTBUFF_AOTW, SMARTBUFF_AOTE };
+  S.LinkAspects = { 186257, 193530, 186289 }; -- Aspect of the Cheetah, Wild, Eagle
 --  S.LinkAmmo     = { SMARTBUFF_AMMOI, SMARTBUFF_AMMOP, SMARTBUFF_AMMOF };
 --  S.LinkLoneWolf = { SMARTBUFF_LW1, SMARTBUFF_LW2, SMARTBUFF_LW3, SMARTBUFF_LW4, SMARTBUFF_LW5, SMARTBUFF_LW6, SMARTBUFF_LW7, SMARTBUFF_LW8 };
 
@@ -1220,7 +1220,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_TIDEGUARD", 457481, isSpellBookBuff); --"Tidecaller's Guard" -- Shield. Replaces Flametongue Weapon
 
   -- Shaman buff links
-  S.ChainShamanShield = { SMARTBUFF_LIGHTNINGSHIELD, SMARTBUFF_WATERSHIELD, SMARTBUFF_EARTHSHIELD };
+  S.ChainShamanShield = { 192106, 52127, 974 }; -- Lightning Shield, Water Shield, Earth Shield
 
   -- Warrior
   GetSpellInfoIfNeeded("SMARTBUFF_BATTLESHOUT", 6673, isSpellBookBuff); --"Battle Shout"
@@ -1228,13 +1228,14 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_BERSERKERRAGE", 18499, isSpellBookBuff); --"Berserker Rage"
   GetSpellInfoIfNeeded("SMARTBUFF_BATSTANCE", 386164, isSpellBookBuff); --"Battle Stance"
   GetSpellInfoIfNeeded("SMARTBUFF_DEFSTANCE", 386208, isSpellBookBuff); --"Defensive Stance"
+  GetSpellInfoIfNeeded("SMARTBUFF_BERSERKSTANCE", 386196, isSpellBookBuff); --"Berserker Stance"
 --  SMARTBUFF_GLADSTANCE      = getSpellBookItemByName(156291); --"Gladiator Stance"
   GetSpellInfoIfNeeded("SMARTBUFF_SHIELDBLOCK", 2565, isSpellBookBuff); --"Shield Block"
   GetSpellInfoIfNeeded("SMARTBUFF_WARAVATAR", 107574, isSpellBookBuff); --"Avatar"
 
-  -- Warrior buff links
-  S.ChainWarriorStance = { SMARTBUFF_BATSTANCE, SMARTBUFF_DEFSTANCE }; -- SMARTBUFF_GLADSTANCE commented out - candidate for deletion
-  S.ChainWarriorShout  = { SMARTBUFF_BATTLESHOUT }; -- SMARTBUFF_COMMANDINGSHOUT commented out - candidate for deletion
+  -- Warrior buff chains (spell IDs so chains don't depend on globals at assembly time)
+  S.ChainWarriorStance = { 386164, 386208, 386196 }; -- Battle Stance, Defensive Stance, Berserker Stance
+  S.ChainWarriorShout  = { 6673 }; -- Battle Shout
 
   -- Rogue
   GetSpellInfoIfNeeded("SMARTBUFF_STEALTH", 1784, isSpellBookBuff); --"Stealth"
@@ -1255,8 +1256,32 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_ATROPHICPOISON", 381637, isSpellBookBuff); --"Atrophic Poison"
 
   -- Rogue buff links
-  S.ChainRoguePoisonsLethal     = { SMARTBUFF_WOUNDPOISON, SMARTBUFF_INSTANTPOISON, SMARTBUFF_AMPLIFYPOISON, SMARTBUFF_DEADLYPOISON};
-  S.ChainRoguePoisonsNonLethal  = { SMARTBUFF_CRIPPLINGPOISON, SMARTBUFF_NUMBINGPOISON, SMARTBUFF_ATROPHICPOISON };
+  S.ChainRoguePoisonsLethal     = { 8679, 315584, 381664, 2823 }; -- Wound, Instant, Amplifying, Deadly Poison
+  S.ChainRoguePoisonsNonLethal = { 3408, 5761, 381637 }; -- Crippling, Numbing, Atrophic Poison
+
+  -- Rogue Assassination talent Dragon-Tempered Blades (381801): allows 2 of each poison type; chains make poisons exclusive (1 per chain). When talent is known, ignore poison chains so addon doesn't treat "already have one" as "don't cast another".
+  SMARTBUFF_ROGUE_DRAGON_TEMPERED_BLADES_SPELL_ID = 381801;
+  function SMARTBUFF_RogueHasDragonTemperedBlades()
+    local id = SMARTBUFF_ROGUE_DRAGON_TEMPERED_BLADES_SPELL_ID;
+    if (C_SpellBook and C_SpellBook.IsSpellKnownOrInSpellBook and C_SpellBook.IsSpellKnownOrInSpellBook(id)) then return true; end
+    if (IsSpellKnown and IsSpellKnown(id)) then return true; end
+    return false;
+  end
+  -- Compare chain content (same length, same values per index); entries may be number or string (e.g. spell ID vs name).
+  local function chainContentEqual(a, b)
+    if (not a or not b or type(a) ~= "table" or type(b) ~= "table" or #a ~= #b) then return false; end
+    for i = 1, #a do
+      local va, vb = a[i], b[i];
+      if (va ~= vb) then
+        local na, nb = tonumber(va) or va, tonumber(vb) or vb;
+        if (na ~= nb) then return false; end
+      end
+    end
+    return true;
+  end
+  function SMARTBUFF_IsRoguePoisonChain(chain)
+    return chainContentEqual(chain, S.ChainRoguePoisonsLethal) or chainContentEqual(chain, S.ChainRoguePoisonsNonLethal);
+  end
 
   -- Paladin
   GetSpellInfoIfNeeded("SMARTBUFF_RIGHTEOUSFURY", 25780, isSpellBookBuff); --"Righteous Fury"
@@ -1271,7 +1296,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_RITEOFSANTIFICATION", 433568, true); --"Right of Sanctification, Hero"
   GetSpellInfoIfNeeded("SMARTBUFF_RITEOFADJURATION", 433583, isSpellBookBuff); --"Right of Adjuration, Hero"
   -- Paladin buff links
-  S.ChainPaladinAura     = { SMARTBUFF_CRUSADERAURA, SMARTBUFF_DEVOTIONAURA, SMARTBUFF_CONCENTRATIONAURA };
+  S.ChainPaladinAura = { 32223, 465, 317920 }; -- Crusader Aura, Devotion Aura, Concentration Aura
 
   -- Death Knight
   GetSpellInfoIfNeeded("SMARTBUFF_DANCINGRW", 49028, isSpellBookBuff); --"Dancing Rune Weapon"
@@ -1290,7 +1315,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_BLACKOX", 115315, isSpellBookBuff); --"Summon Black Ox Statue"
   GetSpellInfoIfNeeded("SMARTBUFF_JADESERPENT", 115313, isSpellBookBuff); --"Summon Jade Serpent Statue"
   -- Monk buff links
-  S.ChainMonkStatue = { SMARTBUFF_BLACKOX, SMARTBUFF_JADESERPENT };
+  S.ChainMonkStatue = { 115315, 115313 }; -- Summon Black Ox Statue, Summon Jade Serpent Statue
 --  S.ChainMonkStance = { SMARTBUFF_SOTFIERCETIGER, SMARTBUFF_SOTSTURDYOX, SMARTBUFF_SOTWISESERPENT, SMARTBUFF_SOTSPIRITEDCRANE };
 
   -- Evoker
@@ -1380,8 +1405,9 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BTWWCrystalAugRune1", 453250); -- Crystallization/Crystallized Augment Rune
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BTWWEtherealAugRune", 1234969); -- Ethereal Augmentation from Ethereal Augment Rune
 
-  S.LinkSafariHat           = { SMARTBUFF_BMiscItem9, SMARTBUFF_BMiscItem10 };
-  S.LinkAugment             = { SMARTBUFF_BMiscItem14, SMARTBUFF_BMiscItem14_1, SMARTBUFF_BMiscItem14_2, SMARTBUFF_BMiscItem14_3, SMARTBUFF_BAugmentRune,  SMARTBUFF_BVieledAugment, SMARTBUFF_BDreamAugmentRune, SMARTBUFF_BDraconicRune, SMARTBUFF_BTWWCrystalAugRune1, SMARTBUFF_BTWWEtherealAugRune };
+  -- Links as spell IDs so links don't depend on globals at assembly time
+  S.LinkSafariHat = { 158486, 158474 }; -- Safari Hat, Savage Safari Hat (spell IDs)
+  S.LinkAugment   = { 190668, 175457, 175456, 175439, 367405, 347901, 393438, 393438, 453250, 1234969 }; -- Empower/Focus/Hyper/Stout, Eternal/Veiled/Dream/Draconic/Crystal/Ethereal augment runes
 
   -- Flasks & Elixirs
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTBC1", 28520); --"Flask of Relentless Assault"
@@ -1471,16 +1497,17 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN4", 1235108); -- Flask of Magisters
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN5", 1239355); -- Vicious Thalassian Flask of Honor
 
-  S.LinkFlaskTBC            = { SMARTBUFF_BFLASKTBC1, SMARTBUFF_BFLASKTBC2, SMARTBUFF_BFLASKTBC3, SMARTBUFF_BFLASKTBC4, SMARTBUFF_BFLASKTBC5 };
-  S.LinkFlaskCT7            = { SMARTBUFF_BFLASKCT1, SMARTBUFF_BFLASKCT2, SMARTBUFF_BFLASKCT3, SMARTBUFF_BFLASKCT4, SMARTBUFF_BFLASKCT5 };
-  S.LinkFlaskMoP            = { SMARTBUFF_BFLASKCT61, SMARTBUFF_BFLASKCT62, SMARTBUFF_BFLASKCT63, SMARTBUFF_BFLASKMOP2, SMARTBUFF_BFLASKMOP3, SMARTBUFF_BFLASKMOP4, SMARTBUFF_BFLASKMOP5, SMARTBUFF_BFLASKMOP6 };
-  S.LinkFlaskWoD            = { SMARTBUFF_BFLASKWOD1, SMARTBUFF_BFLASKWOD2, SMARTBUFF_BFLASKWOD3, SMARTBUFF_BFLASKWOD4, SMARTBUFF_BGRFLASKWOD1, SMARTBUFF_BGRFLASKWOD2, SMARTBUFF_BGRFLASKWOD3, SMARTBUFF_BGRFLASKWOD4 };
-  S.LinkFlaskLeg            = { SMARTBUFF_BFLASKLEG1, SMARTBUFF_BFLASKLEG2, SMARTBUFF_BFLASKLEG3, SMARTBUFF_BFLASKLEG4 };
-  S.LinkFlaskBfA            = { SMARTBUFF_BFLASKBFA1, SMARTBUFF_BFLASKBFA2, SMARTBUFF_BFLASKBFA3, SMARTBUFF_BFLASKBFA4, SMARTBUFF_BGRFLASKBFA1, SMARTBUFF_BGRFLASKBFA2, SMARTBUFF_BGRFLASKBFA3, SMARTBUFF_BGRFLASKBFA4 };
-  S.LinkFlaskSL             = { SMARTBUFF_BFLASKSL1, SMARTBUFF_BFLASKSL2 };
-  S.LinkFlaskDF             = { SMARTBUFF_BFlaskDF1, SMARTBUFF_BFlaskDF2, SMARTBUFF_BFlaskDF3, SMARTBUFF_BFlaskDF4, SMARTBUFF_BFlaskDF5, SMARTBUFF_BFlaskDF6, SMARTBUFF_BFlaskDF7, SMARTBUFF_BFlaskDF8, SMARTBUFF_BFlaskDF9, SMARTBUFF_BFlaskDF10, SMARTBUFF_BFlaskDF11, SMARTBUFF_BFlaskDF12, SMARTBUFF_BFlaskDF13_1, SMARTBUFF_BFlaskDF13_2, SMARTBUFF_BFlaskDF13_3, SMARTBUFF_BFlaskDF13_4, SMARTBUFF_BFlaskDF14 };
-  S.LinkFlaskTWW            = { SMARTBUFF_BFLASKTWW1, SMARTBUFF_BFLASKTWW2, SMARTBUFF_BFLASKTWW3, SMARTBUFF_BFLASKTWW4, SMARTBUFF_BFLASKTWW5, SMARTBUFF_BFLASKTWW6, SMARTBUFF_BFLASKTWW7, SMARTBUFF_BFLASKTWW8, SMARTBUFF_BFLASKTWW9, SMARTBUFF_BFLASKTWW10, SMARTBUFF_BFLASKTWWPvP_1, SMARTBUFF_BFLASKTWWPvP_2, SMARTBUFF_BFLASKTWWPvP_3, SMARTBUFF_BFLASKTWWPvP_4}
-  S.LinkFlaskMidnight       = { SMARTBUFF_BFLASKMIDN1, SMARTBUFF_BFLASKMIDN2, SMARTBUFF_BFLASKMIDN3, SMARTBUFF_BFLASKMIDN4, SMARTBUFF_BFLASKMIDN5 };
+  -- Flask/Phial links as spell IDs so links don't depend on globals at assembly time
+  S.LinkFlaskTBC     = { 28520, 28540, 28518, 28521, 28519 }; -- TBC flasks
+  S.LinkFlaskCT7     = { 79471, 79472, 79470, 79469, 94160 }; -- Cataclysm flasks
+  S.LinkFlaskMoP     = { 79640, 79639, 79638, 105694, 105693, 105689, 105691, 105696 }; -- MoP flasks
+  S.LinkFlaskWoD     = { 156077, 156071, 156070, 156073, 156084, 156080, 156079, 156064 }; -- WoD flasks
+  S.LinkFlaskLeg     = { 188035, 188034, 188031, 188033 }; -- Legion flasks
+  S.LinkFlaskBfA     = { 251837, 251836, 251839, 251838, 298837, 298836, 298841, 298839 }; -- BfA flasks
+  S.LinkFlaskSL      = { 307185, 307187 }; -- Shadowlands flasks
+  S.LinkFlaskDF      = { 371345, 371204, 371036, 374000, 371386, 373257, 370652, 371172, 393700, 393717, 371186, 393714, 371348, 371350, 371351, 371353, 393665 }; -- Dragonflight phials
+  S.LinkFlaskTWW     = { 431971, 431972, 431973, 431974, 432021, 432473, 432306, 432265, 432304, 432286, 432403, 432430, 432497, 432452 }; -- TWW flasks
+  S.LinkFlaskMidnight = { 1235111, 1235110, 1235057, 1235108, 1239355 }; -- Midnight flasks
 
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BELIXIRTBC1", 54494); --"Major Agility" B
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BELIXIRTBC2", 33726); --"Mastery" B
@@ -1542,23 +1569,13 @@ function SMARTBUFF_InitSpellIDs()
   SMARTBUFF_SaveBuffRelationsCache();
 
   -- Buff map
-  S.LinkStats = { SMARTBUFF_MOTW, -- SMARTBUFF_BOK, SMARTBUFF_LOTE, SMARTBUFF_LOTWT commented out - candidate for deletion
-                  -- getSpellBookItemByName(159988), -- Bark of the Wild -- candidate for deletion
-                  -- getSpellBookItemByName(203538), -- Greater Blessing of Kings -- candidate for deletion (spell doesn't exist per Wowhead)
-                  -- getSpellBookItemByName(90363),  -- Embrace of the Shale Spider -- candidate for deletion (spell doesn't exist per Wowhead)
-                  -- getSpellBookItemByName(160077)  -- Strength of the Earth -- candidate for deletion (spell doesn't exist per Wowhead)
-                };
+  S.LinkStats = { 1126 }; -- Mark of the Wild (spell ID)
 
-  S.LinkSta   = { SMARTBUFF_PWF, -- SMARTBUFF_COMMANDINGSHOUT and SMARTBUFF_BLOODPACT commented out - candidate for deletion
-                  -- getSpellBookItemByName(50256),  -- Invigorating Roar -- candidate for deletion (spell doesn't exist per Wowhead)
-                  -- getSpellBookItemByName(90364),  -- Qiraji Fortitude -- candidate for deletion (spell doesn't exist per Wowhead)
-                  -- getSpellBookItemByName(160014), -- Sturdiness -- candidate for deletion (spell doesn't exist per Wowhead)
-                  -- getSpellBookItemByName(160003)  -- Savage Vigor -- candidate for deletion (spell doesn't exist per Wowhead)
-                };
+  S.LinkSta   = { 21562 }; -- Power Word: Fortitude (spell ID)
 
   -- S.LinkAp removed - only contained BATTLESHOUT (which doesn't need to link to itself)
 
-  S.LinkInt   = { SMARTBUFF_BOW, SMARTBUFF_AB, SMARTBUFF_DALARANB };
+  S.LinkInt   = { 19742, 1459, 61316 }; -- Blessing of Wisdom, Arcane Intellect, Dalaran Brilliance (spell IDs)
 
   --S.LinkSp    = { SMARTBUFF_DARKINTENT, SMARTBUFF_AB, SMARTBUFF_DALARANB, SMARTBUFF_STILLWATER };
 
@@ -2216,6 +2233,7 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_SHIELDBLOCK, 0.1666, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_BATSTANCE, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainWarriorStance},
       {SMARTBUFF_DEFSTANCE, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainWarriorStance},
+      {SMARTBUFF_BERSERKSTANCE, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainWarriorStance},
       {SMARTBUFF_WARAVATAR, 1.5, SMARTBUFF_CONST_SELF},
     };
   end
