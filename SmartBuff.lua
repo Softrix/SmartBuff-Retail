@@ -318,7 +318,8 @@ local function tfind(t, s)
   return false;
 end
 
--- Chain/link entries: spell ID (number), spell name (string), or spell info table (.name). Order can be string or table (saved state).
+-- Chain/link entries: spell ID (number), spell name (string), or spell info table (.name).
+-- Order can be string or table (saved state).
 -- Resolve numeric IDs at use time so chains/links don't depend on globals being set when assembled.
 local function ResolveChainOrLinkEntry(entry)
   if (type(entry) == "number") then
@@ -334,8 +335,9 @@ local function ChainContains(chain, buffName)
   if (not chain or type(chain) ~= "table" or not buffName) then return false; end
   local nameToMatch = (type(buffName) == "table" and buffName.name) or buffName;
   if (not nameToMatch) then return false; end
-  if (type(nameToMatch) == "string" and cBuffIndex[nameToMatch] and cBuffs[cBuffIndex[nameToMatch]] and cBuffs[cBuffIndex[nameToMatch]].IDS) then
-    local resolved = C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(cBuffs[cBuffIndex[nameToMatch]].IDS);
+  local cbi = nameToMatch and cBuffIndex[nameToMatch];
+  if (type(nameToMatch) == "string" and cbi and cBuffs[cbi] and cBuffs[cbi].IDS) then
+    local resolved = C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(cBuffs[cbi].IDS);
     if (resolved and resolved ~= "") then nameToMatch = resolved; end
   end
   for _, entry in ipairs(chain) do
@@ -424,7 +426,8 @@ local function GetBuffSettings(buff)
   return cBuff;
 end
 
--- Remove duplicate item-type keys in B[spec][template]: keep only canonical "item:ID", migrate or drop link/name orphans so SavedVariables stay clean and we avoid confused state.
+-- Remove duplicate item-type keys in B[spec][template]: keep only canonical "item:ID",
+-- migrate or drop link/name orphans so SavedVariables stay clean and we avoid confused state.
 -- Rate-limited to CRUFT_CLEANUP_CHUNK keys per iteration; continues next frame if more keys remain.
 local CRUFT_CLEANUP_CHUNK = 500;
 local function CleanBuffSettingsCruftOneTable(t, keys, startIdx)
@@ -504,7 +507,8 @@ local function InitBuffSettings(cBI, reset)
     local key = buff;
     if (type(buff) == "string") then
       if (not id) then id = tonumber(string.match(buff, "item:(%d+)")); end
-      -- Item-type buffs: resolve id from ExpectedData when buff has no "item:ID" (e.g. init timing / name) so we use canonical key and restore EnableS from cache
+      -- Item-type buffs: resolve id from ExpectedData when buff has no "item:ID" (e.g. init timing/name).
+      -- Use canonical key and restore EnableS from cache.
       if (not id and SMARTBUFF_ExpectedData and SMARTBUFF_ExpectedData.items) then
         for varName, itemId in pairs(SMARTBUFF_ExpectedData.items) do
           if (_G[varName] == buff) then id = itemId; break; end
@@ -582,7 +586,8 @@ local function InitBuffOrder(reset)
     SMARTBUFF_AddMsgD("Reset buff order");
   end
 
-  -- Normalize Order: item-type keys to canonical "item:ID" and dedupe (single source of truth; avoids link vs placeholder duplicates on reload)
+  -- Normalize Order: item-type keys to canonical "item:ID" and dedupe (single source of truth;
+  -- avoids link vs placeholder duplicates on reload).
   -- Also normalize numeric item IDs (corrupt/old saved state) so they don't show as separate rows
   do
     local function idFrom(s)
@@ -741,7 +746,8 @@ function SMARTBUFF_OnLoad(self)
 
   SMARTBUFF_InitSpellIDs();
   SMARTBUFF_InitItemList();
-  -- BuildItemTables and InitSpellList run only in SetBuffs when SMARTBUFF_BUFFLIST == nil (single init path, avoids duplicate potion/flask entries)
+  -- BuildItemTables and InitSpellList run only in SetBuffs when SMARTBUFF_BUFFLIST == nil
+  -- (single init path, avoids duplicate potion/flask entries).
 
   --DEFAULT_CHAT_FRAME:AddMessage("SB OnLoad");
 end
@@ -754,7 +760,8 @@ function SMARTBUFF_OnEvent(self, event, ...)
 local arg1, arg2, arg3, arg4, arg5 = ...;
 
   if ((event == "UNIT_NAME_UPDATE" and arg1 == "player") or event == "PLAYER_ENTERING_WORLD") then
-    -- Clear valid-spells on login/reload so next buff list build re-validates (runs before isInit return so combat doesn't skip it)
+    -- Clear valid-spells on login/reload so next buff list build re-validates
+    -- (runs before isInit return so combat doesn't skip it).
     if (event == "PLAYER_ENTERING_WORLD" and (arg1 or arg2) and SmartBuffValidSpells) then
       SMARTBUFF_ClearValidSpells();
     end
@@ -1706,7 +1713,8 @@ local function ExtractItemID(item)
 end
 
 -- Helper for UI display: resolve spell/item IDs and varNames to display names using cache first, then API.
--- buffType (optional): when provided and SMARTBUFF_IsItem(buffType), resolve numeric/ID as item only; when spell-like, spell only; when nil, keep current fallback.
+-- buffType (optional): when provided and SMARTBUFF_IsItem(buffType), resolve numeric/ID as item only;
+-- when spell-like, spell only; when nil, keep current fallback.
 local function GetBuffDisplayName(buffName, buffType)
   if (buffName == nil) then return nil; end
 
@@ -3833,7 +3841,8 @@ end
 
 -- IsFishing(unit)
 function SMARTBUFF_IsFishing(unit)
-  -- name, displayName, textureID, startTimeMs, endTimeMs, isTradeskill, notInterruptible, spellID, isEmpowered, numEmpowerStages = UnitChannelInfo(unitToken)
+  -- name, displayName, textureID, startTimeMs, endTimeMs, isTradeskill, notInterruptible,
+  -- spellID, isEmpowered, numEmpowerStages = UnitChannelInfo(unitToken)
   local spell = UnitChannelInfo(unit);
   if (spell ~= nil and SMARTBUFF_FISHING.name ~= nil and spell == SMARTBUFF_FISHING.name) then
     SMARTBUFF_AddMsgD("Channeling "..SMARTBUFF_FISHING.name);
@@ -4736,8 +4745,8 @@ end
 
 function SMARTBUFF_ToggleFixBuffing()
   O.SBButtonFix = not O.SBButtonFix;
-  if not O.SBButtonFix then
-    C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal);
+  if not O.SBButtonFix and not InCombatLockdown() then
+    pcall(C_CVar.SetCVar, "ActionButtonUseKeyDown", O.SBButtonDownVal);
   end
 end
 
@@ -5489,7 +5498,9 @@ function SMARTBUFF_OnPreClick(self, button, down)
   else
     td = GlobalCd;
   end
-  -- If we requested a cast but never got SUCCEEDED/FAILED (cast never went off), expire cooldown so scroll can retry. Do not expire while player is casting (e.g. long pet summon). Safe if combat interrupts (FAILED fires) or cast started then combat (SUCCEEDED/FAILED when done).
+  -- If we requested a cast but never got SUCCEEDED/FAILED (cast never went off), expire cooldown
+  -- so scroll can retry. Do not expire while player is casting (e.g. long pet summon).
+  -- Safe if combat interrupts (FAILED fires) or cast started then combat (SUCCEEDED/FAILED when done).
   local isCasting = false;
   do
     local ok, name = pcall(UnitCastingInfo, "player");
@@ -5516,19 +5527,12 @@ function SMARTBUFF_OnPreClick(self, button, down)
   --sScript = self:GetScript("OnClick");
   --self:SetScript("OnClick", SMARTBUFF_OnClick);
 
-  if O.SBButtonFix then
-    -- macros really dont like the cvar set to 1 so lets test we are
-    -- actually clicking the action button rather than using the scroll
-    -- mouse to ensure buffing works for both.
-    if button == "LeftButton" or button == "RightButton" then
-      -- clicked manually either the action button or macro
-      -- using a mouse button - crazy blizzard issues strike
-      -- again :)
-      C_CVar.SetCVar("ActionButtonUseKeyDown", 0);
-    else
-      -- assume this is a scroll mouse.
-      C_CVar.SetCVar("ActionButtonUseKeyDown", 1);
-    end
+  -- Macros don't like ActionButtonUseKeyDown=1. Use 0 for click, 1 for scroll
+  -- so both work. Skip in combat (SetCVar is protected).
+  if O.SBButtonFix and not InCombatLockdown() then
+    local isClick = (button == "LeftButton" or button == "RightButton");
+    local val = isClick and 0 or 1;
+    pcall(C_CVar.SetCVar, "ActionButtonUseKeyDown", val);
   end
 
   --SMARTBUFF_AddMsgD("Last buff type: " .. lastBuffType .. ", set cd: " .. td);
@@ -5612,9 +5616,9 @@ function SMARTBUFF_OnPostClick(self, button, down)
 
   SMARTBUFF_SetButtonTexture(SmartBuff_KeyButton, imgSB);
 
-  -- ensure we reset the cvar back to the original players setting.
+  -- Ensure we reset the cvar back to the original player's setting.
   if O.SBButtonFix then
-    C_CVar.SetCVar("ActionButtonUseKeyDown", O.SBButtonDownVal);
+    pcall(C_CVar.SetCVar, "ActionButtonUseKeyDown", O.SBButtonDownVal);
   end
 
   --SMARTBUFF_AddMsgD("Button reseted, " .. button);
