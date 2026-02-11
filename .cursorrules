@@ -4,6 +4,7 @@
 - Use the same code style as existing files
 - Follow Lua conventions used in the project
 - Use 2-space indentation for this repository
+- Wrap lines at 130 characters; comments especially should not be one-liners that stretch into eternity
 - Use descriptive variable names following the existing pattern (e.g., cBuff, bufferSize, buffnS)
 - Keep functions brief and focused
 - Add debug messages using SMARTBUFF_AddMsgD() for troubleshooting
