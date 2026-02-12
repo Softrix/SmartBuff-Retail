@@ -32,9 +32,12 @@ SMARTBUFF_UNDEAD    = "No-muerto";
 -- Classes
 SMARTBUFF_CLASSES = {"Druida", "Cazador", "Mago", "Palad\195\173n", "Sacerdote", "P\195\173caro", "Cham\195\161n", "Brujo", "Guerrero", "Caballero de la Muerte", "Monje", "Cazador de demonios", "Evoker", "Mascota de cazador", "Mascota de brujo", "Mascota de caballero de la Muerte", "Tanque", "Sanador", "Infligir da\195\177o"};
 
--- Templates and Instances
-SMARTBUFF_TEMPLATES = {"En solitario", "Grupo", "BdB", "Banda", "Piedra angular mítica", "Visión horrífica", "Sondaje", "Campo de batalla", "Arena", "La Aguja del Vacío", "La Grieta de los Sueños", "Marcha sobre Quel'Danas", "Palacio de Nerub-ar", "Liberación de Submina", "Personalizado 1", "Personalizado 2", "Personalizado 3", "Personalizado 4", "Personalizado 5"};
-SMARTBUFF_INSTANCES = {"La Aguja del Vacío", "La Grieta de los Sueños", "Marcha sobre Quel'Danas", "Palacio de Nerub-ar", "Liberación de Submina"};
+-- Templates: split into generics, instances, custom. Assembled into SMARTBUFF_TEMPLATES at load (SmartBuff.lua).
+-- GENERICS: Enum.SmartBuffGroup (SmartBuff.lua) matches this order. Do not reorder or add/remove without updating both.
+SMARTBUFF_TEMPLATES_GENERICS = {"En solitario", "Grupo", "BdB", "Banda", "Piedra angular mítica", "Visión horrífica", "Sondaje", "Campo de batalla", "Arena"};
+-- INSTANCES: Must match GetInstanceInfo() name exactly. Only raids are currently supported; 5-man instance switching is not supported.
+SMARTBUFF_TEMPLATES_INSTANCES = {"La Aguja del Vacío", "La Grieta de los Sueños", "Marcha sobre Quel'Danas", "Palacio de Nerub-ar", "Liberación de Submina"};
+SMARTBUFF_TEMPLATES_CUSTOM = {"Personalizado 1", "Personalizado 2", "Personalizado 3", "Personalizado 4", "Personalizado 5"};
 
 -- Mount
 SMARTBUFF_MOUNT = "Aumenta la velocidad en un (%d+)%%.";

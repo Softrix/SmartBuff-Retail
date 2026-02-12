@@ -1,4 +1,4 @@
-## Interface: 120000, 120001
+﻿## Interface: 120000, 120001
 ## Title: SmartBuff |cff0099ffRetail|r
 ## Version: 38.120000
 ## Author: |cff20d2ffCodermik & Aeldra|r (EU-Proudmoore)

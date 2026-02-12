@@ -31,9 +31,13 @@ SMARTBUFF_UNDEAD    = "Untot";
 -- Classes
 SMARTBUFF_CLASSES = {"Druide", "Jäger", "Magier", "Paladin", "Priester", "Schurke", "Schamane", "Hexenmeister", "Krieger", "Todesritter", "Mönch", "Dämonenjäger", "Evoker", "Jäger Pet", "Hexer Pet", "Todesritter Pet", "Tank", "Heiler", "Schadensverursacher"};
 
--- Templates and Instances
-SMARTBUFF_TEMPLATES = {"Solo", "Gruppe", "LFG", "Raid", "Mytisk nøgle", "Rædselsvision", "Dyk", "Slagmark", "Arena", "Tomspiret", "Drømmeriften", "March mod Quel'Danas", "Nerub-ar Palads", "Befrielse af Undermine", "Tilpasset 1", "Tilpasset 2", "Tilpasset 3", "Tilpasset 4", "Tilpasset 5"};
-SMARTBUFF_INSTANCES = {"Tomspiret", "Drømmeriften", "March mod Quel'Danas", "Nerub-ar Palads", "Befrielse af Undermine"};
+-- Templates: split into generics, instances, custom. Assembled into SMARTBUFF_TEMPLATES at load (SmartBuff.lua).
+-- GENERICS: Enum.SmartBuffGroup (SmartBuff.lua) matches this order. Do not reorder or add/remove without updating both.
+-- Values must match WoW UI strings for the locale. Instance names must match GetInstanceInfo() return value exactly.
+SMARTBUFF_TEMPLATES_GENERICS = {"Solo", "Gruppe", "Raidsuche", "Raid", "Mythischer Schlüsselstein", "Schreckliche Vision", "Tiefenbohrung", "Schlachtfeld", "Arena"};
+-- INSTANCES: Must match GetInstanceInfo() name exactly. Only raids are currently supported; 5-man instance switching is not supported.
+SMARTBUFF_TEMPLATES_INSTANCES = {"Der Leerenpeiler", "Der Traumriss", "Marsch auf Quel'Danas", "Nerub-ar Palast", "Befreiung von Untermine"};
+SMARTBUFF_TEMPLATES_CUSTOM = {"Benutzerdefiniert 1", "Benutzerdefiniert 2", "Benutzerdefiniert 3", "Benutzerdefiniert 4", "Benutzerdefiniert 5"};
 
 -- Mount
 SMARTBUFF_MOUNT = "Erhöht Tempo um (%d+)%%.";
@@ -168,7 +172,7 @@ SMARTBUFF_BST_REMINDER       = "Benachrichtigung";
 SMARTBUFF_BST_MANALIMIT      = "Grenzwert";
 
 -- Buffsetup Frame Tooltip Text
-SMARTBUFF_BSTT_SELFONLY      = "Bufft nur deinen eigenen Charakter."; 
+SMARTBUFF_BSTT_SELFONLY      = "Bufft nur deinen eigenen Charakter.";
 SMARTBUFF_BSTT_SELFNOT       = "Bufft alle anderen selektierte Klassen,\nausser deinen eigenen Charakter.";
 SMARTBUFF_BSTT_COMBATIN      = "Bufft innerhalb des Kampfes.\nAlle Kampflogik ist deaktiviert, sofern die Hauptoption \"im Kampf\" (im Optionenfenster) nicht aktiviert ist.";
 SMARTBUFF_BSTT_COMBATOUT     = "Bufft ausserhalb des Kampfes.";

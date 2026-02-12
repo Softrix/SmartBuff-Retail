@@ -25,6 +25,15 @@ SMARTBUFF_DESC               = "Cast the most important buffs on you, your tanks
 SMARTBUFF_VERS_TITLE         = SMARTBUFF_TITLE .. " " .. SMARTBUFF_VERSION;
 SMARTBUFF_OPTIONS_TITLE      = SMARTBUFF_VERS_TITLE .. " Retail ";
 
+-- Assemble SMARTBUFF_TEMPLATES from generics + instances + custom (localization sets the three parts).
+-- Order matters: generics first (indices 1-9), then instances (10-14), then custom (15-19). Matches Enum.SmartBuffGroup.
+do
+  SMARTBUFF_TEMPLATES = {}
+  for _, src in ipairs({SMARTBUFF_TEMPLATES_GENERICS, SMARTBUFF_TEMPLATES_INSTANCES, SMARTBUFF_TEMPLATES_CUSTOM}) do
+    for _, v in ipairs(src) do table.insert(SMARTBUFF_TEMPLATES, v) end
+  end
+end
+
 -- addon name
 local addonName              = ...
 local SmartbuffPrefix        = "Smartbuff";
@@ -950,7 +959,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
           cBuffTimer[unit] = {};
         end
         cBuffTimer[unit][spell] = GetTime();
-        
+
         -- Check if this is an ITEM type creation spell (like Create Healthstone)
         -- If so, reset tLastCheck to prevent immediate extra check before item appears in inventory
         if (spell and cBuffIndex[spell]) then
@@ -962,7 +971,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
             SMARTBUFF_AddMsgD("ITEM type spell cast succeeded, resetting check timer");
           end
         end
-        
+
         if (name ~= nil) then
           SMARTBUFF_AddMsg(name .. ": " .. spell .. " " .. SMARTBUFF_MSG_BUFFED);
           currentUnit = nil;
@@ -1152,24 +1161,12 @@ function SMARTBUFF_AddMsgD(msg, r, g, b)
   end
 end
 
-Enum.SmartBuffGroup = {
-  Solo = 1,
-  Party = 2,
-  LFR = 3,
-  Raid = 4,
-  MythicKeystone = 5,
-  HorrificVision = 6,
-  Delve = 7,
-  Battleground = 8,
-  Arena = 9,
-  NerubarRaid = 10,
-  UndermineRaid = 11,
-  Custom1 = 12,
-  Custom2 = 13,
-  Custom3 = 14,
-  Custom4 = 15,
-  Custom5 = 16
-}
+-- Derived from template structure: indices 1-9 = GENERICS (order must match localization TEMPLATES_GENERICS; update both if changed).
+-- Instances (10-14) and custom (15-19) use templateLookup; no enum entries needed.
+Enum.SmartBuffGroup = {}
+for i, key in ipairs({"Solo", "Party", "LFR", "Raid", "MythicKeystone", "HorrificVision", "Delve", "Battleground", "Arena"}) do
+  Enum.SmartBuffGroup[key] = i
+end
 
 -- Set the current template and create an array of units
 function SMARTBUFF_SetTemplate(force)
@@ -1183,55 +1180,104 @@ function SMARTBUFF_SetTemplate(force)
   if (currentTemplate == nil) then
     currentTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo];
   end
-  
+
   local newTemplate = currentTemplate -- default to old template
-
-  -- if autoswitch no group change is enabled, load new template based on group composition
-  if O.AutoSwitchTemplate then
-    newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo];
-    local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID = GetInstanceInfo()
-    --printd("name: " .. name, ", instanceType: " .. instanceType .. ", difficultyID: " .. difficultyID .. ", difficultyName: " .. difficultyName, ", instanceID: " .. instanceID)
-
-    if IsInRaid() then
-      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid];
-    elseif IsInGroup() then
-      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party];
-    end
-    -- check instance type (allows solo raid clearing, etc)
-    if instanceType == "raid" then
-      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid];
-      if LfgDungeonID then
-        newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.LFR];
-      end
-    elseif instanceType == "party" then
-      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party];
-      if (difficultyID == 8) then
-        newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.MythicKeystone];
-      end
-    end
-    if (difficultyID == 152) then
-      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.HorrificVision];
-    elseif (difficultyID == 208) then
-      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Delve];
-    end
-  end
-
-  -- if autoswitch on instance change is enabled, load new instance template if any, unless in LFR
+  local switchReason = nil -- reason for auto-switch (for chat message)
   local isRaidInstanceTemplate = false
-  if O.AutoSwitchTemplateInst and not (newTemplate == SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.LFR]) then
-    local zone = GetRealZoneText()
-    local instances = Enum.MakeEnumFromTable(SMARTBUFF_INSTANCES);
-    local i = instances[zone]
-    if i and SMARTBUFF_TEMPLATES[i + Enum.SmartBuffGroup.Arena] then
-      newTemplate = SMARTBUFF_TEMPLATES[i + Enum.SmartBuffGroup.Arena]
-      isRaidInstanceTemplate = true
+
+  -- if autoswitch enabled, determine template by type/name in enum order, Solo as fallback
+  if O.AutoSwitchTemplate then
+    local instName, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID = GetInstanceInfo()
+    -- Direct lookup: instName (localized) -> template index in assembled SMARTBUFF_TEMPLATES
+    local templateLookup = Enum.MakeEnumFromTable(SMARTBUFF_TEMPLATES)
+
+    -- Check by type in enum order; difficultyID first (Horrific Vision, Delve) since they can overlap party/raid
+    if difficultyID == 152 then
+      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.HorrificVision]
+      switchReason = "horrific vision"
+    elseif difficultyID == 208 then
+      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Delve]
+      switchReason = "delve"
+    elseif instanceType == "party" then
+      if difficultyID == 8 then
+        newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.MythicKeystone]
+        switchReason = "mythic keystone"
+      else
+        newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party]
+        switchReason = "party"
+      end
+    elseif instanceType == "raid" then
+      if LfgDungeonID then
+        newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.LFR]
+        switchReason = "LFR"
+      elseif O.AutoSwitchTemplateInst then
+        -- instName from GetInstanceInfo is localized; match directly in assembled SMARTBUFF_TEMPLATES
+        local templateIdx = templateLookup[instName] or templateLookup[GetRealZoneText()]
+        if templateIdx and SMARTBUFF_TEMPLATES[templateIdx] then
+          newTemplate = SMARTBUFF_TEMPLATES[templateIdx]
+          isRaidInstanceTemplate = true
+          switchReason = "instance"
+        end
+        if not isRaidInstanceTemplate then
+          newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid]
+          switchReason = "raid"
+        end
+      else
+        newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid]
+        switchReason = "raid"
+      end
+    elseif instanceType == "pvp" then
+      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Battleground] or SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo]
+      switchReason = "battleground"
+    elseif instanceType == "arena" then
+      newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Arena] or SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo]
+      switchReason = "arena"
+    end
+
+    -- If nothing matched by type, try instance name (e.g. scenario or other with matching template)
+    if not switchReason and O.AutoSwitchTemplateInst then
+      local templateIdx = templateLookup[instName] or templateLookup[GetRealZoneText()]
+      if templateIdx and SMARTBUFF_TEMPLATES[templateIdx] then
+        newTemplate = SMARTBUFF_TEMPLATES[templateIdx]
+        isRaidInstanceTemplate = true
+        switchReason = "instance"
+      end
+    end
+
+    -- Fallback to Solo
+    if not switchReason then
+      if instanceType and instanceType ~= "none" then
+        -- In an instance but no template matched; use group context if available
+        if IsInRaid() then
+          newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid]
+          switchReason = "raid"
+        elseif IsInGroup() then
+          newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party]
+          switchReason = "party"
+        else
+          newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo]
+          switchReason = "unknown instance"
+        end
+      else
+        -- Open world
+        if IsInRaid() then
+          newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid]
+          switchReason = "raid"
+        elseif IsInGroup() then
+          newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party]
+          switchReason = "party"
+        else
+          newTemplate = SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Solo]
+          switchReason = "solo"
+        end
+      end
     end
   end
 
   if currentTemplate ~= newTemplate then
     SMARTBUFF_AddMsgD("Current tmpl: " .. currentTemplate or "nil" .. " - new tmpl: " .. newTemplate or "nil");
-    SMARTBUFF_AddMsg(SMARTBUFF_TITLE ..
-    " :: " .. SMARTBUFF_OFT_AUTOSWITCHTMP .. ": " .. currentTemplate .. " -> " .. newTemplate);
+    local reason = switchReason or "instance"
+    SMARTBUFF_AddMsg(SMARTBUFF_TITLE .. ": " .. SMARTBUFF_OFT_AUTOSWITCHTMP .. " (" .. reason .. ") " .. currentTemplate .. " -> " .. newTemplate);
   end
   currentTemplate = newTemplate;
 
@@ -1432,7 +1478,7 @@ function SMARTBUFF_GetCurrentBuffCounts()
     ITEM = 0,
     TOTAL = 0
   };
-  
+
   -- Count from cBuffs array (final list)
   local maxIndex = 0;
   for i, _ in pairs(cBuffs) do
@@ -1440,7 +1486,7 @@ function SMARTBUFF_GetCurrentBuffCounts()
       maxIndex = i;
     end
   end
-  
+
   for i = 1, maxIndex do
     if (cBuffs[i] and cBuffs[i].Type) then
       local buffType = cBuffs[i].Type;
@@ -1450,7 +1496,7 @@ function SMARTBUFF_GetCurrentBuffCounts()
       counts.TOTAL = counts.TOTAL + 1;
     end
   end
-  
+
   return counts;
 end
 
@@ -1463,16 +1509,16 @@ function SMARTBUFF_VerifyBuffList()
     -- No cache exists yet - first run, accept whatever we have
     return true;
   end
-  
+
   local currentCounts = SMARTBUFF_GetCurrentBuffCounts();
   local expectedCounts = cache.expectedCounts;
-  
+
   -- If current total is significantly lower than cache (< 80%), items might still be loading
   -- But we accept it anyway (AllTheThings pattern: accept partial data)
   if (expectedCounts.TOTAL > 0 and currentCounts.TOTAL < expectedCounts.TOTAL * 0.8) then
     return false;  -- Likely incomplete, but we'll accept it
   end
-  
+
   -- If current total matches or exceeds cache, initialization is likely complete
   -- (exceeding is OK - player may have acquired new items)
   return true;
@@ -1653,7 +1699,7 @@ function SMARTBUFF_SetBuffs()
   -- Accept current state (even if incomplete) - following AllTheThings pattern
   -- Don't retry indefinitely - accept partial data and let events handle updates
   local currentCounts = SMARTBUFF_GetCurrentBuffCounts();
-  
+
   -- Count toys separately (stored in S.Toybox, not in static tables)
   local toyCount = 0;
   if (SG.Toybox) then
@@ -1661,11 +1707,11 @@ function SMARTBUFF_SetBuffs()
       toyCount = toyCount + 1;
     end
   end
-  
+
   -- Note: currentCounts includes items/spells that made it into cBuffs[]
   -- Items/spells that returned nil during SMARTBUFF_SetBuff() were filtered out
   -- This is expected - they'll be added when ITEM_DATA_LOAD_RESULT/SPELL_DATA_LOAD_RESULT fires
-  
+
   -- Save cache with current state (accept partial data like AllTheThings)
   -- For items use only canonical key "item:ID" and that entry's state so duplicate keys (link vs canonical) don't both get added
   local enabledBuffsSnapshot = {};
@@ -1881,7 +1927,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
     elseif (cBuffs[i].BuffS) then
       cBuffs[i].IDS, cBuffs[i].BookID = SMARTBUFF_GetSpellID(cBuffs[i].BuffS);
     end
-    
+
     -- Filter invalid/uncastable spells using valid spells cache
     if (cBuffs[i].IDS and SmartBuffValidSpells and SmartBuffValidSpells.spells) then
       local isValid = SmartBuffValidSpells.spells[cBuffs[i].IDS];
@@ -1982,14 +2028,14 @@ function SMARTBUFF_SetBuff(buff, i, ia)
           end
         end
       end
-      
+
       -- If not in cache, try API call
       if (minLevel == nil) then
         local _, _, _, _, apiMinLevel, _, _, _, _, apiTexture = C_Item.GetItemInfo(cBuffs[i].BuffS);
         minLevel = apiMinLevel;
         texture = apiTexture;
       end
-      
+
       if (minLevel == nil) then
         -- Item data not loaded yet - request loading and keep buff (AllTheThings pattern: accept partial data)
         local itemID = ExtractItemID(cBuffs[i].BuffS);
@@ -2027,14 +2073,14 @@ function SMARTBUFF_SetBuff(buff, i, ia)
           end
         end
       end
-      
+
       -- If not in cache, try API call
       if (minLevel == nil) then
         local _, _, _, _, apiMinLevel, _, _, _, _, apiTexture = C_Item.GetItemInfo(cBuffs[i].BuffS);
         minLevel = apiMinLevel;
         texture = apiTexture;
       end
-      
+
       SMARTBUFF_AddMsgD("  GetItemInfo(BuffS) minLevel: " .. tostring(minLevel));
       if (minLevel == nil) then
         -- Item data not loaded yet - request loading and keep buff (AllTheThings pattern: accept partial data)
@@ -3932,17 +3978,17 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
     end
     return nil, nil, 0, 0, nil, nil;
   end
-  
+
   -- Handle special case: "ScanBagsForSBInit" is just a trigger, not a real item
   if (type(reagent) == "string" and reagent == "ScanBagsForSBInit") then
     return nil, nil, 0, 0, nil, nil;
   end
-  
+
   if (O.IncludeToys) then
     -- reagent can be itemLink (string), itemID (number), or placeholder "item:12345"
     local link = nil;
     local itemID = nil;
-    
+
     if (type(reagent) == "string") then
       -- Check if it's a full itemLink (starts with |c)
       if (string.match(reagent, "^|c")) then
@@ -3964,7 +4010,7 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
       local _, itemLink = C_Item.GetItemInfo(reagent);
       link = itemLink;
     end
-    
+
     -- Try direct link match first
     if (link) then
       local toy = SG.Toybox[link];
@@ -3976,7 +4022,7 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
         return 999, toy[1], 1, 1, toy[1], toy[2];
       end
     end
-    
+
     -- O(1) toy lookup by itemID via ToyboxByID index (avoids O(n) pairs over Toybox every check)
     if (itemID and SG.ToyboxByID) then
       local toy = SG.ToyboxByID[itemID];
@@ -3995,9 +4041,9 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
   local firstSlot = nil;
   local firstCount = 0;
   local texture = nil;
-  
+
   if not (chain) then chain = { reagent }; end
-  
+
   if (debug) then
     SMARTBUFF_AddMsgD("FindItem: Searching for reagent=" .. tostring(reagent) .. ", chain size=" .. #chain);
     for i = 1, #chain do
@@ -4005,7 +4051,7 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
       SMARTBUFF_AddMsgD("  Chain[" .. i .. "]: " .. tostring(chainItem) .. " (type: " .. type(chainItem) .. ")");
     end
   end
-  
+
   for bag = 0, NUM_BAG_FRAMES do
     for slot = 1, C_Container.GetContainerNumSlots(bag) do
       local bagItemID = C_Container.GetContainerItemID(bag, slot);
@@ -4019,7 +4065,7 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
           elseif type(chain[i]) == "string" then
             buffItemID = tonumber(string.match(chain[i], "item:(%d+)"));
           end
-          
+
           if buffItemID and buffItemID == bagItemID then
             local containerInfo = C_Container.GetContainerItemInfo(bag, slot);
             if (containerInfo) then
@@ -4033,7 +4079,7 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
               end
               -- Sum all matches for total count
               totalCount = totalCount + containerInfo.stackCount;
-              
+
               if (debug) then
                 SMARTBUFF_AddMsgD("FindItem: MATCH! bagItemID=" .. bagItemID .. " matches chain[" .. i .. "]=" .. buffItemID);
               end
@@ -4043,11 +4089,11 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
       end
     end
   end
-  
+
   if (debug and totalCount == 0) then
     SMARTBUFF_AddMsgD("FindItem: Not found in inventory, returning count=0");
   end
-  
+
   return firstBag, firstSlot, firstCount, totalCount, itemID, texture;
 end
 

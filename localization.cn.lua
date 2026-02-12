@@ -264,9 +264,12 @@ SMARTBUFF_DEMONTYPE = "小鬼";
 -- 职业
 SMARTBUFF_CLASSES = {"德鲁伊", "猎人", "法师", "圣骑士", "牧师", "潜行者", "萨满祭司", "术士", "战士", "死亡骑士", "武僧", "恶魔猎手", "唤魔者", "猎人宠物", "术士宠物", "Death Knight Pet", "Tank", "Healer", "Damage Dealer"};
 
--- 模板和地图
-SMARTBUFF_TEMPLATES = {"单人", "小队", "随机团队", "团队", "史诗钥石", "惊悚幻象", "地心探险", "战场", "竞技场", "虚空尖塔", "梦境裂隙", "进军奎尔丹纳斯", "奈幽贝扎宫", "安德麦恩解放", "自定义 1", "自定义 2", "自定义 3", "自定义 4", "自定义 5"};
-SMARTBUFF_INSTANCES = {"虚空尖塔", "梦境裂隙", "进军奎尔丹纳斯", "奈幽贝扎宫", "安德麦恩解放"};
+-- 模板和地图: split into generics, instances, custom. Assembled into SMARTBUFF_TEMPLATES at load (SmartBuff.lua).
+-- GENERICS: Enum.SmartBuffGroup (SmartBuff.lua) matches this order. Do not reorder or add/remove without updating both.
+SMARTBUFF_TEMPLATES_GENERICS = {"单人", "小队", "随机团队", "团队", "史诗钥石", "惊悚幻象", "地心探险", "战场", "竞技场"};
+-- INSTANCES: Must match GetInstanceInfo() name exactly. Only raids are currently supported; 5-man instance switching is not supported.
+SMARTBUFF_TEMPLATES_INSTANCES = {"虚空尖塔", "梦境裂隙", "进军奎尔丹纳斯", "奈幽贝尔宫殿", "安德麦恩解放"};
+SMARTBUFF_TEMPLATES_CUSTOM = {"自定义 1", "自定义 2", "自定义 3", "自定义 4", "自定义 5"};
 
 -- 骑乘
 SMARTBUFF_MOUNT = "速度提高(%d+)%%.";
@@ -393,7 +396,7 @@ SMARTBUFF_BST_REMINDER       = "通报";
 SMARTBUFF_BST_MANALIMIT      = "最低值";
 
 -- BUFF设置提示信息内容
-SMARTBUFF_BSTT_SELFONLY      = "仅BUFF自己，不给其他队友BUFF。"; 
+SMARTBUFF_BSTT_SELFONLY      = "仅BUFF自己，不给其他队友BUFF。";
 SMARTBUFF_BSTT_SELFNOT       = "BUFF所有其他选择的职业，但是不BUFF自己。";
 SMARTBUFF_BSTT_COMBATIN      = "在战斗状态时仍保持自动触发技能。\n除非在选项窗口中启用主「战斗中」选项，否则战斗中所有逻辑均不执行。";
 SMARTBUFF_BSTT_COMBATOUT     = "在非战斗状态时保持自动触发技能";

@@ -32,9 +32,12 @@ SMARTBUFF_UNDEAD    = "不死";
 -- Classes
 SMARTBUFF_CLASSES = {"德魯伊", "獵人", "法師", "聖騎士", "牧師", "盜賊", "薩滿", "術士", "戰士", "死亡騎士", "武僧", "恶魔猎手", "喚魔者", "獵人寵物", "術士寵物", "死騎寵物", "坦克", "補師", "DD"};
 
--- Templates and Instances
-SMARTBUFF_TEMPLATES = {"單人", "隊伍", "隨機團隊", "團隊", "傳奇鑰石", "恐懼幻象", "地心探險", "戰場", "競技場", "虛空尖塔", "夢境裂隙", "進軍奎爾達納斯", "奈幽貝爾宮殿", "安德邁恩解放戰役", "自訂 1", "自訂 2", "自訂 3", "自訂 4", "自訂 5"};
-SMARTBUFF_INSTANCES = {"虛空尖塔", "夢境裂隙", "進軍奎爾達納斯", "奈幽貝爾宮殿", "安德邁恩解放戰役"};
+-- Templates: split into generics, instances, custom. Assembled into SMARTBUFF_TEMPLATES at load (SmartBuff.lua).
+-- GENERICS: Enum.SmartBuffGroup (SmartBuff.lua) matches this order. Do not reorder or add/remove without updating both.
+SMARTBUFF_TEMPLATES_GENERICS = {"單人", "隊伍", "隨機團隊", "團隊", "傳奇鑰石", "恐懼幻象", "地心探險", "戰場", "競技場"};
+-- INSTANCES: Must match GetInstanceInfo() name exactly. Only raids are currently supported; 5-man instance switching is not supported.
+SMARTBUFF_TEMPLATES_INSTANCES = {"虛空尖塔", "夢境裂隙", "進軍奎爾達納斯", "奈幽貝爾宮殿", "安德邁恩解放戰役"};
+SMARTBUFF_TEMPLATES_CUSTOM = {"自訂 1", "自訂 2", "自訂 3", "自訂 4", "自訂 5"};
 
 -- Mount
 SMARTBUFF_MOUNT = "速度提高(%d+)%%.";

@@ -31,9 +31,12 @@ SMARTBUFF_UNDEAD    = "Undead";
 -- Classes
 SMARTBUFF_CLASSES = {"Друид", "Охотник", "Маг", "Паладин", "Жрец", "Разбойник", "Шаман", "Чернокнижник", "Воин", "Рыцарь смерти", "Монах", "Охотник на демонов", "Эвокер", "Питомец Охотника", "Прислужник Чернокнижника", "DK Pet", "танка", "целителя", "Бойцы"};
 
--- Templates and Instances
-SMARTBUFF_TEMPLATES = {"Соло", "Группа", "ЛФР", "Рейд", "Мифический ключ", "Жуткое видение", "Погружение", "Поле боя", "Арена", "Шпиль Пустоты", "Разлом Снов", "Поход на Кель'Данас", "Дворец Неруб-ар", "Освобождение Подкопа", "Пользовательский 1", "Пользовательский 2", "Пользовательский 3", "Пользовательский 4", "Пользовательский 5"};
-SMARTBUFF_INSTANCES = {"Шпиль Пустоты", "Разлом Снов", "Поход на Кель'Данас", "Дворец Неруб-ар", "Освобождение Подкопа"};
+-- Templates: split into generics, instances, custom. Assembled into SMARTBUFF_TEMPLATES at load (SmartBuff.lua).
+-- GENERICS: Enum.SmartBuffGroup (SmartBuff.lua) matches this order. Do not reorder or add/remove without updating both.
+SMARTBUFF_TEMPLATES_GENERICS = {"Соло", "Группа", "ЛФР", "Рейд", "Мифический ключ", "Жуткое видение", "Погружение", "Поле боя", "Арена"};
+-- INSTANCES: Must match GetInstanceInfo() name exactly. Only raids are currently supported; 5-man instance switching is not supported.
+SMARTBUFF_TEMPLATES_INSTANCES = {"Шпиль Пустоты", "Разлом Снов", "Поход на Кель'Данас", "Дворец Неруб-ар", "Освобождение Подкопа"};
+SMARTBUFF_TEMPLATES_CUSTOM = {"Пользовательский 1", "Пользовательский 2", "Пользовательский 3", "Пользовательский 4", "Пользовательский 5"};
 
 -- Mount
 SMARTBUFF_MOUNT = "Увеличивает скорость на (%d+)%%.";

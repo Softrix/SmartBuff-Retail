@@ -45,9 +45,12 @@ SMARTBUFF_UNDEAD    = "Undead";
 -- Classes
 SMARTBUFF_CLASSES = {"Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior", "Death Knight", "Monk", "Demon Hunter", "Evoker", "Hunter Pet", "Warlock Pet", "Death Knight Pet", "Tank", "Healer", "Damage Dealer"};
 
--- Templates and Instances
-SMARTBUFF_TEMPLATES = {"Solo", "Party", "LFR", "Raid", "Mythic Keystone", "Horrific Vision", "Delve", "Battleground", "Arena", "The Voidspire", "The Dreamrift", "March on Quel'Danas", "Nerub-ar Palace", "Liberation of Undermine", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"};
-SMARTBUFF_INSTANCES = {"The Voidspire", "The Dreamrift", "March on Quel'Danas", "Nerub-ar Palace", "Liberation of Undermine"};
+-- Templates: split into generics, instances, custom. Assembled into SMARTBUFF_TEMPLATES at load (SmartBuff.lua).
+-- GENERICS: Enum.SmartBuffGroup (SmartBuff.lua) matches this order. Do not reorder or add/remove without updating both.
+SMARTBUFF_TEMPLATES_GENERICS = {"Solo", "Party", "LFR", "Raid", "Mythic Keystone", "Horrific Vision", "Delve", "Battleground", "Arena"};
+-- INSTANCES: Must match GetInstanceInfo() name exactly. Only raids are currently supported; 5-man instance switching is not supported.
+SMARTBUFF_TEMPLATES_INSTANCES = {"The Voidspire", "The Dreamrift", "March on Quel'Danas", "Nerub-ar Palace", "Liberation of Undermine"};
+SMARTBUFF_TEMPLATES_CUSTOM = {"Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"};
 
 -- Mount
 SMARTBUFF_MOUNT = "Increases speed by (%d+)%%.";
@@ -241,4 +244,3 @@ SMARTBUFF_LOC_HEARTY         = "Hearty"
 -- Ö : \195\150
 -- Ü : \195\156
 -- ß : \195\159
-
