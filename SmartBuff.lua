@@ -1291,8 +1291,9 @@ function SMARTBUFF_SetTemplate(force)
   wipe(cAddUnitList);
   wipe(cIgnoreUnitList);
 
-  -- Raid Setup, including smart instance templates
-  if currentTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid]) or isRaidInstanceTemplate then
+  -- Raid Setup (or Arena/BG when in raid)
+  local isArenaOrBG = (currentTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Arena]) or currentTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Battleground]));
+  if (currentTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Raid]) or isRaidInstanceTemplate) or (isArenaOrBG and IsInRaid()) then
     cClassGroups = {};
     local name, server, rank, subgroup, level, class, classeng, zone, online, isDead;
     local sRUnit = nil;
@@ -1345,8 +1346,8 @@ function SMARTBUFF_SetTemplate(force)
 
     SMARTBUFF_AddMsgD("Raid Unit-Setup finished");
 
-    -- Party Setup
-  elseif (currentTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party])) then
+    -- Party Setup (or Arena/BG when in party)
+  elseif (currentTemplate == (SMARTBUFF_TEMPLATES[Enum.SmartBuffGroup.Party])) or (isArenaOrBG and IsInGroup()) then
     cClassGroups = {};
     if (B[CS()][currentTemplate].SelfFirst) then
       SMARTBUFF_AddSoloSetup();
@@ -1366,7 +1367,7 @@ function SMARTBUFF_SetTemplate(force)
     end
     SMARTBUFF_AddMsgD("Party Unit-Setup finished");
 
-    -- Solo Setup
+    -- Solo Setup (and Arena/BG when not in group)
   else
     SMARTBUFF_AddSoloSetup();
     SMARTBUFF_AddMsgD("Solo Unit-Setup finished");
@@ -2629,8 +2630,13 @@ function SMARTBUFF_Check(mode, force)
 
   SMARTBUFF_checkBlacklist();
 
-  -- In combat, all reminder/buff logic is disabled unless O.InCombat is enabled
-  if (InCombatLockdown() and not O.InCombat) then
+  -- Skip when: (in combat and O.InCombat disabled) OR (in PvP and match active, matchState >= 3). Allow PvP prep and combat buffs when O.InCombat.
+  local _, instanceType = GetInstanceInfo();
+  local inPvPInstance = (instanceType == "arena" or instanceType == "pvp");
+  local pvPMatchState = inPvPInstance and (C_PvP.GetActiveMatchState() or 0) or 0;
+  local pvPMatchActive = (pvPMatchState >= 3);
+  local skipChecks = (InCombatLockdown() and not O.InCombat) or (inPvPInstance and pvPMatchActive);
+  if skipChecks then
     IsChecking = false;
     return;
   end
@@ -3551,24 +3557,23 @@ end
 -- END SMARTBUFF_IsPlayer
 
 
+-- Returns buff data if buffname found on target; nil otherwise. Uses C_UnitAuras (Retail).
 function UnitBuffByBuffName(target, buffname, filter)
-  for i = 1, 40 do
-    local AuraData = C_UnitAuras.GetAuraDataByIndex(target, i, filter);
-    if not AuraData then return end;
-    local name = AuraData.name;
-    -- Guard: name can be nil or secret value (type() may still report "string"); validate compare with pcall
-    if not name then
-      -- skip this aura, continue to next
-    else
-      local ok, isMatch = pcall(function() return name == buffname end);
-      if ok and isMatch then
-        local icon = AuraData.icon;
-        local charges = AuraData.charges or 0;
-        local dispelName = AuraData.dispelName;
-        local duration = tonumber(AuraData.duration) or 0;
-        local expirationTime = tonumber(AuraData.expirationTime) or 0;
-        local source = AuraData.sourceUnit;
-        return buffname, icon, charges, dispelName, duration, expirationTime, source;
+  local maxAuras = 40;  -- WoW API limit: aura index 1..40 per unit; GetAuraDataByIndex returns nil past last aura
+
+  for auraIndex = 1, maxAuras do
+    local auraInfo = C_UnitAuras.GetAuraDataByIndex(target, auraIndex, filter);
+    if not auraInfo then return end;
+
+    local auraName = auraInfo.name;
+    -- Guard: name can be nil or secret value; validate compare with pcall
+    if auraName then
+      local compareOk, isMatch = pcall(function() return auraName == buffname end);
+      if compareOk and isMatch then
+        local duration = tonumber(auraInfo.duration) or 0;
+        local expirationTime = tonumber(auraInfo.expirationTime) or 0;
+        return buffname, auraInfo.icon, (auraInfo.charges or 0), auraInfo.dispelName,
+          duration, expirationTime, auraInfo.sourceUnit;
       end
     end
   end
@@ -3781,20 +3786,21 @@ function SMARTBUFF_UpdateBuffDuration(buff, duration)
   end
 end
 
+-- Returns aura data if spellname found on target; nil otherwise. Uses C_UnitAuras (Retail).
 function UnitAuraBySpellName(target, spellname, filter)
-  for i = 1, 40 do
-    local AuraData = C_UnitAuras.GetAuraDataByIndex(target, i, filter);
-    if not AuraData then return end;
-    local name = AuraData.name;
-    -- Guard: name can be nil or secret value (type() may still report "string"); validate compare with pcall
-    if not name then
-      -- skip this aura, continue to next
-    else
-      local ok, isMatch = pcall(function() return name == spellname end);
-      if ok and isMatch then
-        local timeleft = tonumber(AuraData.expirationTime) or 0;
-        local caster = AuraData.sourceUnit;
-        return spellname, timeleft, caster;
+  local maxAuras = 40;  -- WoW API limit: aura index 1..40 per unit; GetAuraDataByIndex returns nil past last aura
+
+  for auraIndex = 1, maxAuras do
+    local auraInfo = C_UnitAuras.GetAuraDataByIndex(target, auraIndex, filter);
+    if not auraInfo then return end;
+
+    local auraName = auraInfo.name;
+    -- Guard: name can be nil or secret value; validate compare with pcall
+    if auraName then
+      local compareOk, isMatch = pcall(function() return auraName == spellname end);
+      if compareOk and isMatch then
+        local expirationTime = tonumber(auraInfo.expirationTime) or 0;
+        return spellname, expirationTime, auraInfo.sourceUnit;
       end
     end
   end
@@ -3940,24 +3946,28 @@ end
 -- END SMARTBUFF_IsItem
 
 
--- Loops through all of the debuffs currently active looking for a texture string match
+-- Returns true if unit has a debuff whose icon path contains debufftex (e.g. "Curse").
 function SMARTBUFF_IsDebuffTexture(unit, debufftex)
-  local active = false;
-  local i = 1;
-  local name, icon;
-  -- name,rank,icon,count,type = UnitDebuff("unit", id or "name"[,"rank"])
-  while (C_UnitAuras.GetDebuffDataByIndex(unit, i)) do
-    local DebuffInfo = C_UnitAuras.GetDebuffDataByIndex(unit, i);
-    name = DebuffInfo.name;
-    icon = DebuffInfo.icon;
-    -- Guard: icon can be nil or secret value
-    if (icon and type(icon) == "string" and string.find(icon, debufftex)) then
-      active = true;
-      break
+  local hasMatchingDebuff = false;
+  local debuffIndex = 1;
+
+  while true do
+    local debuffData = C_UnitAuras.GetDebuffDataByIndex(unit, debuffIndex);
+    if not debuffData then break end;
+
+    local debuffIcon = debuffData.icon;
+    local iconIsString = (debuffIcon and type(debuffIcon) == "string");
+    local iconMatches = iconIsString and string.find(debuffIcon, debufftex);
+
+    if iconMatches then
+      hasMatchingDebuff = true;
+      break;
     end
-    i = i + 1;
+
+    debuffIndex = debuffIndex + 1;
   end
-  return active;
+
+  return hasMatchingDebuff;
 end
 
 -- END SMARTASPECT_IsDebuffTex
