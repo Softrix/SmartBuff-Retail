@@ -1,4 +1,4 @@
-﻿<Ui xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd" xmlns="http://www.blizzard.com/wow/ui/">
+<Ui xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd" xmlns="http://www.blizzard.com/wow/ui/">
     <Script file="localization.en.lua" />
     <Script file="localization.de.lua" />
     <Script file="localization.fr.lua" />
@@ -1449,7 +1449,7 @@
             </CheckButton>
             <Button name="SmartBuffOptionsFrameRBT" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RBT">
                 <Size>
-                    <AbsDimension x="88" y="33" />
+                    <AbsDimension x="64" y="33" />
                 </Size>
                 <Anchors>
                     <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
@@ -1460,15 +1460,22 @@
                     <OnClick>
                         SMARTBUFF_ResetBuffTimers();
                     </OnClick>
+                    <OnEnter>
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+                        GameTooltip:SetText(SMARTBUFF_OFTT_RBT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
+                    </OnEnter>
+                    <OnLeave>
+                        GameTooltip:Hide();
+                    </OnLeave>
                 </Scripts>
             </Button>
             <Button name="SmartBuffOptionsFrameResetAll" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RESETALL">
                 <Size>
-                    <AbsDimension x="88" y="33" />
+                    <AbsDimension x="58" y="33" />
                 </Size>
                 <Anchors>
                     <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
-                        <Offset x="116" y="27" />
+                        <Offset x="111" y="27" />
                     </Anchor>
                 </Anchors>
                 <Scripts>
@@ -1476,15 +1483,22 @@
                         SMARTBUFF_OptionsFrame_Toggle();
                         StaticPopup_Show("SMARTBUFF_DATA_PURGE");
                     </OnClick>
+                    <OnEnter>
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+                        GameTooltip:SetText(SMARTBUFF_OFTT_RESETALL, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
+                    </OnEnter>
+                    <OnLeave>
+                        GameTooltip:Hide();
+                    </OnLeave>
                 </Scripts>
             </Button>
             <Button name="SmartBuffOptionsFrameResetBuffs" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RESETBUFFS">
                 <Size>
-                    <AbsDimension x="88" y="33" />
+                    <AbsDimension x="58" y="33" />
                 </Size>
                 <Anchors>
                     <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
-                        <Offset x="212" y="27" />
+                        <Offset x="196" y="27" />
                     </Anchor>
                 </Anchors>
                 <Scripts>
@@ -1492,21 +1506,62 @@
                         SMARTBUFF_OptionsFrame_Toggle();
                         StaticPopup_Show("SMARTBUFF_BUFFS_PURGE");
                     </OnClick>
+                    <OnEnter>
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+                        GameTooltip:SetText(SMARTBUFF_OFTT_RESETBUFFS, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
+                    </OnEnter>
+                    <OnLeave>
+                        GameTooltip:Hide();
+                    </OnLeave>
                 </Scripts>
             </Button>
             <Button name="SmartBuffOptionsFrameResetOrder" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RESETLIST">
                 <Size>
-                    <AbsDimension x="88" y="33" />
+                    <AbsDimension x="58" y="33" />
                 </Size>
                 <Anchors>
                     <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
-                        <Offset x="306" y="27" />
+                        <Offset x="281" y="27" />
                     </Anchor>
                 </Anchors>
                 <Scripts>
                     <OnClick>
                         SMARTBUFF_BuffOrderReset();
                     </OnClick>
+                    <OnEnter>
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+                        GameTooltip:SetText(SMARTBUFF_OFTT_RESETLIST, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
+                    </OnEnter>
+                    <OnLeave>
+                        GameTooltip:Hide();
+                    </OnLeave>
+                </Scripts>
+            </Button>
+            <Button name="SmartBuffOptionsFrameNews" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_NEWS">
+                <Size>
+                    <AbsDimension x="52" y="33" />
+                </Size>
+                <Anchors>
+                    <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
+                        <Offset x="366" y="27" />
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        if SmartBuffWNF:IsVisible() then
+                            SmartBuffWNF:Hide();
+                        else
+                            SmartBuffWNF_lblText:SetText(SMARTBUFF_WHATSNEW);
+                            SmartBuffWNF:Show();
+                        end
+                    </OnClick>
+                    <OnEnter>
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+                        GameTooltip:SetText(SMARTBUFF_OFTT_NEWS, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
+                    </OnEnter>
+                    <OnLeave>
+                        GameTooltip:Hide();
+                    </OnLeave>
                 </Scripts>
             </Button>
             <Button name="SmartBuffOptionsFrameDone" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_DONE">
@@ -1522,6 +1577,13 @@
                     <OnClick>
                         SMARTBUFF_OptionsFrame_Toggle();
                     </OnClick>
+                    <OnEnter>
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+                        GameTooltip:SetText(SMARTBUFF_OFTT_DONE, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
+                    </OnEnter>
+                    <OnLeave>
+                        GameTooltip:Hide();
+                    </OnLeave>
                 </Scripts>
             </Button>
             <CheckButton name="SmartBuffOptionsFrame_cbIncludeToys" inherits="UICheckButtonTemplate">

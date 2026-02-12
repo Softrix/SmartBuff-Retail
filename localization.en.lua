@@ -7,10 +7,11 @@ SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
   .."          |cffffffffMidnight & Classic versions by Codermik, additional retail\n"
   .."          programming by MrWizard and Speedwaystar.\n"
   .."\n\n"
-  .."          Changes in r38.110226:\n\n"
-  .."             * Fixing chained buffs, apparently they were broken\n"
-  .."             * Assassination rogues can do 4 poisons now\n"
-  .."             * Adding berserker stance for warriors\n"
+  .."          Changes in r39.120226:\n\n"
+  .."             * Template switching: BG/Arena, Solo fallback, single if/elseif chain, merged chat msg\n"
+  .."             * Template split: GENERICS/INSTANCES/CUSTOM, assemble at load, enum lookup, SmartBuffGroup refactor\n"
+  .."             * Localization: de (Danish→German), zhCN (Nerub-ar fix), INSTANCES comment\n"
+  .."             * Whitespace cleanup, .cursorrules\n"
   .."\n\n"
   .."          |c0000FF96Many thanks to Chris S., Samantha R. and\n"
   .."          Twilight's Sundries for their kind donations.\n"
@@ -103,7 +104,7 @@ SMARTBUFF_OFT_BUFFTARGET     = "Buff target";
 SMARTBUFF_OFT_BUFFPVP        = "Buff PvP";
 SMARTBUFF_OFT_AUTOSWITCHTMPINST = "Instances";
 SMARTBUFF_OFT_CHECKCHARGES   = "Check charges";
-SMARTBUFF_OFT_RBT            = "Reset BT";
+SMARTBUFF_OFT_RBT            = "R: Timers";
 SMARTBUFF_OFT_BUFFINCITIES   = "Buff in cities";
 SMARTBUFF_OFT_BLDURATION     = "Blacklisted";
 SMARTBUFF_OFT_ANTIDAZE       = "Anti daze";
@@ -113,9 +114,10 @@ SMARTBUFF_OFT_SMARTDEBUFF    = "SmartDebuff";
 SMARTBUFF_OFT_INSHAPESHIFT   = "Shapeshift";
 SMARTBUFF_OFT_LINKGRPBUFFCHECK  = "Grp link";
 SMARTBUFF_OFT_LINKSELFBUFFCHECK = "Self link";
-SMARTBUFF_OFT_RESETALL       = "Reset All";
-SMARTBUFF_OFT_RESETLIST      = "Reset List";
-SMARTBUFF_OFT_RESETBUFFS     = "Reset Buffs";
+SMARTBUFF_OFT_RESETALL       = "R: All";
+SMARTBUFF_OFT_RESETLIST      = "R: List";
+SMARTBUFF_OFT_RESETBUFFS     = "R: Buffs";
+SMARTBUFF_OFT_NEWS           = "News";
 SMARTBUFF_OFT_PURGE_BUFFS    = "New Version, reset ALL SmartBuff buff data?\nThis will reset all buff profiles!";
 SMARTBUFF_OFT_YES            = "Yes";
 SMARTBUFF_OFT_NO             = "No";
@@ -131,6 +133,13 @@ SMARTBUFF_OFT_ICONSIZE       = "Icon Size";
 
 -- Options Frame Tooltip Text
 SMARTBUFF_OFTT               = "Toggles SmartBuff On/Off";
+SMARTBUFF_OFTT_RBT           = "Reset BT: Clear buff timers only (runtime; no saved vars).";
+SMARTBUFF_OFTT_RESETALL      = "Reset All: Wipe everything (profiles + options). Requires ReloadUI.";
+SMARTBUFF_OFTT_RESETBUFFS    = "Reset Buffs: Resets buffs and profiles to defaults.";
+SMARTBUFF_OFTT_RESETLIST     = "Reset List: Reset buff order only.";
+SMARTBUFF_OFTT_DONE          = "Close options.";
+SMARTBUFF_OFTT_NEWS          = "View release notes and changelog.";
+SMARTBUFF_OFTT_HELPLATE_RESET = "Reset buttons (hover for details)";
 SMARTBUFF_OFTT_AUTO          = "Toggles the buff reminder On/Off";
 SMARTBUFF_OFTT_AUTOTIMER     = "Delay in seconds between two checks.";
 SMARTBUFF_OFTT_AUTOCOMBAT    = "Run the check also in combat.\nAll reminder logic is disabled in combat unless the main \"in combat\" option (in the options frame, not this one) is enabled.";

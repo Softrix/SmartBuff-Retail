@@ -10,8 +10,8 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "110226"; -- EU Date: DDMMYY
-SMARTBUFF_VERSION            = "r38." .. SMARTBUFF_DATE;
+SMARTBUFF_DATE               = "120226"; -- EU Date: DDMMYY
+SMARTBUFF_VERSION            = "r39." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
@@ -5937,7 +5937,7 @@ local HelpPlateList = {
   [2] = { ButtonPos = { x = 105, y = -110 }, HighLightBox = { x = 10, y = -30, width = 230, height = 125 }, ToolTipDir = "DOWN", ToolTipText = "Buff reminder options" },
   [3] = { ButtonPos = { x = 105, y = -250 }, HighLightBox = { x = 10, y = -165, width = 230, height = 135 }, ToolTipDir = "DOWN", ToolTipText = "Character based options" },
   [4] = { ButtonPos = { x = 200, y = -320 }, HighLightBox = { x = 10, y = -300, width = 230, height = 90 }, ToolTipDir = "RIGHT", ToolTipText = "Additional UI options" },
-  [5] = { ButtonPos = { x = 192, y = -630 }, HighLightBox = { x = 5, y = -635, width = 374, height = 33 }, ToolTipDir = "UP", ToolTipText = "Reset buttons\n\nReset BT: Clear buff timers only\nReset All: Wipe everything (profiles + options)\nReset Buffs: Resets buffs and profiles to defaults\nReset List: Reset buff order only" },
+  [5] = { ButtonPos = { x = 192, y = -630 }, HighLightBox = { x = 5, y = -635, width = 335, height = 33 }, ToolTipDir = "UP", ToolTipText = SMARTBUFF_OFTT_HELPLATE_RESET },
 }
 
 function SMARTBUFF_ToggleTutorial(close)
