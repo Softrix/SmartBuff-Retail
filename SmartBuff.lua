@@ -553,8 +553,9 @@ local function InitBuffSettings(cBI, reset)
         end
       end
     end
-    -- Restore EnableS from cache when we had to create (e.g. B was missing this key; user had it enabled last session)
-    if (SmartBuffBuffListCache and SmartBuffBuffListCache.enabledBuffs) then
+    -- Restore EnableS from cache only when building the SAME template that was last saved; otherwise new templates incorrectly inherit enabled state from another.
+    -- NOTE: Could be useful to evaluate later: propagate initial state from Solo to never-used profiles (so users don't start from blank slate), then allow customizing.
+    if (SmartBuffBuffListCache and SmartBuffBuffListCache.enabledBuffs and SmartBuffBuffListCache.lastTemplate == CT()) then
       if (not id) then id = (type(buff) == "string") and tonumber(string.match(buff, "item:(%d+)")); end
       if (not id and SMARTBUFF_ExpectedData and SMARTBUFF_ExpectedData.items) then
         for varName, itemId in pairs(SMARTBUFF_ExpectedData.items) do
@@ -1735,7 +1736,7 @@ function SMARTBUFF_SetBuffs()
       end
     end
   end
-  SMARTBUFF_SaveCache(currentCounts, enabledBuffsSnapshot, toyCount);
+  SMARTBUFF_SaveCache(currentCounts, enabledBuffsSnapshot, toyCount, ct);
   InitBuffOrder(false);
 
   -- Redraw options buff list if open so item/spell names appear when data loads (no close/reopen needed)
@@ -4468,6 +4469,7 @@ function SMARTBUFF_ResetBuffs()
 
   wipe(SMARTBUFF_Buffs);
   SMARTBUFF_Buffs = {};
+  B = SMARTBUFF_Buffs;  -- Re-sync: B was still pointing at old table; SetBuffs and UI use B, so reset had no effect on second+ use
 
   SMARTBUFF_ClearValidSpells();
 
@@ -5260,16 +5262,18 @@ function SMARTBUFF_DropDownTemplate_OnClick(self)
   local tmp = nil;
   UIDropDownMenu_SetSelectedValue(SmartBuffOptionsFrame_ddTemplates, i);
   tmp = SMARTBUFF_TEMPLATES[i];
-  --SMARTBUFF_AddMsgD("Selected/Current Buff-Template: " .. tmp .. "/" .. currentTemplate);
-  SMARTBUFF_SetBuffs()
   if (currentTemplate ~= tmp) then
     SmartBuff_BuffSetup:Hide();
     iLastBuffSetup = -1;
     SmartBuff_PlayerSetup:Hide();
 
     currentTemplate = tmp;
+    -- SetBuffs must run with the NEW template so B[spec][template] is created; otherwise uninitialized templates show wrong/empty data
+    SMARTBUFF_SetBuffs();
     SMARTBUFF_Options_OnShow();
     O.LastTemplate = currentTemplate;
+  else
+    SMARTBUFF_SetBuffs();
   end
 end
 
