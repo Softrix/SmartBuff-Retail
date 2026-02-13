@@ -31,9 +31,13 @@ SMARTBUFF_UNDEAD    = "Untot";
 -- Classes
 SMARTBUFF_CLASSES = {"Druide", "Jäger", "Magier", "Paladin", "Priester", "Schurke", "Schamane", "Hexenmeister", "Krieger", "Todesritter", "Mönch", "Dämonenjäger", "Evoker", "Jäger Pet", "Hexer Pet", "Todesritter Pet", "Tank", "Heiler", "Schadensverursacher"};
 
--- Templates and Instances
-SMARTBUFF_TEMPLATES = {"Solo", "Gruppe", "LFG", "Raid", "Mytisk nøgle", "Rædselsvision", "Dyk", "Slagmark", "Arena", "Tomspiret", "Drømmeriften", "March mod Quel'Danas", "Nerub-ar Palads", "Befrielse af Undermine", "Tilpasset 1", "Tilpasset 2", "Tilpasset 3", "Tilpasset 4", "Tilpasset 5"};
-SMARTBUFF_INSTANCES = {"Tomspiret", "Drømmeriften", "March mod Quel'Danas", "Nerub-ar Palads", "Befrielse af Undermine"};
+-- Templates: split into generics, instances, custom. Assembled into SMARTBUFF_TEMPLATES at load (SmartBuff.lua).
+-- GENERICS: Enum.SmartBuffGroup (SmartBuff.lua) matches this order. Do not reorder or add/remove without updating both.
+-- Values must match WoW UI strings for the locale. Instance names must match GetInstanceInfo() return value exactly.
+SMARTBUFF_TEMPLATES_GENERICS = {"Solo", "Gruppe", "Raidsuche", "Raid", "Mythischer Schlüsselstein", "Schreckliche Vision", "Tiefenbohrung", "Schlachtfeld", "Arena"};
+-- INSTANCES: Must match GetInstanceInfo() name exactly. Only raids are currently supported; 5-man instance switching is not supported.
+SMARTBUFF_TEMPLATES_INSTANCES = {"Der Leerenpeiler", "Der Traumriss", "Marsch auf Quel'Danas", "Nerub-ar Palast", "Befreiung von Untermine"};
+SMARTBUFF_TEMPLATES_CUSTOM = {"Benutzerdefiniert 1", "Benutzerdefiniert 2", "Benutzerdefiniert 3", "Benutzerdefiniert 4", "Benutzerdefiniert 5"};
 
 -- Mount
 SMARTBUFF_MOUNT = "Erhöht Tempo um (%d+)%%.";
@@ -89,7 +93,7 @@ SMARTBUFF_OFT_BUFFTARGET     = "Bufft das Ziel";
 SMARTBUFF_OFT_BUFFPVP        = "Buff PvP";
 SMARTBUFF_OFT_AUTOSWITCHTMPINST = "Instanzen";
 SMARTBUFF_OFT_CHECKCHARGES   = "Aufladungen";
-SMARTBUFF_OFT_RBT            = "Reset BT";
+SMARTBUFF_OFT_RBT            = "R: Timers";
 SMARTBUFF_OFT_BUFFINCITIES   = "Bufft in Städten";
 SMARTBUFF_OFT_UISYNC         = "UI Sync";
 SMARTBUFF_OFT_BLDURATION     = "Blacklisted";
@@ -102,9 +106,10 @@ SMARTBUFF_OFT_SMARTDEBUFF    = "SmartDebuff";
 SMARTBUFF_OFT_INSHAPESHIFT   = "Verwandelt";
 SMARTBUFF_OFT_LINKGRPBUFFCHECK  = "Grp Link";
 SMARTBUFF_OFT_LINKSELFBUFFCHECK = "Selbst Link";
-SMARTBUFF_OFT_RESETALL       = "Reset Alles";
-SMARTBUFF_OFT_RESETLIST      = "Reset Liste";
-SMARTBUFF_OFT_RESETBUFFS     = "Reset Buffs";
+SMARTBUFF_OFT_RESETALL       = "R: Alles";
+SMARTBUFF_OFT_RESETLIST      = "R: Liste";
+SMARTBUFF_OFT_RESETBUFFS     = "R: Buffs";
+SMARTBUFF_OFT_NEWS           = "News";
 SMARTBUFF_OFT_PURGE_BUFFS    = "New Version, reset ALL SmartBuff buff data?\nThis will reset all buff profiles!";
 SMARTBUFF_OFT_YES            = "Ja";
 SMARTBUFF_OFT_NO             = "Nein";
@@ -116,6 +121,13 @@ SMARTBUFF_OFT_SPLASHMSGSHORT = "Kurze Meldung";
 
 -- Options Frame Tooltip Text
 SMARTBUFF_OFTT               = "Schaltet SmartBuff An/Aus";
+SMARTBUFF_OFTT_RBT           = "Reset BT: Nur Buff-Timer zurücksetzen (keine gespeicherten Daten).";
+SMARTBUFF_OFTT_RESETALL      = "Reset Alles: Alles löschen (Profile + Optionen). Erfordert ReloadUI.";
+SMARTBUFF_OFTT_RESETBUFFS    = "Reset Buffs: Buffs und Profile auf Standard zurücksetzen.";
+SMARTBUFF_OFTT_RESETLIST     = "Reset Liste: Nur Buff-Reihenfolge zurücksetzen.";
+SMARTBUFF_OFTT_DONE          = "Optionen schließen.";
+SMARTBUFF_OFTT_NEWS          = "Versionshinweise und Änderungsprotokoll anzeigen.";
+SMARTBUFF_OFTT_HELPLATE_RESET = "Reset-Schaltflächen (für Details schweben)";
 SMARTBUFF_OFTT_AUTO          = "Schaltet die Erinnerung an fehlende Buffs An/Aus";
 SMARTBUFF_OFTT_AUTOTIMER     = "Verzögerung in Sekunden zwischen zwei Checks.";
 SMARTBUFF_OFTT_AUTOCOMBAT    = "Check auch während dem Kampf durchführen.\nAlle Erinnerungslogik im Kampf ist deaktiviert, sofern die Hauptoption \"im Kampf\" (im Optionenfenster, nicht diese) nicht aktiviert ist.";
@@ -168,7 +180,7 @@ SMARTBUFF_BST_REMINDER       = "Benachrichtigung";
 SMARTBUFF_BST_MANALIMIT      = "Grenzwert";
 
 -- Buffsetup Frame Tooltip Text
-SMARTBUFF_BSTT_SELFONLY      = "Bufft nur deinen eigenen Charakter."; 
+SMARTBUFF_BSTT_SELFONLY      = "Bufft nur deinen eigenen Charakter.";
 SMARTBUFF_BSTT_SELFNOT       = "Bufft alle anderen selektierte Klassen,\nausser deinen eigenen Charakter.";
 SMARTBUFF_BSTT_COMBATIN      = "Bufft innerhalb des Kampfes.\nAlle Kampflogik ist deaktiviert, sofern die Hauptoption \"im Kampf\" (im Optionenfenster) nicht aktiviert ist.";
 SMARTBUFF_BSTT_COMBATOUT     = "Bufft ausserhalb des Kampfes.";

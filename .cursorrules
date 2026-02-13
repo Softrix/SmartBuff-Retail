@@ -8,8 +8,8 @@
 - Use descriptive variable names following the existing pattern (e.g., cBuff, bufferSize, buffnS)
 - Keep functions brief and focused
 - Add debug messages using SMARTBUFF_AddMsgD() for troubleshooting
-- Code formatting: No trailing white spaces on non-blank lines
-- Code formatting: No whitespaces on blank lines
+- Code formatting: No trailing whitespace on non-blank lines; eliminate before committing
+- Code formatting: No whitespace on blank lines (blank lines must be truly empty)
 - Every non-external code file should end with a new line, unless the language rules prohibit it
 - Use spaces instead of tabs for compatibility
 

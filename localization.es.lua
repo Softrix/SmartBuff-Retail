@@ -32,9 +32,12 @@ SMARTBUFF_UNDEAD    = "No-muerto";
 -- Classes
 SMARTBUFF_CLASSES = {"Druida", "Cazador", "Mago", "Palad\195\173n", "Sacerdote", "P\195\173caro", "Cham\195\161n", "Brujo", "Guerrero", "Caballero de la Muerte", "Monje", "Cazador de demonios", "Evoker", "Mascota de cazador", "Mascota de brujo", "Mascota de caballero de la Muerte", "Tanque", "Sanador", "Infligir da\195\177o"};
 
--- Templates and Instances
-SMARTBUFF_TEMPLATES = {"En solitario", "Grupo", "BdB", "Banda", "Piedra angular mítica", "Visión horrífica", "Sondaje", "Campo de batalla", "Arena", "La Aguja del Vacío", "La Grieta de los Sueños", "Marcha sobre Quel'Danas", "Palacio de Nerub-ar", "Liberación de Submina", "Personalizado 1", "Personalizado 2", "Personalizado 3", "Personalizado 4", "Personalizado 5"};
-SMARTBUFF_INSTANCES = {"La Aguja del Vacío", "La Grieta de los Sueños", "Marcha sobre Quel'Danas", "Palacio de Nerub-ar", "Liberación de Submina"};
+-- Templates: split into generics, instances, custom. Assembled into SMARTBUFF_TEMPLATES at load (SmartBuff.lua).
+-- GENERICS: Enum.SmartBuffGroup (SmartBuff.lua) matches this order. Do not reorder or add/remove without updating both.
+SMARTBUFF_TEMPLATES_GENERICS = {"En solitario", "Grupo", "BdB", "Banda", "Piedra angular mítica", "Visión horrífica", "Sondaje", "Campo de batalla", "Arena"};
+-- INSTANCES: Must match GetInstanceInfo() name exactly. Only raids are currently supported; 5-man instance switching is not supported.
+SMARTBUFF_TEMPLATES_INSTANCES = {"La Aguja del Vacío", "La Grieta de los Sueños", "Marcha sobre Quel'Danas", "Palacio de Nerub-ar", "Liberación de Submina"};
+SMARTBUFF_TEMPLATES_CUSTOM = {"Personalizado 1", "Personalizado 2", "Personalizado 3", "Personalizado 4", "Personalizado 5"};
 
 -- Mount
 SMARTBUFF_MOUNT = "Aumenta la velocidad en un (%d+)%%.";
@@ -87,7 +90,7 @@ SMARTBUFF_OFT_BUFFTARGET     = "Buffar objetivo";
 SMARTBUFF_OFT_BUFFPVP        = "Buffar en JcJ";
 SMARTBUFF_OFT_AUTOSWITCHTMPINST = "Instancias";
 SMARTBUFF_OFT_CHECKCHARGES   = "Comprobar cargas";
-SMARTBUFF_OFT_RBT            = "Restaurar BT";
+SMARTBUFF_OFT_RBT            = "R: Timers";
 SMARTBUFF_OFT_BUFFINCITIES   = "Buffar en ciudades";
 SMARTBUFF_OFT_UISYNC         = "Sincronizar con UI";
 SMARTBUFF_OFT_BLDURATION     = "Lista Negra";
@@ -100,9 +103,10 @@ SMARTBUFF_OFT_SMARTDEBUFF    = "SmartDebuff";
 SMARTBUFF_OFT_INSHAPESHIFT   = "Shapeshift";
 SMARTBUFF_OFT_LINKGRPBUFFCHECK  = "Grp link";
 SMARTBUFF_OFT_LINKSELFBUFFCHECK = "Self link";
-SMARTBUFF_OFT_RESETALL       = "Reset All";
-SMARTBUFF_OFT_RESETLIST      = "Reset List";
-SMARTBUFF_OFT_RESETBUFFS     = "Reset Buffs";
+SMARTBUFF_OFT_RESETALL       = "R: Todo";
+SMARTBUFF_OFT_RESETLIST      = "R: Lista";
+SMARTBUFF_OFT_RESETBUFFS     = "R: Buffs";
+SMARTBUFF_OFT_NEWS           = "News";
 SMARTBUFF_OFT_PURGE_BUFFS    = "New Version, reset ALL SmartBuff buff data?\nThis will reset all buff profiles!";
 SMARTBUFF_OFT_YES            = "Yes";
 SMARTBUFF_OFT_NO             = "No";
@@ -112,6 +116,13 @@ SMARTBUFF_OFT_REQ_RELOAD     = "Las nuevas versiones requieren una recarga de la
 
 -- Options Frame Tooltip Text
 SMARTBUFF_OFTT               = "Alterna SmartBuff On/Off";
+SMARTBUFF_OFTT_RBT           = "Reset BT: Solo borra los temporizadores de buff (sin datos guardados).";
+SMARTBUFF_OFTT_RESETALL      = "Reset Todo: Borra todo (perfiles + opciones). Requiere ReloadUI.";
+SMARTBUFF_OFTT_RESETBUFFS    = "Reset Buffs: Restablece buffs y perfiles a valores por defecto.";
+SMARTBUFF_OFTT_RESETLIST     = "Reset Lista: Solo restablece el orden de buffs.";
+SMARTBUFF_OFTT_DONE          = "Cerrar opciones.";
+SMARTBUFF_OFTT_NEWS          = "Ver notas de versión y registro de cambios.";
+SMARTBUFF_OFTT_HELPLATE_RESET = "Botones reset (pasar para detalles)";
 SMARTBUFF_OFTT_AUTO          = "Alterna el recordatorio de buff On/Off";
 SMARTBUFF_OFTT_AUTOTIMER     = "Retraso en segundos entre dos comprobaciones.";
 SMARTBUFF_OFTT_AUTOCOMBAT    = "Ejecutar comprobaci\195\179n tambi\195\169n en combate.\nToda la l\195\179gica de recordatorio en combate est\195\161 desactivada a menos que la opci\195\179n principal \"en combate\" (en la ventana de opciones, no esta) est\195\169 activada.";
