@@ -93,7 +93,7 @@ SMARTBUFF_OFT_CHECKCHARGES   = "Comprobar cargas";
 SMARTBUFF_OFT_RBT            = "R: Timers";
 SMARTBUFF_OFT_BUFFINCITIES   = "Buffar en ciudades";
 SMARTBUFF_OFT_UISYNC         = "Sincronizar con UI";
-SMARTBUFF_OFT_BLDURATION     = "Lista Negra";
+SMARTBUFF_OFT_BLDURATION     = "Bloqueado";
 SMARTBUFF_OFT_COMPMODE       = "Modo Comp.";
 SMARTBUFF_OFT_MINIGRP        = "Mini grupo";
 SMARTBUFF_OFT_ANTIDAZE       = "Anti aturdimiento";
@@ -149,7 +149,7 @@ SMARTBUFF_OFTT_AUTOSWITCHTMPINST = "Cambiar autom\195\161ticamente la plantilla,
 SMARTBUFF_OFTT_CHECKCHARGES  = "Muestra cantidad baja de \ncargas en un buff.\n0 = Desactivado";
 SMARTBUFF_OFTT_BUFFINCITIES  = "Buffar tambi\195\169n si est\195\161s en una ciudad principal.\nSi tienes activado el JcJ, buffar igualmente.";
 SMARTBUFF_OFTT_UISYNC        = "Activar sincronizaci\195\179n con la UI\npara recuperar el tiempo de buff restante de otros jugadores.";
-SMARTBUFF_OFTT_BLDURATION    = "Cuantos segundos est\195\161n los jugadores en la lista negra.\n0 = Desactivado";
+SMARTBUFF_OFTT_BLDURATION    = "Cuántos segundos estarán bloqueados los jugadores.\n0 = Desactivado";
 SMARTBUFF_OFTT_COMPMODE      = "Modo compatible\nAtenci\195\179n!!!\nUsar este modo s\195\179lo si est\195\161s\nteniendo problemas para lanzarte buffs a t\195\173 mismo.";
 SMARTBUFF_OFTT_MINIGRP       = "Mostrar los ajustes del subgrupo de banda en un\nmarco propio movible";
 SMARTBUFF_OFTT_ANTIDAZE      = "Autom\195\161ticamente cancela el\naspecto del mono/manada\nsi alguien est\195\161 aturdido\n(\195\169l mismo o el grupo).";
@@ -217,6 +217,7 @@ SMARTBUFF_MSG_CLASS          = "Clase";
 SMARTBUFF_MSG_CHARGES        = "cargas";
 SMARTBUFF_MSG_SOUNDS         = "Selección de sonido: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec changed (%s), loading buff templates...";
+SMARTBUFF_MSG_PVP_PREP_ONLY  = "Debido a limitaciones de la API, el buffeo solo funciona durante la preparación y se desactiva cuando comienza la partida.";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "Click izquierdo: men\195\186 de opciones\nClick derecho: On/Off\nAlt-Click izquierdo: SmartDebuff\nMay\195\186scuals arrastrar: Mover bot\195\179n";

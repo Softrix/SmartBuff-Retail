@@ -223,6 +223,7 @@ SMARTBUFF_MSG_CLASS          = "職業";
 SMARTBUFF_MSG_CHARGES        = "次";
 SMARTBUFF_MSG_SOUNDS         = "飛濺聲音選擇: "
 SMARTBUFF_MSG_SPECCHANGED    = "天賦已更改(%s), 重設buff模組...";
+SMARTBUFF_MSG_PVP_PREP_ONLY  = "由於API限制，增益僅在準備階段有效，比賽開始後將停用。";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "左鍵: 選項視窗\n右鍵: 開/關\nAlt-左鍵: SmartDebuff\nShift拖曳: 移動按鈕";

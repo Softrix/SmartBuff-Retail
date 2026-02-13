@@ -445,6 +445,7 @@ SMARTBUFF_MSG_LEFT           = "以后消失！";
 SMARTBUFF_MSG_CLASS          = "职业";
 SMARTBUFF_MSG_CHARGES        = "次数";
 SMARTBUFF_MSG_SOUNDS         = "飞溅声音选择: "
+SMARTBUFF_MSG_PVP_PREP_ONLY  = "由于API限制，增益仅在准备阶段有效，比赛开始后将停用。";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "左键：选项菜单\n右键：开/关\nAlt+左键：SmartDebuff\n按Shift拖拽：移动按钮";

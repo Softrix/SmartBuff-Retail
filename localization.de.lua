@@ -96,7 +96,7 @@ SMARTBUFF_OFT_CHECKCHARGES   = "Aufladungen";
 SMARTBUFF_OFT_RBT            = "R: Timers";
 SMARTBUFF_OFT_BUFFINCITIES   = "Bufft in Städten";
 SMARTBUFF_OFT_UISYNC         = "UI Sync";
-SMARTBUFF_OFT_BLDURATION     = "Blacklisted";
+SMARTBUFF_OFT_BLDURATION     = "Blockiert";
 SMARTBUFF_OFT_COMPMODE       = "Komp. Modus";
 SMARTBUFF_OFT_MINIGRP        = "Mini Gruppe";
 SMARTBUFF_OFT_ANTIDAZE       = "Anti-Daze";
@@ -154,7 +154,7 @@ SMARTBUFF_OFTT_AUTOSWITCHTMPINST = "Wechselt automatisch die Buff-Vorlage,\nwenn
 SMARTBUFF_OFTT_CHECKCHARGES  = "Erinnerung wenn die Aufladungen\neines Buffs bald aufgebraucht sind.\n0 = Deaktivert";
 SMARTBUFF_OFTT_BUFFINCITIES  = "Bufft auch in den Hauptstädten.\nWenn du PvP geflagged bist, bufft es immer.";
 SMARTBUFF_OFTT_UISYNC        = "Aktiviert die Synchronisation mit dem UI,\num die Buff-Zeiten der anderen Spieler zu erhalten.";
-SMARTBUFF_OFTT_BLDURATION    = "Wieviele Sekunden ein Spieler auf\ndie schwarze Liste gesetzt wird.\n0 = Deaktivert";
+SMARTBUFF_OFTT_BLDURATION    = "Wie viele Sekunden ein Spieler blockiert wird.\n0 = Deaktiviert";
 SMARTBUFF_OFTT_COMPMODE      = "Kompatibilitäts Modus\nWarnung!!!\nBenutzte diesen Modus nur, wenn Probleme auftreten\nBuffs auf sich selbst zu casten.";
 SMARTBUFF_OFTT_MINIGRP       = "Zeigt die Raid-Subgruppen Einstellungen in einem\neigenen verschiebbaren Mini-Fenster an.";
 SMARTBUFF_OFTT_ANTIDAZE      = "Bricht automatisch den\nAspekt des Geparden/Rudels ab,\nwenn jemand betäubt wird\n(Selbst oder Gruppe).";
@@ -221,6 +221,7 @@ SMARTBUFF_MSG_CLASS          = "Klasse";
 SMARTBUFF_MSG_CHARGES        = "Aufladungen";
 SMARTBUFF_MSG_SOUNDS         = "Splash-Sound-Auswahl: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec gewechselt (%s), lade Buff-Vorlagen...";
+SMARTBUFF_MSG_PVP_PREP_ONLY  = "Aufgrund von API-Einschränkungen funktioniert Buffen nur in der Vorbereitungsphase und wird deaktiviert, sobald das Match beginnt.";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "Links Klick: Optionen Menü\nRechts Klick: An/Aus\nAlt-Links Klick: SmartDebuff\nShift-Ziehen: Knopf verschieben";

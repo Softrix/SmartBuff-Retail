@@ -10,7 +10,7 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "120226"; -- EU Date: DDMMYY
+SMARTBUFF_DATE               = "130226"; -- EU Date: DDMMYY
 SMARTBUFF_VERSION            = "r39." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
@@ -113,7 +113,7 @@ local cClassGroups           = {};
 local cBuffs                 = {};
 local cBuffIndex             = {};
 local cBuffTimer             = {};
-local cBlacklist             = {};
+local cBlocklist             = {};
 local cUnits                 = {};
 local cBuffsCombat           = {};
 
@@ -924,8 +924,8 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     currentUnit = arg1;
     SMARTBUFF_AddMsgD(string.format("Spell failed: %s", arg1));
     if (currentUnit and (string.find(currentUnit, "party") or string.find(currentUnit, "raid") or (currentUnit == "target" and O.Debug))) then
-      if (UnitName(currentUnit) ~= sPlayerName and O.BlacklistTimer > 0) then
-        cBlacklist[currentUnit] = GetTime();
+      if (UnitName(currentUnit) ~= sPlayerName and O.BlocklistTimer > 0) then
+        cBlocklist[currentUnit] = GetTime();
         if (currentUnit and UnitName(currentUnit)) then
         end
       end
@@ -1169,6 +1169,42 @@ for i, key in ipairs({"Solo", "Party", "LFR", "Raid", "MythicKeystone", "Horrifi
   Enum.SmartBuffGroup[key] = i
 end
 
+-- True if template has at least one buff with EnableS or EnableG.
+local function templateHasEnabledBuffs(templateName)
+  local t = B and B[CS()] and B[CS()][templateName];
+  if (not t or type(t) ~= "table") then return false; end
+  for k, v in pairs(t) do
+    if (type(v) == "table" and (v.EnableS or v.EnableG)) then return true; end
+  end
+  return false;
+end
+
+-- Copy buff settings from one template to another (for RetainTemplate on first switch).
+-- Only copies when: RetainTemplate is true, source has enabled buffs, and dest is "fresh" (no data or no buffs enabled).
+-- Does not copy blank templates, so users cannot accidentally overwrite a configured template with a blank one.
+local function MaybeCopyTemplateOnFirstSwitch(fromT, toT)
+  if (not B or not B[CS()] or not B[CS()][fromT]) then return; end
+  if (not O or not O.RetainTemplate) then return; end
+  if (not templateHasEnabledBuffs(fromT)) then return; end  -- do not copy blank over configured
+  -- Dest is "fresh" if nil/empty or has no enabled buffs
+  if (B[CS()][toT] and templateHasEnabledBuffs(toT)) then return; end  -- dest already has enabled buffs, not fresh
+
+  local src = B[CS()][fromT];
+  B[CS()][toT] = B[CS()][toT] or {};
+  local dst = B[CS()][toT];
+
+  for k, v in pairs(src) do
+    if (type(v) == "table") then
+      dst[k] = {};
+      for k2, v2 in pairs(v) do
+        dst[k][k2] = (type(v2) == "table") and (function(t) local r = {}; for a, b in pairs(t) do r[a] = b; end return r; end)(v2) or v2;
+      end
+    else
+      dst[k] = v;
+    end
+  end
+end
+
 -- Set the current template and create an array of units
 function SMARTBUFF_SetTemplate(force)
   -- Only block in combat (not when mounted) - setup should work when mounted
@@ -1276,14 +1312,18 @@ function SMARTBUFF_SetTemplate(force)
   end
 
   if currentTemplate ~= newTemplate then
+    MaybeCopyTemplateOnFirstSwitch(currentTemplate, newTemplate);
     SMARTBUFF_AddMsgD("Current tmpl: " .. currentTemplate or "nil" .. " - new tmpl: " .. newTemplate or "nil");
     local reason = switchReason or "instance"
     SMARTBUFF_AddMsg(SMARTBUFF_TITLE .. ": " .. SMARTBUFF_OFT_AUTOSWITCHTMP .. " (" .. reason .. ") " .. currentTemplate .. " -> " .. newTemplate);
+    if (reason == "arena" or reason == "battleground") then
+      SMARTBUFF_AddMsg(SMARTBUFF_TITLE .. ": " .. SMARTBUFF_MSG_PVP_PREP_ONLY, true);
+    end
   end
   currentTemplate = newTemplate;
 
   SMARTBUFF_SetBuffs();
-  wipe(cBlacklist);
+  wipe(cBlocklist);
   wipe(cBuffTimer);
   wipe(cUnits);
   wipe(cGroups);
@@ -2628,7 +2668,7 @@ function SMARTBUFF_Check(mode, force)
   local reagent;
   local nGlobal = 0;
 
-  SMARTBUFF_checkBlacklist();
+  SMARTBUFF_checkBlocklist();
 
   -- Skip when: (in combat and O.InCombat disabled) OR (in PvP and match active, matchState >= 3). Allow PvP prep and combat buffs when O.InCombat.
   local _, instanceType = GetInstanceInfo();
@@ -2763,7 +2803,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
   --SMARTBUFF_AddMsgD("Checking " .. unit);
 
   if (UnitExists(unit) and UnitIsFriend("player", unit) and not UnitIsDeadOrGhost(unit) and not UnitIsCorpse(unit)
-        and UnitIsConnected(unit) and UnitIsVisible(unit) and not UnitOnTaxi(unit) and not cBlacklist[unit]
+        and UnitIsConnected(unit) and UnitIsVisible(unit) and not UnitOnTaxi(unit) and not cBlocklist[unit]
         and ((not UnitIsPVP(unit) and (not isPvP or O.BuffPvP)) or (UnitIsPVP(unit) and (isPvP or O.BuffPvP)))) then
     --and not SmartBuff_UnitIsIgnored(unit)
 
@@ -3481,17 +3521,17 @@ end
 -- END SMARTBUFF_CanApplyWeaponBuff
 
 
--- Check the unit blacklist
-function SMARTBUFF_checkBlacklist()
+-- Check the unit blocklist
+function SMARTBUFF_checkBlocklist()
   local t = GetTime();
-  for unit in pairs(cBlacklist) do
-    if (t > (cBlacklist[unit] + O.BlacklistTimer)) then
-      cBlacklist[unit] = nil;
+  for unit in pairs(cBlocklist) do
+    if (t > (cBlocklist[unit] + O.BlocklistTimer)) then
+      cBlocklist[unit] = nil;
     end
   end
 end
 
--- END SMARTBUFF_checkBlacklist
+-- END SMARTBUFF_checkBlocklist
 
 
 -- Casts a spell
@@ -4217,13 +4257,16 @@ function SMARTBUFF_Options_Init(self)
   if (type(SMARTBUFF_Options) ~= "table") then SMARTBUFF_Options = {}; end
   O = SMARTBUFF_Options;
 
+  -- Migrate blacklist -> blocklist (inclusive language)
+  if (O.BlacklistTimer ~= nil and O.BlocklistTimer == nil) then O.BlocklistTimer = O.BlacklistTimer; O.BlacklistTimer = nil; end
+
   SMARTBUFF_BROKER_SetIcon();
 
 
   if (O.Toggle == nil) then O.Toggle = true; end
   if (O.ToggleAuto == nil) then O.ToggleAuto = true; end
   if (O.AutoTimer == nil) then O.AutoTimer = 5; end
-  if (O.BlacklistTimer == nil) then O.BlacklistTimer = 5; end
+  if (O.BlocklistTimer == nil) then O.BlocklistTimer = 5; end
   if (O.ToggleAutoCombat == nil) then O.ToggleAutoCombat = false; end
   if (O.ToggleAutoChat == nil) then O.ToggleAutoChat = false; end
   if (O.ToggleAutoSplash == nil) then O.ToggleAutoSplash = true; end
@@ -4246,8 +4289,9 @@ function SMARTBUFF_Options_Init(self)
   if (O.ScrollWheelUp == nil) then O.ScrollWheelUp = true; end
   if (O.ScrollWheelDown == nil) then O.ScrollWheelDown = true; end
 
-  if (O.InCombat == nil) then O.InCombat = true; end
+  if (O.InCombat == nil) then O.InCombat = false; end
   if (O.IncludeToys == nil) then O.IncludeToys = false; end
+  if (O.RetainTemplate == nil) then O.RetainTemplate = false; end
   if (O.AutoSwitchTemplate == nil) then O.AutoSwitchTemplate = true; end
   if (O.AutoSwitchTemplateInst == nil) then O.AutoSwitchTemplateInst = true; end
   if (O.InShapeshift == nil) then O.InShapeshift = true; end
@@ -4594,7 +4638,7 @@ function SMARTBUFF_command(msg)
     SMARTBUFF_ShowBuffTimers();
   elseif (msg == "target") then
     if (SMARTBUFF_PreCheck(0)) then
-      SMARTBUFF_checkBlacklist();
+      SMARTBUFF_checkBlocklist();
       SMARTBUFF_BuffUnit("target", 0, 0);
     end
   elseif (msg == "debug") then
@@ -4767,6 +4811,10 @@ end
 function SMARTBUFF_OHideSAButton()
   O.HideSAButton = not O.HideSAButton;
   SMARTBUFF_ShowSAButton();
+end
+
+function SMARTBUFF_ORetainTemplate()
+  O.RetainTemplate = not O.RetainTemplate;
 end
 
 function SMARTBUFF_OSelfFirst()
@@ -5114,12 +5162,13 @@ function SMARTBUFF_Options_OnShow()
   SmartBuffOptionsFrame_cbMsgError:SetChecked(O.ToggleMsgError);
   SmartBuffOptionsFrame_cbHideMmButton:SetChecked(O.HideMmButton);
   SmartBuffOptionsFrame_cbHideSAButton:SetChecked(O.HideSAButton);
+  SmartBuffOptionsFrame_cbRetainTemplate:SetChecked(O.RetainTemplate);
 
   SmartBuffOptionsFrameRebuffTimer:SetValue(O.RebuffTimer);
   SmartBuff_SetSliderText(SmartBuffOptionsFrameRebuffTimer, SMARTBUFF_OFT_REBUFFTIMER, O.RebuffTimer,
     INT_SPELL_DURATION_SEC);
-  SmartBuffOptionsFrameBLDuration:SetValue(O.BlacklistTimer);
-  SmartBuff_SetSliderText(SmartBuffOptionsFrameBLDuration, SMARTBUFF_OFT_BLDURATION, O.BlacklistTimer,
+  SmartBuffOptionsFrameBLDuration:SetValue(O.BlocklistTimer);
+  SmartBuff_SetSliderText(SmartBuffOptionsFrameBLDuration, SMARTBUFF_OFT_BLDURATION, O.BlocklistTimer,
     INT_SPELL_DURATION_SEC);
 
   SMARTBUFF_SetCheckButtonBuffs(0);
@@ -5273,6 +5322,7 @@ function SMARTBUFF_DropDownTemplate_OnClick(self)
   UIDropDownMenu_SetSelectedValue(SmartBuffOptionsFrame_ddTemplates, i);
   tmp = SMARTBUFF_TEMPLATES[i];
   if (currentTemplate ~= tmp) then
+    MaybeCopyTemplateOnFirstSwitch(currentTemplate, tmp);
     SmartBuff_BuffSetup:Hide();
     iLastBuffSetup = -1;
     SmartBuff_PlayerSetup:Hide();
