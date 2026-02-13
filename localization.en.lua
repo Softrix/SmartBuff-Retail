@@ -106,9 +106,10 @@ SMARTBUFF_OFT_AUTOSWITCHTMPINST = "Instances";
 SMARTBUFF_OFT_CHECKCHARGES   = "Check charges";
 SMARTBUFF_OFT_RBT            = "R: Timers";
 SMARTBUFF_OFT_BUFFINCITIES   = "Buff in cities";
-SMARTBUFF_OFT_BLDURATION     = "Blacklisted";
+SMARTBUFF_OFT_BLDURATION     = "Blocked";
 SMARTBUFF_OFT_ANTIDAZE       = "Anti daze";
 SMARTBUFF_OFT_HIDESABUTTON   = "Hide action button";
+SMARTBUFF_OFT_RETAINTEMPLATE = "Retain";
 SMARTBUFF_OFT_INCOMBAT       = "in combat";
 SMARTBUFF_OFT_SMARTDEBUFF    = "SmartDebuff";
 SMARTBUFF_OFT_INSHAPESHIFT   = "Shapeshift";
@@ -163,10 +164,11 @@ SMARTBUFF_OFTT_AUTOSWITCHTMP = "Automatically switches the template,\nif the gro
 SMARTBUFF_OFTT_AUTOSWITCHTMPINST = "Automatically switches the template,\nif the instance changes.";
 SMARTBUFF_OFTT_CHECKCHARGES  = "Displays low amount of\ncharges on a buff.\n0 = Deactivated";
 SMARTBUFF_OFTT_BUFFINCITIES  = "Buffs also if you are in capital cities.\nIf you are PvP flagged, it buffs in any case.";
-SMARTBUFF_OFTT_BLDURATION    = "How many seconds, players will be blacklisted.\n0 = Deactivated";
+SMARTBUFF_OFTT_BLDURATION    = "How many seconds, players will be blocked.\n0 = Deactivated";
 SMARTBUFF_OFTT_ANTIDAZE      = "Automatically cancels the\naspect of the cheetah/pack\nif someone gets dazed\n(self or group).";
 SMARTBUFF_OFTT_SPLASHSTYLE   = "Changes the fontstyle of\nthe buff messages.";
 SMARTBUFF_OFTT_HIDESABUTTON  = "Hides the SmartBuff action button.";
+SMARTBUFF_OFTT_RETAINTEMPLATE = "When switching to a fresh template (never used, or no buffs enabled),\nthe current buff settings will be copied to it when this is checked.\nBlank templates are never copied over, so you cannot accidentally overwrite a configured template.";
 SMARTBUFF_OFTT_INCOMBAT      = "At the moment it only works on yourself.\nThe first buff you mark as in combat,\nwill set on the button before combat\nand you can use it in combat.\n!!! Warning !!!\nAll logic is disabled in combat!";
 SMARTBUFF_OFTT_SMARTDEBUFF   = "Shows the SmartDebuff frame.";
 SMARTBUFF_OFTT_SPLASHDURATION= "How many seconds the splash\nmessage will displayed,\nbefore it fades.";
@@ -174,6 +176,7 @@ SMARTBUFF_OFTT_INSHAPESHIFT  = "Cast buffs also if you\nare shapeshifted.";
 SMARTBUFF_OFTT_LINKGRPBUFFCHECK  = "Checks if a buff of an other\nclass with similar effect\nis already active.";
 SMARTBUFF_OFTT_LINKSELFBUFFCHECK = "Checks if a self buff is active,\nwhose only one can be\nactive at a time.";
 SMARTBUFF_OFTT_SOUNDSELECT   = "Select the required splash sound.";
+SMARTBUFF_OFTT_PLAYSOUND     = "Controlled by Sound Effects volume.";
 
 -- Buffsetup Frame Text
 SMARTBUFF_BST_SELFONLY       = "Myself only";
@@ -228,6 +231,7 @@ SMARTBUFF_MSG_CLASS          = "Class";
 SMARTBUFF_MSG_CHARGES        = "charges";
 SMARTBUFF_MSG_SOUNDS         = "Splash Sound Selection: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec changed (%s), loading buff templates...";
+SMARTBUFF_MSG_PVP_PREP_ONLY  = "Due to API limitation, buffing only works during prep and is disabled once the match starts.";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "Left click: options menu\nRight click: On/Off\nAlt-Left Click: SmartDebuff\nShift drag: Move button";

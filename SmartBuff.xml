@@ -1196,9 +1196,9 @@
                     <OnValueChanged>
                         local o = SMARTBUFF_Options;
                         local n = self:GetValue();
-                        if (o and o.BlacklistTimer ~= n) then
+                        if (o and o.BlocklistTimer ~= n) then
                         SmartBuff_SetSliderText(self, SMARTBUFF_OFT_BLDURATION, n, INT_SPELL_DURATION_SEC);
-                        o.BlacklistTimer = n;
+                        o.BlocklistTimer = n;
                         end
                     </OnValueChanged>
                     <OnEnter>
@@ -1375,6 +1375,37 @@
                     </OnClick>
                 </Scripts>
             </Button>
+            <CheckButton name="SmartBuffOptionsFrame_cbRetainTemplate" inherits="UICheckButtonTemplate">
+                <Size>
+                    <AbsDimension x="20" y="20" />
+                </Size>
+                <Anchors>
+                    <Anchor point="LEFT" relativeTo="SmartBuffOptionsFrame_ddTemplates" relativePoint="RIGHT">
+                        <Offset>
+                            <AbsDimension x="8" y="0" />
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <HitRectInsets>
+                    <AbsInset left="0" right="0" top="0" bottom="0" />
+                </HitRectInsets>
+                <Scripts>
+                    <OnLoad>
+                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_RETAINTEMPLATE);
+                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                    </OnLoad>
+                    <OnClick>
+                        SMARTBUFF_ORetainTemplate();
+                    </OnClick>
+                    <OnEnter>
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+                        GameTooltip:SetText(SMARTBUFF_OFTT_RETAINTEMPLATE, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
+                    </OnEnter>
+                    <OnLeave>
+                        GameTooltip:Hide();
+                    </OnLeave>
+                </Scripts>
+            </CheckButton>
             <Button name="SmartBuffOptionsFrame_TutorialButton" parentKey="MainHelpButton" inherits="MainHelpPlateButton" toplevel="true">
                 <Anchors>
                     <Anchor x="-24" y="24" point="TOPLEFT" relativeTo="$parent" />
@@ -1635,6 +1666,13 @@
                     <OnClick>
                         SMARTBUFF_PlaySpashSound();
                     </OnClick>
+                    <OnEnter>
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+                        GameTooltip:SetText(SMARTBUFF_OFTT_PLAYSOUND, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
+                    </OnEnter>
+                    <OnLeave>
+                        GameTooltip:Hide();
+                    </OnLeave>
                 </Scripts>
             </Button>
             <Slider name="SmartBuffOptionsFrame_sldSounds" inherits="OptionsSliderTemplate" minValue="1" maxValue="25" defaultValue="1">

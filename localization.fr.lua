@@ -94,7 +94,7 @@ SMARTBUFF_OFT_CHECKCHARGES   = "Charges";
 SMARTBUFF_OFT_RBT            = "R: Timers";
 SMARTBUFF_OFT_BUFFINCITIES   = "Buff dans les Cap.";
 SMARTBUFF_OFT_UISYNC         = "UI sync";
-SMARTBUFF_OFT_BLDURATION     = "Liste noire";
+SMARTBUFF_OFT_BLDURATION     = "Bloqué";
 SMARTBUFF_OFT_COMPMODE       = "Comp. mode";
 SMARTBUFF_OFT_MINIGRP        = "Mini groupe";
 SMARTBUFF_OFT_ANTIDAZE       = "Anti daze"; -- NOT TRANSLATED
@@ -150,7 +150,7 @@ SMARTBUFF_OFTT_AUTOSWITCHTMPINST = "Change automatiquement de configuration,\nsi
 SMARTBUFF_OFTT_CHECKCHARGES  = "Affiche un message au quantit\195\169 basse\nde charges que un Buff\n0 = D\195\169sactiv\195\169";
 SMARTBUFF_OFTT_BUFFINCITIES  = "Buffs also if you are in capital cities.\nIf you are PvP flagged, it buffs in any case."; -- NOT TRANSLATED
 SMARTBUFF_OFTT_UISYNC        = "Activate syncronisation with the UI\nto retrive the bufftime left from other players."; -- NOT TRANSLATED
-SMARTBUFF_OFTT_BLDURATION    = "How many seconds, players will be blacklistet.\n0 = Deactivated"; -- NOT TRANSLATED
+SMARTBUFF_OFTT_BLDURATION    = "Combien de secondes les joueurs seront bloqués.\n0 = Désactivé";
 SMARTBUFF_OFTT_COMPMODE      = "Compatibility mode\nAttention!!!\nUses this mode only, if you are\nfacing problems to cast buffs on yourself.";
 SMARTBUFF_OFTT_MINIGRP       = "Show raid subgoup settings in an\nown movable mini group frame."; -- NOT TRANSLATED
 SMARTBUFF_OFTT_ANTIDAZE      = "Automatically cancels the\naspect of the cheetah/pack\nif someone gets dazed\n(self or group)."; -- NOT TRANSLATED
@@ -218,6 +218,7 @@ SMARTBUFF_MSG_CLASS          = "Classe";
 SMARTBUFF_MSG_CHARGES        = "charges";
 SMARTBUFF_MSG_SOUNDS         = "Son Splash sélectionné: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec changed (%s), loading buff templates...";
+SMARTBUFF_MSG_PVP_PREP_ONLY  = "En raison des limitations de l'API, le buff ne fonctionne que pendant la préparation et est désactivé une fois le match commencé.";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "Left Click: Menu d\'options\nRight Click: ON/OFF\nAlt-Left Click: SmartDebuff\nShift drag: Move button"; -- NOT TRANSLATED

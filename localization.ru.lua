@@ -92,7 +92,7 @@ SMARTBUFF_OFT_CHECKCHARGES   = "Проверять заряды";
 SMARTBUFF_OFT_RBT            = "R: Таймеры";
 SMARTBUFF_OFT_BUFFINCITIES   = "Баффать в городе";
 SMARTBUFF_OFT_UISYNC         = "Синхронизация UI";
-SMARTBUFF_OFT_BLDURATION     = "Ч.список";
+SMARTBUFF_OFT_BLDURATION     = "Блок";
 SMARTBUFF_OFT_COMPMODE       = "Комп.режим";
 SMARTBUFF_OFT_MINIGRP        = "Мини-группа";
 SMARTBUFF_OFT_ANTIDAZE       = "Анти-стоп";
@@ -148,7 +148,7 @@ SMARTBUFF_OFTT_AUTOSWITCHTMPINST = "Автоматически менять на
 SMARTBUFF_OFTT_CHECKCHARGES  = "Показывать нехватку зарядов баффа\nпри падении ниже этого числа.\n0 = Отключить";
 SMARTBUFF_OFTT_BUFFINCITIES  = "Баффать даже при нахождении в городе.\nЕсли на вас PvP флаг, баффает в любом случае.";
 SMARTBUFF_OFTT_UISYNC        = "Активировать синхронизацию с UI\nчтобы получать оставшееся время баффов\nот других игроков.";
-SMARTBUFF_OFTT_BLDURATION    = "Сколько секунд игрок держится в чёрном списке.\n0 = Отключить";
+SMARTBUFF_OFTT_BLDURATION    = "Сколько секунд игрок будет заблокирован.\n0 = Отключить";
 SMARTBUFF_OFTT_COMPMODE      = "Режим совместимости.\nВнимание!!!\nИспользуйте этот режим только если\nу вас проблемы с обкастом себя самого.";
 SMARTBUFF_OFTT_MINIGRP       = "Показывать выбор подгрупп рейда\nв отдельной маленькой рамке.";
 SMARTBUFF_OFTT_ANTIDAZE      = "Автоматически прерывать\nДух Гепарда/Стаи\nесли на ком-то из группы\nповисло замедление.";
@@ -215,6 +215,7 @@ SMARTBUFF_MSG_CLASS          = "Класс";
 SMARTBUFF_MSG_CHARGES        = "зарядов";
 SMARTBUFF_MSG_SOUNDS         = "Выбранный звук всплеска: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec changed (%s), loading buff templates...";
+SMARTBUFF_MSG_PVP_PREP_ONLY  = "Из-за ограничений API баффы работают только во время подготовки и отключаются после начала матча.";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "Левой кнопкой: меню опций\nПравой кнопкой: Вкл/Выкл\nAlt+Левой Кнопкой: SmartDebuff\nТащить с Shift-ом: Двигать кнопку";
