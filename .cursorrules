@@ -32,6 +32,10 @@
 - Follow the existing file organization (buffs in SmartBuff.buffs.lua, main logic in SmartBuff.lua)
 - Use existing constants and patterns where possible
 
+## What's New (localization.en.lua)
+- SMARTBUFF_WHATSNEW should include brief notes for the last two versions only
+- When adding a new version, prepend its changes and keep the previous version's notes; remove notes older than two versions
+
 ## Documentation
 - Provide brief but clear explanations for any new functions
 - Include user-friendly descriptions in function headers
