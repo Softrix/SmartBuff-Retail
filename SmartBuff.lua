@@ -2700,11 +2700,13 @@ function SMARTBUFF_Check(mode, force)
     local actionType, spellName, slot, buffType;
     i, actionType, spellName, slot, _, buffType = SMARTBUFF_BuffUnit("target", 0, mode);
     if (i <= 1) then
-      if (i == 0) then
-        --tLastCheck = GetTime() - O.AutoTimer + GlobalCd;
+      -- Don't surface missing-buff when in combat and O.InCombat disabled
+      if (i == 0 and InCombatLockdown() and not O.InCombat) then
+        -- skip
+      else
+        IsChecking = false;
+        return i, actionType, spellName, slot, "target", buffType;
       end
-      IsChecking = false;
-      return i, actionType, spellName, slot, "target", buffType;
     end
   end
 
@@ -2736,8 +2738,10 @@ function SMARTBUFF_Check(mode, force)
           i, actionType, spellName, slot, _, buffType = SMARTBUFF_BuffUnit(unit, subgroup, mode);
 
           if (i <= 1) then
-            -- Logic gated by O.InCombat (early exit); in combat surface notification only when both O.InCombat and O.ToggleAutoCombat
-            if (not InCombatLockdown() or (O.InCombat and O.ToggleAutoCombat)) then
+            -- Don't surface missing-buff when in combat and O.InCombat disabled (aura check unreliable at combat start)
+            if (i == 0 and InCombatLockdown() and not O.InCombat) then
+              -- skip, continue to next unit
+            elseif (not InCombatLockdown() or (O.InCombat and O.ToggleAutoCombat)) then
               if (i == 0 and mode ~= 1) then
                 --tLastCheck = GetTime() - O.AutoTimer + GlobalCd;
                 if (actionType == SMARTBUFF_ACTION_ITEM) then
