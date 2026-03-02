@@ -117,7 +117,6 @@ local cBlocklist             = {};
 local cUnits                 = {};
 local cBuffsCombat           = {};
 local cBuffsToCastAfterBGRes = {};  -- Queue of {actionType, spellName, slot} for post-resurrection in BG (aura state secret)
-local wasPlayerDeadInBG      = false;
 
 local cScrBtnBO              = nil;
 
@@ -728,7 +727,8 @@ function SMARTBUFF_OnLoad(self)
   self:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
   self:RegisterEvent("UNIT_SPELLCAST_FAILED");
   self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
-  self:RegisterEvent("UNIT_HEALTH");
+  self:RegisterEvent("PLAYER_ALIVE");
+  self:RegisterEvent("PLAYER_UNGHOST");
   self:RegisterEvent("PLAYER_LEVEL_UP");
   self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED");
   -- Cache-related events for partial reloads
@@ -989,20 +989,15 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
         SMARTBUFF_Splash_Clear();
       end
     end
-  elseif (event == "UNIT_HEALTH" and arg1 == "player" and isInit and B and B[CS()]) then
-    -- BG death->resurrection: queue buffs to try (aura state is secret during match)
+  elseif ((event == "PLAYER_ALIVE" or event == "PLAYER_UNGHOST") and isInit and B and B[CS()]) then
+    -- BG resurrection: queue buffs to try (aura state is secret during match)
+    -- PLAYER_ALIVE = release to GY or accept res; PLAYER_UNGHOST = spawn after running as ghost
     local _, instanceType = GetInstanceInfo();
     local inPvPInstance = (instanceType == "arena" or instanceType == "pvp");
     local pvPMatchState = inPvPInstance and (C_PvP.GetActiveMatchState() or 0) or 0;
     local pvPMatchActive = (pvPMatchState >= 3);
     if (inPvPInstance and pvPMatchActive) then
-      local isDead = UnitIsDeadOrGhost("player");
-      if (wasPlayerDeadInBG and not isDead) then
-        SMARTBUFF_PopulateBGResQueue();
-      end
-      wasPlayerDeadInBG = isDead;
-    else
-      wasPlayerDeadInBG = false;
+      SMARTBUFF_PopulateBGResQueue();
     end
   end
 
