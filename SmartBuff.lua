@@ -116,6 +116,8 @@ local cBuffTimer             = {};
 local cBlocklist             = {};
 local cUnits                 = {};
 local cBuffsCombat           = {};
+local cBuffsToCastAfterBGRes = {};  -- Queue of {actionType, spellName, slot} for post-resurrection in BG (aura state secret)
+local wasPlayerDeadInBG      = false;
 
 local cScrBtnBO              = nil;
 
@@ -726,6 +728,7 @@ function SMARTBUFF_OnLoad(self)
   self:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
   self:RegisterEvent("UNIT_SPELLCAST_FAILED");
   self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
+  self:RegisterEvent("UNIT_HEALTH");
   self:RegisterEvent("PLAYER_LEVEL_UP");
   self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED");
   -- Cache-related events for partial reloads
@@ -985,6 +988,21 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
         isClearSplash = false;
         SMARTBUFF_Splash_Clear();
       end
+    end
+  elseif (event == "UNIT_HEALTH" and arg1 == "player" and isInit and B and B[CS()]) then
+    -- BG death->resurrection: queue buffs to try (aura state is secret during match)
+    local _, instanceType = GetInstanceInfo();
+    local inPvPInstance = (instanceType == "arena" or instanceType == "pvp");
+    local pvPMatchState = inPvPInstance and (C_PvP.GetActiveMatchState() or 0) or 0;
+    local pvPMatchActive = (pvPMatchState >= 3);
+    if (inPvPInstance and pvPMatchActive) then
+      local isDead = UnitIsDeadOrGhost("player");
+      if (wasPlayerDeadInBG and not isDead) then
+        SMARTBUFF_PopulateBGResQueue();
+      end
+      wasPlayerDeadInBG = isDead;
+    else
+      wasPlayerDeadInBG = false;
     end
   end
 
@@ -2640,6 +2658,37 @@ end
 -- END SMARTBUFF_IsShapeshifted
 
 
+-- Populate cBuffsToCastAfterBGRes from current template (enabled self buffs). Used after death->resurrection in BG when aura state is secret.
+function SMARTBUFF_PopulateBGResQueue()
+  wipe(cBuffsToCastAfterBGRes);
+  local ct = currentTemplate;
+  if (not B or not B[CS()] or not B[CS()][ct] or not B[CS()].Order or not cBuffIndex) then return; end
+  local ord = B[CS()].Order;
+  for _, buffnS in ipairs(ord) do
+    local cBuff = cBuffs[cBuffIndex[buffnS]];
+    local bs = GetBuffSettings(buffnS);
+    if (cBuff and bs and bs.EnableS and cBuff.Type ~= SMARTBUFF_CONST_TRACK) then
+      if (cBuff.IDS or SMARTBUFF_IsItem(cBuff.Type)) then
+        local actionType, spellName, slot;
+        if (SMARTBUFF_IsItem(cBuff.Type) or cBuff.Type == SMARTBUFF_CONST_WEAPON) then
+          actionType = SMARTBUFF_ACTION_ITEM;
+          local itemID = buffnS and tonumber(string.match(buffnS, "item:(%d+)"));
+          spellName = (itemID and C_Item.GetItemInfo(itemID)) or buffnS;
+          slot = 0;
+        else
+          actionType = SMARTBUFF_ACTION_SPELL;
+          spellName = buffnS;
+          slot = -1;
+        end
+        tinsert(cBuffsToCastAfterBGRes, { actionType = actionType, spellName = spellName, slot = slot });
+      end
+    end
+  end
+end
+
+-- END SMARTBUFF_PopulateBGResQueue
+
+
 local IsChecking = false;
 function SMARTBUFF_Check(mode, force)
   -- print("precheck "..tostring(SMARTBUFF_PreCheck(mode, force)))
@@ -2676,6 +2725,15 @@ function SMARTBUFF_Check(mode, force)
   local pvPMatchState = inPvPInstance and (C_PvP.GetActiveMatchState() or 0) or 0;
   local pvPMatchActive = (pvPMatchState >= 3);
   local skipChecks = (InCombatLockdown() and not O.InCombat) or (inPvPInstance and pvPMatchActive);
+  -- BG resurrection: when match active and we have queued buffs, return first buff for SecureActionButton (aura state secret; cast once only).
+  -- Caller must remove from queue only when it successfully sets the button (requires non-combat moment).
+  if (inPvPInstance and pvPMatchActive and cBuffsToCastAfterBGRes and #cBuffsToCastAfterBGRes > 0) then
+    local entry = cBuffsToCastAfterBGRes[1];
+    if (entry and entry.actionType and entry.spellName) then
+      IsChecking = false;
+      return 0, entry.actionType, entry.spellName, entry.slot or -1, "player", nil, true;  -- 7th = isBGRes
+    end
+  end
   if skipChecks then
     IsChecking = false;
     return;
@@ -5666,42 +5724,45 @@ function SMARTBUFF_OnPreClick(self, button, down)
   currentSpell = nil;
   tCastRequested = 0;
 
-  if (not InCombatLockdown()) then
-    local ret, actionType, spellName, slot, unit, buffType = SMARTBUFF_Check(mode);
-    if (ret and ret == 0 and actionType and spellName and unit) then
-      lastBuffType = buffType;
-      self:SetAttribute("type", actionType);
-      self:SetAttribute("unit", unit);
-      if (actionType == SMARTBUFF_ACTION_SPELL) then
-        if (slot and slot > 0 and unit == "player") then
-          self:SetAttribute("type", "macro");
-          self:SetAttribute("macrotext", string.format("/use %s\n/use %i\n/click StaticPopup1Button1", spellName, slot));
-          --self:SetAttribute("target-item", slot);
-          SMARTBUFF_AddMsgD("Weapon buff " .. spellName .. ", " .. slot);
-        else
-          self:SetAttribute("spell", spellName);
-        end
-
-        if (cBuffIndex[spellName]) then
-          currentUnit = unit;
-          currentSpell = spellName;
-          tCastRequested = GetTime();
-        end
-      elseif (actionType == SMARTBUFF_ACTION_ITEM and slot) then
-        self:SetAttribute("item", spellName);
-        if (slot > 0) then
-          self:SetAttribute("type", "macro");
-          self:SetAttribute("macrotext", string.format("/use %s\n/use %i\n/click StaticPopup1Button1", spellName, slot));
-        end
-      elseif (actionType == "action" and slot) then
-        self:SetAttribute("action", slot);
+  -- Call Check regardless of combat so BG-res queue can return a buff (user clicks when they have a non-combat moment)
+  local ret, actionType, spellName, slot, unit, buffType, isBGRes = SMARTBUFF_Check(mode);
+  if (ret and ret == 0 and actionType and spellName and unit and (not InCombatLockdown())) then
+    lastBuffType = buffType or "";
+    self:SetAttribute("type", actionType);
+    self:SetAttribute("unit", unit);
+    if (actionType == SMARTBUFF_ACTION_SPELL) then
+      if (slot and slot > 0 and unit == "player") then
+        self:SetAttribute("type", "macro");
+        self:SetAttribute("macrotext", string.format("/use %s\n/use %i\n/click StaticPopup1Button1", spellName, slot));
+        --self:SetAttribute("target-item", slot);
+        SMARTBUFF_AddMsgD("Weapon buff " .. spellName .. ", " .. slot);
       else
-        SMARTBUFF_AddMsgD("Preclick: not supported actiontype -> " .. actionType);
+        self:SetAttribute("spell", spellName);
       end
 
-      --isClearSplash = true;
-      tLastCheck = GetTime() - O.AutoTimer + GlobalCd;
+      if (cBuffIndex and cBuffIndex[spellName]) then
+        currentUnit = unit;
+        currentSpell = spellName;
+        tCastRequested = GetTime();
+      end
+    elseif (actionType == SMARTBUFF_ACTION_ITEM) then
+      self:SetAttribute("item", spellName);
+      if (slot and slot > 0) then
+        self:SetAttribute("type", "macro");
+        self:SetAttribute("macrotext", string.format("/use %s\n/use %i\n/click StaticPopup1Button1", spellName, slot));
+      end
+    elseif (actionType == "action" and slot) then
+      self:SetAttribute("action", slot);
+    else
+      SMARTBUFF_AddMsgD("Preclick: not supported actiontype -> " .. tostring(actionType));
     end
+
+    if (isBGRes and cBuffsToCastAfterBGRes and #cBuffsToCastAfterBGRes > 0) then
+      tremove(cBuffsToCastAfterBGRes, 1);
+    end
+
+    --isClearSplash = true;
+    tLastCheck = GetTime() - O.AutoTimer + GlobalCd;
   end
 end
 
