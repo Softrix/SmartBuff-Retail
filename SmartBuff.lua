@@ -5722,7 +5722,7 @@ function SMARTBUFF_OnPreClick(self, button, down)
   -- Call Check regardless of combat so BG-res queue can return a buff (user clicks when they have a non-combat moment)
   local ret, actionType, spellName, slot, unit, buffType, isBGRes = SMARTBUFF_Check(mode);
   if (ret and ret == 0 and actionType and spellName and unit and (not InCombatLockdown())) then
-    lastBuffType = buffType or "";
+    lastBuffType = buffType or (isBGRes and spellName) or "";
     self:SetAttribute("type", actionType);
     self:SetAttribute("unit", unit);
     if (actionType == SMARTBUFF_ACTION_SPELL) then
