@@ -174,6 +174,7 @@ SMARTBUFF_BST_OFFHAND        = "Una mano";
 SMARTBUFF_BST_RANGED         = "Arma arrojadiza";
 SMARTBUFF_BST_REMINDER       = "Notificaci\195\179n";
 SMARTBUFF_BST_MANALIMIT      = "M\195\173nimo obligado";
+SMARTBUFF_BST_SKIPBGRES      = "Excluir en Campos de Batalla";
 
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Buffar s\195\179lo tu personaje.";
@@ -186,6 +187,7 @@ SMARTBUFF_BSTT_RANGED        = "Buffs the ranged slot.";
 SMARTBUFF_BSTT_REMINDER      = "Visualizar mensaje recordatorio.";
 SMARTBUFF_BSTT_REBUFFTIMER   = "Cu\195\161ntos segundos antes de que el buff expire,\ndebe el recordatorio avisarte.\n0 = temporizador de rebuff global";
 SMARTBUFF_BSTT_MANALIMIT     = "Umbral de Man\195\161/Ira/Energ\195\173a\nSi tienes menos de este valor\nno se lanzar\195\161 el buff";
+SMARTBUFF_BSTT_SKIPBGRES    = "Si est\195\161 marcado, este hechizo no se a\195\177ade a la cola tras resurrecci\195\179n en Campo de Batalla o Arena.";
 
 -- Playersetup Frame Tooltip Text
 SMARTBUFF_PSTT_RESIZE        = "Minimiza/maximiza\nla ventana principal de opciones";

@@ -89,6 +89,7 @@ function SmartBuff_SetupTooltips()
   t(SmartBuff_BuffSetup_cbCombatIn, SMARTBUFF_BSTT_COMBATIN);
   t(SmartBuff_BuffSetup_cbCombatOut, SMARTBUFF_BSTT_COMBATOUT);
   t(SmartBuff_BuffSetup_txtManaLimit, SMARTBUFF_BSTT_MANALIMIT);
+  t(SmartBuff_BuffSetup_cbSkipBGResQueue, SMARTBUFF_BSTT_SKIPBGRES);
   t(SmartBuff_BuffSetup_cbMH, SMARTBUFF_BSTT_MAINHAND);
   t(SmartBuff_BuffSetup_cbOH, SMARTBUFF_BSTT_OFFHAND);
   t(SmartBuff_BuffSetup_cbRH, SMARTBUFF_BSTT_RANGED);

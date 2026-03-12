@@ -194,6 +194,7 @@ SMARTBUFF_BST_OFFHAND        = "Off Hand";
 SMARTBUFF_BST_RANGED         = "Thrown";
 SMARTBUFF_BST_REMINDER       = "Notification";
 SMARTBUFF_BST_MANALIMIT      = "Lower bound";
+SMARTBUFF_BST_SKIPBGRES      = "Exclude in BGs";
 
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Buffs only your character.";
@@ -207,6 +208,7 @@ SMARTBUFF_BSTT_RANGED        = "Buffs the ranged slot.";
 SMARTBUFF_BSTT_REMINDER      = "Display reminder message.";
 SMARTBUFF_BSTT_REBUFFTIMER   = "How many seconds before a buff expires,\nthe reminder should alert you.\n0 = global rebuff timer";
 SMARTBUFF_BSTT_MANALIMIT     = "Mana/Rage/Energy threshold\nIf you are below this value\nit will not cast the buff.";
+SMARTBUFF_BSTT_SKIPBGRES    = "If checked, this spell is not added to the cast queue after resurrection in Battleground or Arena.";
 SMARTBUFF_BSTT_ADDLIST       = "Additional list: Add players who should receive this buff even if they don't match the class/role filter. Target a party/raid member and click + to add.";
 SMARTBUFF_BSTT_IGNORELIST    = "Ignore list: Exclude players from this buff even if they match the class/role filter. Target a party/raid member and click + to add.";
 

@@ -581,6 +581,7 @@ local function InitBuffSettings(cBI, reset)
   if (cBuff.AddList == nil) then cBuff.AddList = {}; end                     -- to 2.1a
   if (cBuff.IgnoreList == nil) then cBuff.IgnoreList = {}; end               -- to 2.1a
   if (cBuff.RH == nil) then cBuff.RH = false; end                            -- to 4.0b
+  if (cBuff.SkipBGResQueue == nil) then cBuff.SkipBGResQueue = false; end
 end
 
 local function InitBuffOrder(reset)
@@ -2666,7 +2667,7 @@ function SMARTBUFF_PopulateBGResQueue()
     local cBuff = cBuffs[cBuffIndex[buffnS]];
     local bs = GetBuffSettings(buffnS);
     if (cBuff and bs and bs.EnableS and cBuff.Type ~= SMARTBUFF_CONST_TRACK) then
-      if (cBuff.IDS and not SMARTBUFF_IsItem(cBuff.Type)) then
+      if (cBuff.IDS and not SMARTBUFF_IsItem(cBuff.Type) and not bs.SkipBGResQueue) then
         tinsert(cBuffsToCastAfterBGRes, { actionType = SMARTBUFF_ACTION_SPELL, spellName = buffnS, slot = -1 });
       end
     end
@@ -5079,16 +5080,25 @@ function SmartBuff_BuffSetup_Show(i)
       end
     end
 
+    if (cBuffs[i].IDS and not SMARTBUFF_IsItem(cBuffs[i].Type)) then
+      SmartBuff_BuffSetup_cbSkipBGResQueue:Show();
+      SmartBuff_BuffSetup_cbSkipBGResQueue:SetChecked(bs.SkipBGResQueue == true);
+    else
+      SmartBuff_BuffSetup_cbSkipBGResQueue:Hide();
+    end
+
     if (cBuffs[i].Type == SMARTBUFF_CONST_GROUP or cBuffs[i].Type == SMARTBUFF_CONST_ITEMGROUP) then
       SmartBuff_BuffSetup_cbSelf:Show();
       SmartBuff_BuffSetup_cbSelfNot:Show();
       SmartBuff_BuffSetup_btnPriorityList:Show();
       SmartBuff_BuffSetup_btnIgnoreList:Show();
+      SmartBuff_BuffSetup_btnInfo:Show();
     else
       SmartBuff_BuffSetup_cbSelf:Hide();
       SmartBuff_BuffSetup_cbSelfNot:Hide();
       SmartBuff_BuffSetup_btnPriorityList:Hide();
       SmartBuff_BuffSetup_btnIgnoreList:Hide();
+      SmartBuff_BuffSetup_btnInfo:Hide();
       SmartBuff_PlayerSetup:Hide();
     end
 
@@ -5152,6 +5162,7 @@ function SmartBuff_BuffSetup_OnClick()
   cBuff.SelfNot  = SmartBuff_BuffSetup_cbSelfNot:GetChecked();
   cBuff.CIn      = SmartBuff_BuffSetup_cbCombatIn:GetChecked();
   cBuff.COut     = SmartBuff_BuffSetup_cbCombatOut:GetChecked();
+  cBuff.SkipBGResQueue = SmartBuff_BuffSetup_cbSkipBGResQueue:IsShown() and SmartBuff_BuffSetup_cbSkipBGResQueue:GetChecked();
   cBuff.MH       = SmartBuff_BuffSetup_cbMH:GetChecked();
   cBuff.OH       = SmartBuff_BuffSetup_cbOH:GetChecked();
   cBuff.RH       = SmartBuff_BuffSetup_cbRH:GetChecked();

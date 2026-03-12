@@ -175,6 +175,7 @@ SMARTBUFF_BST_OFFHAND        = "Main Gauche";
 SMARTBUFF_BST_RANGED         = "Armes de jet";
 SMARTBUFF_BST_REMINDER       = "Notification";
 SMARTBUFF_BST_MANALIMIT      = "Lower bound";
+SMARTBUFF_BST_SKIPBGRES      = "Exclure en Champs de bataille";
 
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Buffs uniquement votre personnage.";
@@ -187,6 +188,7 @@ SMARTBUFF_BSTT_RANGED        = "Buffs the ranged slot.";
 SMARTBUFF_BSTT_REMINDER      = "Afficher le message de rappel.";
 SMARTBUFF_BSTT_REBUFFTIMER   = "Indique le temps en secondes avant que le Buff expire,\nle rappel vous lancera une alerte.\n0 = Timer: Rebuff";
 SMARTBUFF_BSTT_MANALIMIT     = "Mana/Rage/Energy threshold\nIf you are below this value\nit will not cast the buff.";
+SMARTBUFF_BSTT_SKIPBGRES    = "Si coché, ce sort n'est pas ajouté à la file après résurrection en Champ de bataille ou Arène.";
 
 -- Playersetup Frame Tooltip Text
 SMARTBUFF_PSTT_RESIZE        = "Minimize/maximize\nthe main options frame";

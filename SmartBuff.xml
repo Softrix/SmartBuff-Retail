@@ -1671,14 +1671,38 @@
                     </OnClick>
                 </Scripts>
             </CheckButton>
+            <CheckButton justifyH="LEFT" name="SmartBuff_BuffSetup_cbSkipBGResQueue" inherits="UICheckButtonTemplate">
+                <Size>
+                    <AbsDimension x="20" y="20" />
+                </Size>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup_cbCombatOut" relativePoint="TOPLEFT">
+                        <Offset>
+                            <AbsDimension x="0" y="-16" />
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <HitRectInsets>
+                    <AbsInset left="0" right="0" top="0" bottom="0" />
+                </HitRectInsets>
+                <Scripts>
+                    <OnLoad>
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_BST_SKIPBGRES);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
+                    </OnLoad>
+                    <OnClick>
+                        SmartBuff_BuffSetup_OnClick();
+                    </OnClick>
+                </Scripts>
+            </CheckButton>
             <EditBox name="SmartBuff_BuffSetup_txtManaLimit" inherits="InputBoxTemplate" letters="5" numeric="true" autoFocus="false">
                 <Size>
                     <AbsDimension x="40" y="16" />
                 </Size>
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup_cbCombatOut" relativePoint="TOPLEFT">
+                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup_cbSkipBGResQueue" relativePoint="TOPLEFT">
                         <Offset>
-                            <AbsDimension x="8" y="-24" />
+                            <AbsDimension x="8" y="-20" />
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -1717,9 +1741,9 @@
                     <AbsDimension x="20" y="20" />
                 </Size>
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup_cbCombatOut" relativePoint="TOPLEFT">
+                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup_txtManaLimit" relativePoint="BOTTOMLEFT">
                         <Offset>
-                            <AbsDimension x="0" y="-16" />
+                            <AbsDimension x="0" y="20" />
                         </Offset>
                     </Anchor>
                 </Anchors>
