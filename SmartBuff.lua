@@ -2654,7 +2654,7 @@ end
 
 
 -- Populate cBuffsToCastAfterBGRes from current template (enabled self buffs). Used after death->resurrection in BG when aura state is secret.
--- Only spellbook buffs are queued; flasks, food, scrolls, potions and other item buffs are skipped.
+-- Only spellbook buffs are queued (including weapon buffs like Windfury); flasks, food, scrolls, potions and other item buffs are skipped.
 function SMARTBUFF_PopulateBGResQueue()
   wipe(cBuffsToCastAfterBGRes);
   local ct = currentTemplate;
@@ -2664,7 +2664,7 @@ function SMARTBUFF_PopulateBGResQueue()
     local cBuff = cBuffs[cBuffIndex[buffnS]];
     local bs = GetBuffSettings(buffnS);
     if (cBuff and bs and bs.EnableS and cBuff.Type ~= SMARTBUFF_CONST_TRACK) then
-      if (cBuff.IDS and not SMARTBUFF_IsItem(cBuff.Type) and cBuff.Type ~= SMARTBUFF_CONST_WEAPON) then
+      if (cBuff.IDS and not SMARTBUFF_IsItem(cBuff.Type)) then
         tinsert(cBuffsToCastAfterBGRes, { actionType = SMARTBUFF_ACTION_SPELL, spellName = buffnS, slot = -1 });
       end
     end
