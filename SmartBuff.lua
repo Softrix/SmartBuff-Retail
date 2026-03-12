@@ -2028,6 +2028,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
   if (buff[5] ~= nil) then cBuffs[i].Params = buff[5] else cBuffs[i].Params = SG.NIL end
   cBuffs[i].Links = buff[6];
   cBuffs[i].Chain = buff[7];
+  cBuffs[i].SingleTargetGroup = (buff[8] == "single") and "single" or nil;
 
   -- Warlock Nether Ward fix
   --if (cBuffs[i].BuffS == SMARTBUFF_SHADOWWARD and IsTalentSkilled(3, 13, SMARTBUFF_NETHERWARD)) then
@@ -3271,6 +3272,15 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
               end
 
               if (buff) then
+                -- Single-target group buffs: if our buff is already on an eligible group member, unset buff (do not move).
+                -- Past this point: buff is either still set (continue to cast) or nil (skip).
+                if (cBuff.SingleTargetGroup == "single" and cBuff.Type == SMARTBUFF_CONST_GROUP
+                    and subgroup and type(subgroup) == "number" and subgroup >= 1 and SMARTBUFF_AnyEligibleGroupUnitHasMyBuff(subgroup, buffnS, bs)) then
+                  buff = nil;
+                  SMARTBUFF_AddMsgD("Single-target buff " .. buffnS .. " already on group member, skipping");
+                end
+              end
+              if (buff) then
                 if (cBuff.IDS) then
                   SMARTBUFF_AddMsgD("Checking " .. i .. " - " .. cBuff.IDS .. " " .. buffnS);
                 end
@@ -3354,7 +3364,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                     end
                   end
 
-                  -- Check mode ---------------------------------------------------------------------------------------
+                -- Check mode ---------------------------------------------------------------------------------------
                 elseif (mode == 1) then
                   currentUnit = nil;
                   currentSpell = nil;
@@ -3455,12 +3465,12 @@ end
 -- END SMARTBUFF_BuffUnit
 
 
+-- Matches any unit by name (players, NPCs, pets). Used for AddList and IgnoreList.
 function SMARTBUFF_IsInList(unit, unitname, list)
-  if (list ~= nil) then
-    for un in pairs(list) do
-      if (un ~= nil and UnitIsPlayer(unit) and un == unitname) then
-        return true;
-      end
+  if (list == nil) then return false end
+  for un in pairs(list) do
+    if (un ~= nil and un == unitname) then
+      return true;
     end
   end
   return false;
@@ -3675,6 +3685,35 @@ function UnitBuffByBuffName(target, buffname, filter)
       end
     end
   end
+end
+
+-- Returns true if any eligible unit in the subgroup has our buff (sourceUnit == "player"). Used for single-target group buffs.
+-- Only considers units that match current buff settings (class, role, AddList, IgnoreList).
+function SMARTBUFF_AnyEligibleGroupUnitHasMyBuff(subgroup, buffnS, bs)
+  if (not subgroup or not buffnS or not cGroups or not cGroups[subgroup]) then return false end
+  for _, u in pairs(cGroups[subgroup]) do
+    if (u and UnitExists(u)) then
+      local _, _, _, _, _, _, src = UnitBuffByBuffName(u, buffnS, "HELPFUL");
+      if (src and UnitIsUnit("player", src)) then
+        if (not bs) then return true end
+        local un = UnitName(u);
+        local uc = select(2, UnitClass(u));
+        local ur = UnitGroupRolesAssigned(u);
+        local uct = UnitCreatureType(u) or "";
+        local ucf = UnitCreatureFamily(u) or "";
+        if (not SMARTBUFF_IsInList(u, un, bs.IgnoreList)
+            and (bs[ur] or (bs.SelfOnly and SMARTBUFF_IsPlayer(u))
+              or (bs[uc] and (UnitIsPlayer(u) or uct == SMARTBUFF_HUMANOID or (uc == "DRUID" and (uct == SMARTBUFF_BEAST or uct == SMARTBUFF_ELEMENTAL))))
+              or (bs["HPET"] and uct == SMARTBUFF_BEAST and uc ~= "DRUID")
+              or (bs["DKPET"] and uct == SMARTBUFF_UNDEAD)
+              or (bs["WPET"] and (uct == SMARTBUFF_DEMON or (uc ~= "DRUID" and uct == SMARTBUFF_ELEMENTAL)) and ucf ~= SMARTBUFF_DEMONTYPE))
+              or SMARTBUFF_IsInList(u, un, bs.AddList)) then
+          return true;
+        end
+      end
+    end
+  end
+  return false;
 end
 
 -- Will return the name of the buff to cast
@@ -3902,68 +3941,6 @@ function UnitAuraBySpellName(target, spellname, filter)
       end
     end
   end
-end
-
--- Test helper: report buffs on party/raid members and which are ours (sourceUnit == player). Use /sb checkbuffs or /sb cb.
-function SMARTBUFF_CheckBuffsReport()
-  local units = {"player"};
-  if (IsInRaid()) then
-    for i = 1, 40 do
-      if (UnitExists("raid" .. i)) then
-        units[#units + 1] = "raid" .. i;
-      end
-    end
-  elseif (IsInGroup()) then
-    for i = 1, 4 do
-      if (UnitExists("party" .. i)) then
-        units[#units + 1] = "party" .. i;
-      end
-    end
-  elseif (UnitExists("target")) then
-    units[#units + 1] = "target";
-  end
-
-  SMARTBUFF_AddMsg("--- SmartBuff CheckBuffs Report ---", true);
-  for _, unit in ipairs(units) do
-    local name = UnitName(unit) or "?";
-    local exists = UnitExists(unit);
-    local connected = UnitIsConnected(unit);
-    local dead = UnitIsDeadOrGhost(unit);
-    SMARTBUFF_AddMsg(string.format("[%s] %s | exists=%s connected=%s dead=%s", unit, name, tostring(exists), tostring(connected), tostring(dead)), true);
-
-    if (exists and connected) then
-      local myBuffs = {};
-      local otherBuffs = {};
-      local count = 0;
-      for auraIndex = 1, 40 do
-        local auraInfo = C_UnitAuras.GetAuraDataByIndex(unit, auraIndex, "HELPFUL");
-        if (not auraInfo) then break; end
-        count = count + 1;
-        local auraName = auraInfo and auraInfo.name;
-        local src = auraInfo and auraInfo.sourceUnit;
-        local isMine = src and SMARTBUFF_IsPlayer(src);
-        if (auraName) then
-          if (isMine) then
-            myBuffs[#myBuffs + 1] = auraName;
-          else
-            otherBuffs[#otherBuffs + 1] = auraName .. " (src=" .. tostring(src) .. ")";
-          end
-        end
-      end
-      SMARTBUFF_AddMsg(string.format("  Auras: %d total", count), true);
-      if (#myBuffs > 0) then
-        SMARTBUFF_AddMsg("  MINE: " .. table.concat(myBuffs, ", "), true);
-      else
-        SMARTBUFF_AddMsg("  MINE: (none)", true);
-      end
-      if (#otherBuffs > 0) then
-        SMARTBUFF_AddMsg("  Other: " .. table.concat(otherBuffs, ", "), true);
-      end
-    else
-      SMARTBUFF_AddMsg("  (cannot read auras)", true);
-    end
-  end
-  SMARTBUFF_AddMsg("--- End Report ---", true);
 end
 
 function SMARTBUFF_CheckBuff(unit, buffName, isMine)
@@ -4802,8 +4779,6 @@ function SMARTBUFF_command(msg)
     SMARTBUFF_OptionsFrame_Open(true);
   elseif (msg == "cache") then
     SMARTBUFF_PrintCacheStats(cBuffs);
-  elseif (msg == "checkbuffs" or msg == "cb") then
-    SMARTBUFF_CheckBuffsReport();
   else
     --SMARTBUFF_Check(0);
     SMARTBUFF_AddMsg(SMARTBUFF_VERS_TITLE, true);
@@ -4818,7 +4793,6 @@ function SMARTBUFF_command(msg)
     SMARTBUFF_AddMsg("rb       -  " .. "Reset key/mouse bindings", true);
     SMARTBUFF_AddMsg("changes    -  " .. "Display changelog", true);
     SMARTBUFF_AddMsg("reload    -  " .. "Reset buff list", true);
-    SMARTBUFF_AddMsg("checkbuffs -  " .. "Report party/raid buffs and which are yours (cb)", true);
   end
 end
 
@@ -5149,6 +5123,14 @@ function SmartBuff_BuffSetup_Show(i)
       SmartBuff_PS_Show(iCurrentList);
     end
   end
+end
+
+-- Returns tooltip text for cbSelf/cbSelfNot; appends single-target guidance when buff has SingleTargetGroup.
+function SmartBuff_GetSelfTooltipText(baseText)
+  if (iLastBuffSetup and iLastBuffSetup > 0 and cBuffs and cBuffs[iLastBuffSetup] and cBuffs[iLastBuffSetup].SingleTargetGroup) then
+    return { baseText, SMARTBUFF_BSTT_SINGLETARGET };
+  end
+  return baseText;
 end
 
 function SmartBuff_BuffSetup_ManaLimitChanged(self)
@@ -5623,6 +5605,19 @@ function SmartBuff_PS_RemovePlayer()
       cList[player] = nil;
       break;
     end
+  end
+  SmartBuff_PS_SelectPlayer(0);
+end
+
+function SmartBuff_PS_ClearList()
+  local cList = SmartBuff_PS_GetList();
+  for k in pairs(cList) do
+    cList[k] = nil;
+  end
+  if (iCurrentList == 1) then
+    wipe(cAddUnitList);
+  else
+    wipe(cIgnoreUnitList);
   end
   SmartBuff_PS_SelectPlayer(0);
 end

@@ -1842,9 +1842,9 @@
                     </OnClick>
                 </Scripts>
             </Button>
-            <Button name="SmartBuff_BuffSetup_btnInfo" inherits="UIPanelButtonTemplate" text="?">
+            <Button name="SmartBuff_BuffSetup_btnInfo" inherits="UIPanelButtonTemplate" text="Help">
                 <Size>
-                    <AbsDimension x="20" y="20" />
+                    <AbsDimension x="40" y="20" />
                 </Size>
                 <Anchors>
                     <Anchor point="LEFT" relativeTo="SmartBuff_BuffSetup_btnIgnoreList" relativePoint="RIGHT">
@@ -2631,13 +2631,30 @@
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="SmartBuff_PlayerSetup_Down" relativePoint="TOPRIGHT">
                         <Offset>
-                            <AbsDimension x="12" y="0" />
+                            <AbsDimension x="4" y="0" />
                         </Offset>
                     </Anchor>
                 </Anchors>
                 <Scripts>
                     <OnClick>
                         SmartBuff_PS_Resize();
+                    </OnClick>
+                </Scripts>
+            </Button>
+            <Button name="SmartBuff_PlayerSetup_Clear" inherits="UIPanelButtonTemplate" text="c">
+                <Size>
+                    <AbsDimension x="20" y="20" />
+                </Size>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_PlayerSetup_Resize" relativePoint="TOPRIGHT">
+                        <Offset>
+                            <AbsDimension x="0" y="0" />
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        SmartBuff_PS_ClearList();
                     </OnClick>
                 </Scripts>
             </Button>
@@ -2759,7 +2776,7 @@
     </Frame>
     <Frame name="SmartBuff_GroupBuffHelp" hidden="true" parent="UIParent" toplevel="true" movable="true" frameStrata="DIALOG" enableMouse="true">
         <Size>
-            <AbsDimension x="280" y="220" />
+            <AbsDimension x="280" y="320" />
         </Size>
         <Anchors>
             <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup" relativePoint="TOPRIGHT">
@@ -2792,7 +2809,7 @@
             </Button>
             <ScrollFrame name="SmartBuff_GroupBuffHelp_Scroll" inherits="UIPanelScrollFrameTemplate">
                 <Size>
-                    <AbsDimension x="248" y="180" />
+                    <AbsDimension x="248" y="280" />
                 </Size>
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
@@ -2804,7 +2821,7 @@
                 <ScrollChild>
                     <EditBox name="SmartBuff_GroupBuffHelp_Text" multiLine="true" autoFocus="false">
                         <Size>
-                            <AbsDimension x="220" y="160" />
+                            <AbsDimension x="220" y="260" />
                         </Size>
                         <Anchors>
                             <Anchor point="TOPLEFT" />

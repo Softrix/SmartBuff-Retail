@@ -199,6 +199,7 @@ SMARTBUFF_BST_MANALIMIT      = "Lower bound";
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Buffs only your character.";
 SMARTBUFF_BSTT_SELFNOT       = "Buffs all other selected classes,\nexcept your character.";
+SMARTBUFF_BSTT_SINGLETARGET  = "For single-target buffs (Earth Shield, Soulstone, etc.), prefer role filter (e.g. TANK) over class.";
 SMARTBUFF_BSTT_COMBATIN      = "Buffs if you are in combat.\nAll in-combat logic is disabled unless the main \"in combat\" option (in the options frame) is enabled.";
 SMARTBUFF_BSTT_COMBATOUT     = "Buffs if you are out of combat.";
 SMARTBUFF_BSTT_MAINHAND      = "Buffs the Main Hand.";
@@ -216,15 +217,19 @@ SMARTBUFF_PSTT_ADD           = "Add your current target to this list. Target mus
 SMARTBUFF_PSTT_REMOVE        = "Remove the selected player from this list.";
 SMARTBUFF_PSTT_UP            = "Move selection up in the list.";
 SMARTBUFF_PSTT_DOWN          = "Move selection down in the list.";
+SMARTBUFF_PSTT_CLEAR         = "Clear all entries from this list.";
 
 -- Group Buff Help (INFO button)
 SMARTBUFF_GROUPBUFFHELP_TT   = "Open group buff configuration help";
 SMARTBUFF_GROUPBUFFHELP      = "|cffffffffGroup Buff Configuration|r\n\n"
   .."|cffffffffRole vs Class|r\n"
   .."Class is what someone is (Warrior, Mage, Priest, etc.). Role is what they do (Tank, Healer, Damage).\n\n"
-  .."For buffs like Earth Shield or Soulstone that only affect one person, use role (e.g. Tank) instead of class. That keeps the buff stable instead of jumping between players.\n\n"
-  .."|cffffffffAdditional and Ignore lists override class/role|r\n"
-  .."Additional list: Buff these players even if they don't match your class/role checkboxes.\n"
+  .."|cffffffffSingle-target buffs|r\n"
+  .."Some buffs (Earth Shield, Soulstone, Evoker buffs, etc.) can only be on one person at a time. SmartBuff marks these as single-target.\n\n"
+  .."The buff will not jump or move as long as any eligible group member already has your buff. Once someone eligible has it, SmartBuff leaves it alone until it expires or they leave. Prefer role (e.g. Tank) over class for these buffs.\n\n"
+  .."|cffffffffAdditional and Ignore lists|r\n"
+  .."These lists override class/role. Target a party or raid member and click + to add. Select an entry and click - to remove. Click c to clear the list.\n\n"
+  .."Additional list: Buff these players (or NPCs) even if they don't match your class/role checkboxes.\n"
   .."Ignore list: Don't buff these players even if they do match. The lists take priority over the checkboxes.\n\n"
   .."|cffffffffYou must select something|r\n"
   .."At least one class or role checkbox must be checked. Otherwise the buff won't go to anyone (unless they're on the Additional list).\n\n"

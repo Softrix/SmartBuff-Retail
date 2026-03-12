@@ -23,14 +23,15 @@ function SmartBuff_AttachTooltip(frame, text, opts)
 
   frame:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, anchor);
-    if type(text) == "table" then
-      GameTooltip:SetText(text[1], TTC[1], TTC[2], TTC[3], TTC[4]);
-      for i = 2, #text do
-        GameTooltip:AddLine(text[i], TTC[1], TTC[2], TTC[3], TTC[4]);
+    local resolved = (type(text) == "function") and text() or text;
+    if type(resolved) == "table" then
+      GameTooltip:SetText(resolved[1], TTC[1], TTC[2], TTC[3], TTC[4]);
+      for i = 2, #resolved do
+        GameTooltip:AddLine(resolved[i], TTC[1], TTC[2], TTC[3], TTC[4]);
       end
       GameTooltip:AppendText("");
     else
-      GameTooltip:SetText(text, TTC[1], TTC[2], TTC[3], TTC[4]);
+      GameTooltip:SetText(resolved, TTC[1], TTC[2], TTC[3], TTC[4]);
     end
   end);
 
@@ -83,8 +84,8 @@ function SmartBuff_SetupTooltips()
   t(SmartBuffOptionsFrame_sldSounds, SMARTBUFF_OFTT_SOUNDSELECT);
   t(SmartBuffOptionsFrame_cbFixBuffIssue, SMARTBUFF_OFTT_FIXBUFF);
 
-  t(SmartBuff_BuffSetup_cbSelf, SMARTBUFF_BSTT_SELFONLY);
-  t(SmartBuff_BuffSetup_cbSelfNot, SMARTBUFF_BSTT_SELFNOT);
+  t(SmartBuff_BuffSetup_cbSelf, function() return SmartBuff_GetSelfTooltipText(SMARTBUFF_BSTT_SELFONLY); end);
+  t(SmartBuff_BuffSetup_cbSelfNot, function() return SmartBuff_GetSelfTooltipText(SMARTBUFF_BSTT_SELFNOT); end);
   t(SmartBuff_BuffSetup_cbCombatIn, SMARTBUFF_BSTT_COMBATIN);
   t(SmartBuff_BuffSetup_cbCombatOut, SMARTBUFF_BSTT_COMBATOUT);
   t(SmartBuff_BuffSetup_txtManaLimit, SMARTBUFF_BSTT_MANALIMIT);
@@ -105,6 +106,7 @@ function SmartBuff_SetupTooltips()
   t(SmartBuff_PlayerSetup_Resize, SMARTBUFF_PSTT_RESIZE, {
     onLeave = function() SmartBuff_BuffSetup_OnClick(); end
   });
+  t(SmartBuff_PlayerSetup_Clear, SMARTBUFF_PSTT_CLEAR);
   t(SmartBuff_BuffSetup_btnInfo, SMARTBUFF_GROUPBUFFHELP_TT or "Open group buff configuration help");
 
   for i = 1, 19 do
