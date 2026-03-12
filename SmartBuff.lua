@@ -5023,7 +5023,11 @@ function SmartBuff_BuffSetup_Show(i)
 
     local obj = SmartBuff_BuffSetup_BuffText;
     if (name) then
-      obj:SetText(GetBuffDisplayName(name, btype));
+      local displayName = GetBuffDisplayName(name, btype);
+      if (cBuffs[i].SingleTargetGroup) then
+        displayName = displayName .. " - single";
+      end
+      obj:SetText(displayName);
       --SMARTBUFF_AddMsgD(name);
     else
       obj:SetText("");
@@ -6041,7 +6045,11 @@ local function OnScroll(self, cData, sBtnName)
         btn:SetHighlightFontObject("GameFontHighlightSmall");
         local idx = cBuffIndex[cData[n]];
         local btype = (idx and cBuffs[idx]) and cBuffs[idx].Type or nil;
-        btn:SetText(GetBuffDisplayName(cData[n], btype));
+        local displayName = GetBuffDisplayName(cData[n], btype);
+        if (idx and cBuffs[idx] and cBuffs[idx].SingleTargetGroup) then
+          displayName = displayName .. " - single";
+        end
+        btn:SetText(displayName);
         local bs = GetBuffSettings(cData[n]);
         if (bs) then
           btn:SetChecked(bs.EnableS);
