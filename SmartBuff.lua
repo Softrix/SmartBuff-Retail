@@ -791,6 +791,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     end
   elseif (event == "ADDON_LOADED" and arg1 and (arg1 == SMARTBUFF_TITLE or strfind(arg1, "SmartBuff") == 1)) then
     isLoaded = true;
+    SmartBuff_SetupTooltips();
   end
 
   -- PLAYER_LOGIN
@@ -3903,6 +3904,68 @@ function UnitAuraBySpellName(target, spellname, filter)
   end
 end
 
+-- Test helper: report buffs on party/raid members and which are ours (sourceUnit == player). Use /sb checkbuffs or /sb cb.
+function SMARTBUFF_CheckBuffsReport()
+  local units = {"player"};
+  if (IsInRaid()) then
+    for i = 1, 40 do
+      if (UnitExists("raid" .. i)) then
+        units[#units + 1] = "raid" .. i;
+      end
+    end
+  elseif (IsInGroup()) then
+    for i = 1, 4 do
+      if (UnitExists("party" .. i)) then
+        units[#units + 1] = "party" .. i;
+      end
+    end
+  elseif (UnitExists("target")) then
+    units[#units + 1] = "target";
+  end
+
+  SMARTBUFF_AddMsg("--- SmartBuff CheckBuffs Report ---", true);
+  for _, unit in ipairs(units) do
+    local name = UnitName(unit) or "?";
+    local exists = UnitExists(unit);
+    local connected = UnitIsConnected(unit);
+    local dead = UnitIsDeadOrGhost(unit);
+    SMARTBUFF_AddMsg(string.format("[%s] %s | exists=%s connected=%s dead=%s", unit, name, tostring(exists), tostring(connected), tostring(dead)), true);
+
+    if (exists and connected) then
+      local myBuffs = {};
+      local otherBuffs = {};
+      local count = 0;
+      for auraIndex = 1, 40 do
+        local auraInfo = C_UnitAuras.GetAuraDataByIndex(unit, auraIndex, "HELPFUL");
+        if (not auraInfo) then break; end
+        count = count + 1;
+        local auraName = auraInfo and auraInfo.name;
+        local src = auraInfo and auraInfo.sourceUnit;
+        local isMine = src and SMARTBUFF_IsPlayer(src);
+        if (auraName) then
+          if (isMine) then
+            myBuffs[#myBuffs + 1] = auraName;
+          else
+            otherBuffs[#otherBuffs + 1] = auraName .. " (src=" .. tostring(src) .. ")";
+          end
+        end
+      end
+      SMARTBUFF_AddMsg(string.format("  Auras: %d total", count), true);
+      if (#myBuffs > 0) then
+        SMARTBUFF_AddMsg("  MINE: " .. table.concat(myBuffs, ", "), true);
+      else
+        SMARTBUFF_AddMsg("  MINE: (none)", true);
+      end
+      if (#otherBuffs > 0) then
+        SMARTBUFF_AddMsg("  Other: " .. table.concat(otherBuffs, ", "), true);
+      end
+    else
+      SMARTBUFF_AddMsg("  (cannot read auras)", true);
+    end
+  end
+  SMARTBUFF_AddMsg("--- End Report ---", true);
+end
+
 function SMARTBUFF_CheckBuff(unit, buffName, isMine)
   if (not unit or not buffName) then
     return false, 0;
@@ -4739,6 +4802,8 @@ function SMARTBUFF_command(msg)
     SMARTBUFF_OptionsFrame_Open(true);
   elseif (msg == "cache") then
     SMARTBUFF_PrintCacheStats(cBuffs);
+  elseif (msg == "checkbuffs" or msg == "cb") then
+    SMARTBUFF_CheckBuffsReport();
   else
     --SMARTBUFF_Check(0);
     SMARTBUFF_AddMsg(SMARTBUFF_VERS_TITLE, true);
@@ -4753,6 +4818,7 @@ function SMARTBUFF_command(msg)
     SMARTBUFF_AddMsg("rb       -  " .. "Reset key/mouse bindings", true);
     SMARTBUFF_AddMsg("changes    -  " .. "Display changelog", true);
     SMARTBUFF_AddMsg("reload    -  " .. "Reset buff list", true);
+    SMARTBUFF_AddMsg("checkbuffs -  " .. "Report party/raid buffs and which are yours (cb)", true);
   end
 end
 
@@ -5493,9 +5559,11 @@ function SmartBuff_PS_GetList()
     local cBuff = GetBuffSettings(name);
     if (cBuff) then
       if (iCurrentList == 1) then
-        return cBuff.AddList or {};
+        if (not cBuff.AddList) then cBuff.AddList = {}; end
+        return cBuff.AddList;
       else
-        return cBuff.IgnoreList or {};
+        if (not cBuff.IgnoreList) then cBuff.IgnoreList = {}; end
+        return cBuff.IgnoreList;
       end
     end
   end
@@ -5538,7 +5606,7 @@ end
 function SmartBuff_PS_AddPlayer()
   local cList = SmartBuff_PS_GetList();
   local un = UnitName("target");
-  if (un and UnitIsPlayer("target") and (UnitInRaid("target") or UnitInParty("target") or O.Debug)) then
+  if (un and (UnitInRaid("target") or UnitInParty("target") or O.Debug)) then
     if (not cList[un]) then
       cList[un] = true;
       SmartBuff_PS_SelectPlayer(0);

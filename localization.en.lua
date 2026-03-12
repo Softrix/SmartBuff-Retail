@@ -207,9 +207,29 @@ SMARTBUFF_BSTT_RANGED        = "Buffs the ranged slot.";
 SMARTBUFF_BSTT_REMINDER      = "Display reminder message.";
 SMARTBUFF_BSTT_REBUFFTIMER   = "How many seconds before a buff expires,\nthe reminder should alert you.\n0 = global rebuff timer";
 SMARTBUFF_BSTT_MANALIMIT     = "Mana/Rage/Energy threshold\nIf you are below this value\nit will not cast the buff.";
+SMARTBUFF_BSTT_ADDLIST       = "Additional list: Add players who should receive this buff even if they don't match the class/role filter. Target a party/raid member and click + to add.";
+SMARTBUFF_BSTT_IGNORELIST    = "Ignore list: Exclude players from this buff even if they match the class/role filter. Target a party/raid member and click + to add.";
 
 -- Playersetup Frame Tooltip Text
 SMARTBUFF_PSTT_RESIZE        = "Minimize/maximize\nthe main options frame";
+SMARTBUFF_PSTT_ADD           = "Add your current target to this list. Target must be in your party or raid.";
+SMARTBUFF_PSTT_REMOVE        = "Remove the selected player from this list.";
+SMARTBUFF_PSTT_UP            = "Move selection up in the list.";
+SMARTBUFF_PSTT_DOWN          = "Move selection down in the list.";
+
+-- Group Buff Help (INFO button)
+SMARTBUFF_GROUPBUFFHELP_TT   = "Open group buff configuration help";
+SMARTBUFF_GROUPBUFFHELP      = "|cffffffffGroup Buff Configuration|r\n\n"
+  .."|cffffffffRole vs Class|r\n"
+  .."Class is what someone is (Warrior, Mage, Priest, etc.). Role is what they do (Tank, Healer, Damage).\n\n"
+  .."For buffs like Earth Shield or Soulstone that only affect one person, use role (e.g. Tank) instead of class. That keeps the buff stable instead of jumping between players.\n\n"
+  .."|cffffffffAdditional and Ignore lists override class/role|r\n"
+  .."Additional list: Buff these players even if they don't match your class/role checkboxes.\n"
+  .."Ignore list: Don't buff these players even if they do match. The lists take priority over the checkboxes.\n\n"
+  .."|cffffffffYou must select something|r\n"
+  .."At least one class or role checkbox must be checked. Otherwise the buff won't go to anyone (unless they're on the Additional list).\n\n"
+  .."|cffffffffRoles only matter in groups|r\n"
+  .."Tank, Healer, and Damage filters only apply when you're in a party or raid. When solo, they have no effect.";
 
 -- Messages
 SMARTBUFF_MSG_LOADED         = "(Retail) loaded. Please report any problems on Curse or join discord at discord.gg/R6EkZ94TKK.";
