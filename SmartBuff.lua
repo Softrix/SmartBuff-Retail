@@ -2968,7 +2968,9 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
             SMARTBUFF_AddMsgD(uc .. " " .. CT());
 
+            -- Note: Only players (and pets) are valid targets for group buffs; NPCs do not benefit from buffs.
             if (not SMARTBUFF_IsInList(unit, un, bs.IgnoreList) and (((cBuff.Type == SMARTBUFF_CONST_GROUP or cBuff.Type == SMARTBUFF_CONST_ITEMGROUP)
+                    and UnitPlayerControlled(unit)
                     and (bs[ur]
                       or (bs.SelfOnly and SMARTBUFF_IsPlayer(unit))
                       or (bs[uc] and (UnitIsPlayer(unit) or uct == SMARTBUFF_HUMANOID or (uc == "DRUID" and (uct == SMARTBUFF_BEAST or uct == SMARTBUFF_ELEMENTAL))))
@@ -3680,10 +3682,11 @@ end
 
 -- Returns true if any eligible unit in the subgroup has our buff (sourceUnit == "player"). Used for single-target group buffs.
 -- Only considers units that match current buff settings (class, role, AddList, IgnoreList).
+-- Note: Only players (and pets) are valid targets; NPCs do not benefit from buffs.
 function SMARTBUFF_AnyEligibleGroupUnitHasMyBuff(subgroup, buffnS, bs)
   if (not subgroup or not buffnS or not cGroups or not cGroups[subgroup]) then return false end
   for _, u in pairs(cGroups[subgroup]) do
-    if (u and UnitExists(u)) then
+    if (u and UnitExists(u) and UnitPlayerControlled(u)) then
       local _, _, _, _, _, _, src = UnitBuffByBuffName(u, buffnS, "HELPFUL");
       if (src and UnitIsUnit("player", src)) then
         if (not bs) then return true end
@@ -5978,7 +5981,7 @@ local function CreateScrollButton(name, parent, cBtn, onClick, onDragStop)
   local btn = CreateFrame("CheckButton", name, parent, "UICheckButtonTemplate");
   btn:SetWidth(ScrBtnSize);
   btn:SetHeight(ScrBtnSize);
-  --  btn:RegisterForClicks("LeftButtonUp");
+  btn:RegisterForClicks("LeftButtonUp", "RightButtonUp");
   btn:SetScript("OnClick", onClick);
   --  btn:SetScript("OnMouseUp", onClick);
 
@@ -6101,14 +6104,21 @@ function SMARTBUFF_BuffOrderOnScroll(self, arg1)
   OnScroll(self, t, name);
 end
 
+-- Left click toggles buff enable; right click opens buff options (checkbox state restored so it does not toggle).
+-- Guards (i and i > 0) avoid nil index if order/index is out of sync when the row is clicked.
 function SMARTBUFF_BuffOrderBtnOnClick(self, button)
   local n = self:GetID() + FauxScrollFrame_GetOffset(self:GetParent());
-  local i = cBuffIndex[B[CS()].Order[n]];
-  --SMARTBUFF_AddMsgD("Buff OnClick = "..n..", "..button);
+  local ord = B[CS()].Order;
+  local buffnS = ord and ord[n];
+  local i = buffnS and cBuffIndex[buffnS];
   if (button == "LeftButton") then
-    SMARTBUFF_OToggleBuff("S", i);
+    if (i and i > 0) then SMARTBUFF_OToggleBuff("S", i); end
   else
-    SmartBuff_BuffSetup_Show(i);
+    if (i and i > 0) then
+      SmartBuff_BuffSetup_Show(i);
+      local bs = GetBuffSettings(buffnS);
+      self:SetChecked(bs and bs.EnableS);
+    end
   end
 end
 
