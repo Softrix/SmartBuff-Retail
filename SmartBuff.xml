@@ -8,6 +8,7 @@
     <Script file="localization.cn.lua" />
     <Script file="SmartBuff.buffs.lua" />
     <Script file="SmartBuff.lua" />
+    <Script file="SmartBuff_UI.lua" />
     <Button name="SmartBuff_ActionButtonTemplate" inherits="SecureActionButtonTemplate,SecureHandlerBaseTemplate" virtual="true" hidden="true">
         <Size>
             <AbsDimension x="32" y="32" />
@@ -129,13 +130,6 @@
                     <OnClick>
                         SMARTBUFF_Splash_ChangeFont(2);
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_SPLASHSTYLE, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Button>
             <Slider name="$parent_sldSize" parentKey="size" inherits="OptionsSliderTemplate" minValue="0" maxValue="0">
@@ -227,8 +221,8 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_SPLASHICON);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_SPLASHICON);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnShow>
                         local o = SMARTBUFF_OptionsGlobal;
@@ -259,8 +253,8 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_SPLASHMSGSHORT);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_SPLASHMSGSHORT);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnShow>
                         local o = SMARTBUFF_OptionsGlobal;
@@ -392,15 +386,6 @@
                     SMARTBUFF_MinimapButton_OnUpdate(self, self.isMoving);
                 end
             </OnUpdate>
-            <OnEnter>
-                GameTooltip:SetOwner(self, "ANCHOR_LEFT");
-                GameTooltip:SetText(SMARTBUFF_TITLE);
-                GameTooltip:AddLine(SMARTBUFF_MINIMAP_TT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                GameTooltip:AppendText("");
-            </OnEnter>
-            <OnLeave>
-                GameTooltip:Hide();
-            </OnLeave>
             <OnMouseUp>
 
             </OnMouseUp>
@@ -513,19 +498,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OToggle();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbAuto" inherits="UICheckButtonTemplate">
@@ -544,19 +522,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_AUTO);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_AUTO);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OToggleAuto();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_AUTO, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <Slider name="SmartBuffOptionsFrameAutoTimer" inherits="OptionsSliderTemplate" minValue="0" maxValue="0">
@@ -589,13 +560,6 @@
                         o.AutoTimer = n;
                         end
                     </OnValueChanged>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_AUTOTIMER, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Slider>
             <CheckButton name="SmartBuffOptionsFrame_cbAutoCombat" inherits="UICheckButtonTemplate">
@@ -614,19 +578,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_AUTOCOMBAT);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_AUTOCOMBAT);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OToggleAutoCombat();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_AUTOCOMBAT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbAutoChat" inherits="UICheckButtonTemplate">
@@ -645,19 +602,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_AUTOCHAT);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_AUTOCHAT);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OToggleAutoChat();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_AUTOCHAT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbAutoSplash" inherits="UICheckButtonTemplate">
@@ -676,19 +626,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_AUTOSPLASH);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_AUTOSPLASH);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OToggleAutoSplash();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_AUTOSPLASH, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbAutoSound" inherits="UICheckButtonTemplate">
@@ -707,19 +650,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_AUTOSOUND);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_AUTOSOUND);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OToggleAutoSound();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_AUTOSOUND, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <Slider name="SmartBuffOptionsFrame_sldCharges" inherits="OptionsSliderTemplate" minValue="0" maxValue="0">
@@ -755,13 +691,6 @@
                         end
                         end
                     </OnValueChanged>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_CHECKCHARGES, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Slider>
             <Slider name="SmartBuffOptionsFrame_sldSplashDuration" inherits="OptionsSliderTemplate" minValue="0" maxValue="0">
@@ -794,13 +723,6 @@
                         o.SplashDuration = n;
                         end
                     </OnValueChanged>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_SPLASHDURATION, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Slider>
             <Slider name="SmartBuffOptionsFrameRebuffTimer" inherits="OptionsSliderTemplate" minValue="0" maxValue="0">
@@ -833,13 +755,6 @@
                         o.RebuffTimer = n;
                         end
                     </OnValueChanged>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_REBUFFTIMER, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Slider>
             <CheckButton name="SmartBuffOptionsFrame_cbAutoSwitchTmp" inherits="UICheckButtonTemplate">
@@ -856,19 +771,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_AUTOSWITCHTMP);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_AUTOSWITCHTMP);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OAutoSwitchTmp();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_AUTOSWITCHTMP, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbAutoSwitchTmpInst" inherits="UICheckButtonTemplate">
@@ -887,19 +795,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_AUTOSWITCHTMPINST);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_AUTOSWITCHTMPINST);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OAutoSwitchTmpInst();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_AUTOSWITCHTMPINST, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbLinkGrpBuffCheck" inherits="UICheckButtonTemplate">
@@ -918,19 +819,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_LINKGRPBUFFCHECK);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_LINKGRPBUFFCHECK);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OLinkGrpBuffCheck();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_LINKGRPBUFFCHECK, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbLinkSelfBuffCheck" inherits="UICheckButtonTemplate" hidden="true">
@@ -949,19 +843,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_LINKSELFBUFFCHECK);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_LINKSELFBUFFCHECK);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OLinkSelfBuffCheck();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_LINKSELFBUFFCHECK, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbBuffPvP" inherits="UICheckButtonTemplate">
@@ -980,19 +867,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_BUFFPVP);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_BUFFPVP);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OBuffPvP();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_BUFFPVP, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbBuffTarget" inherits="UICheckButtonTemplate">
@@ -1011,19 +891,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_BUFFTARGET);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_BUFFTARGET);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OBuffTarget();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_BUFFTARGET, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbScrollWheelUp" inherits="UICheckButtonTemplate">
@@ -1042,19 +915,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_SCROLLWHEELUP);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_SCROLLWHEELUP);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OScrollWheelUp();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_SCROLLWHEELUP, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbScrollWheelDown" inherits="UICheckButtonTemplate">
@@ -1073,19 +939,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_SCROLLWHEELDOWN);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_SCROLLWHEELDOWN);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OScrollWheelDown();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_SCROLLWHEELDOWN, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbBuffInCities" inherits="UICheckButtonTemplate">
@@ -1104,19 +963,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_BUFFINCITIES);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_BUFFINCITIES);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OBuffInCities();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_BUFFINCITIES, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbInShapeshift" inherits="UICheckButtonTemplate">
@@ -1133,19 +985,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_INSHAPESHIFT);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_INSHAPESHIFT);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OInShapeshift();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_INSHAPESHIFT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbInCombat" inherits="UICheckButtonTemplate">
@@ -1164,19 +1009,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_INCOMBAT);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_INCOMBAT);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OInCombat();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_INCOMBAT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <Slider name="SmartBuffOptionsFrameBLDuration" inherits="OptionsSliderTemplate" minValue="0" maxValue="0">
@@ -1201,13 +1039,6 @@
                         o.BlocklistTimer = n;
                         end
                     </OnValueChanged>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_BLDURATION, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Slider>
             <CheckButton name="SmartBuffOptionsFrame_cbMsgNormal" inherits="UICheckButtonTemplate">
@@ -1237,8 +1068,8 @@
                 </Layers>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_MSGNORMAL);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_MSGNORMAL);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OToggleMsgNormal();
@@ -1261,8 +1092,8 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_MSGERROR);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_MSGERROR);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OToggleMsgError();
@@ -1285,8 +1116,8 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_MSGWARNING);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_MSGWARNING);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OToggleMsgWarning();
@@ -1309,19 +1140,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_HIDEMMBUTTON);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_HIDEMMBUTTON);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OHideMmButton();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_HIDEMMBUTTON, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton name="SmartBuffOptionsFrame_cbHideSAButton" inherits="UICheckButtonTemplate">
@@ -1340,19 +1164,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_HIDESABUTTON);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_HIDESABUTTON);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OHideSAButton();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_HIDESABUTTON, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <Button name="SmartBuffOptionsFrame_ddTemplates" inherits="UIDropDownMenuTemplate">
@@ -1391,19 +1208,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_RETAINTEMPLATE);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_RETAINTEMPLATE);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_ORetainTemplate();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_RETAINTEMPLATE, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <Button name="SmartBuffOptionsFrame_TutorialButton" parentKey="MainHelpButton" inherits="MainHelpPlateButton" toplevel="true">
@@ -1463,19 +1273,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_SELFFIRST);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_SELFFIRST);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OSelfFirst();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_SELFFIRST, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <Button name="SmartBuffOptionsFrameRBT" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RBT">
@@ -1491,13 +1294,6 @@
                     <OnClick>
                         SMARTBUFF_ResetBuffTimers();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_RBT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Button>
             <Button name="SmartBuffOptionsFrameResetAll" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RESETALL">
@@ -1514,13 +1310,6 @@
                         SMARTBUFF_OptionsFrame_Toggle();
                         StaticPopup_Show("SMARTBUFF_DATA_PURGE");
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_RESETALL, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Button>
             <Button name="SmartBuffOptionsFrameResetBuffs" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RESETBUFFS">
@@ -1537,13 +1326,6 @@
                         SMARTBUFF_OptionsFrame_Toggle();
                         StaticPopup_Show("SMARTBUFF_BUFFS_PURGE");
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_RESETBUFFS, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Button>
             <Button name="SmartBuffOptionsFrameResetOrder" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_RESETLIST">
@@ -1559,13 +1341,6 @@
                     <OnClick>
                         SMARTBUFF_BuffOrderReset();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_RESETLIST, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Button>
             <Button name="SmartBuffOptionsFrameNews" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_NEWS">
@@ -1586,13 +1361,6 @@
                             SmartBuffWNF:Show();
                         end
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_NEWS, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Button>
             <Button name="SmartBuffOptionsFrameDone" inherits="UIPanelButtonTemplate" text="SMARTBUFF_OFT_DONE">
@@ -1608,13 +1376,6 @@
                     <OnClick>
                         SMARTBUFF_OptionsFrame_Toggle();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_DONE, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Button>
             <CheckButton name="SmartBuffOptionsFrame_cbIncludeToys" inherits="UICheckButtonTemplate">
@@ -1631,19 +1392,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_INCLUDETOYS);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_INCLUDETOYS);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SMARTBUFF_OIncludeToys();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_INCLUDETOYS, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <EditBox name="SmartBuffOptionsCredits_lblText" letters="2000" multiLine="true" autoFocus="false">
@@ -1666,13 +1420,6 @@
                     <OnClick>
                         SMARTBUFF_PlaySpashSound();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_PLAYSOUND, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </Button>
             <Slider name="SmartBuffOptionsFrame_sldSounds" inherits="OptionsSliderTemplate" minValue="1" maxValue="25" defaultValue="1">
@@ -1703,10 +1450,6 @@
                         SmartBuffOptionsFrameSlider_OnLoad(self, 1, 24, 1);
                         BackdropTemplateMixin.OnBackdropLoaded(self);
                     </OnLoad>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_SOUNDSELECT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
                 </Scripts>
             </Slider>
             <CheckButton name="SmartBuffOptionsFrame_cbFixBuffIssue" inherits="UICheckButtonTemplate">
@@ -1722,20 +1465,13 @@
                     <AbsInset left="0" right="0" top="0" bottom="0" />
                 </HitRectInsets>
                 <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_OFTT_FIXBUFF, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
                     <OnClick>
                         SMARTBUFF_ToggleFixBuffing();
                     </OnClick>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_OFT_FIXBUFF);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_OFT_FIXBUFF);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
         </Frames>
@@ -1855,19 +1591,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_BST_SELFONLY);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_BST_SELFONLY);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SmartBuff_BuffSetup_OnClick();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_BSTT_SELFONLY, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton justifyH="LEFT" name="SmartBuff_BuffSetup_cbSelfNot" inherits="UICheckButtonTemplate">
@@ -1886,19 +1615,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_BST_SELFNOT);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_BST_SELFNOT);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SmartBuff_BuffSetup_OnClick();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_BSTT_SELFNOT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton justifyH="LEFT" name="SmartBuff_BuffSetup_cbCombatIn" inherits="UICheckButtonTemplate">
@@ -1917,19 +1639,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_BST_COMBATIN);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_BST_COMBATIN);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SmartBuff_BuffSetup_OnClick();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_BSTT_COMBATIN, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton justifyH="LEFT" name="SmartBuff_BuffSetup_cbCombatOut" inherits="UICheckButtonTemplate">
@@ -1948,19 +1663,36 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_BST_COMBATOUT);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_BST_COMBATOUT);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SmartBuff_BuffSetup_OnClick();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_BSTT_COMBATOUT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
+                </Scripts>
+            </CheckButton>
+            <CheckButton justifyH="LEFT" name="SmartBuff_BuffSetup_cbSkipBGResQueue" inherits="UICheckButtonTemplate">
+                <Size>
+                    <AbsDimension x="20" y="20" />
+                </Size>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup_cbCombatOut" relativePoint="TOPLEFT">
+                        <Offset>
+                            <AbsDimension x="0" y="-16" />
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <HitRectInsets>
+                    <AbsInset left="0" right="0" top="0" bottom="0" />
+                </HitRectInsets>
+                <Scripts>
+                    <OnLoad>
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_BST_SKIPBGRES);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
+                    </OnLoad>
+                    <OnClick>
+                        SmartBuff_BuffSetup_OnClick();
+                    </OnClick>
                 </Scripts>
             </CheckButton>
             <EditBox name="SmartBuff_BuffSetup_txtManaLimit" inherits="InputBoxTemplate" letters="5" numeric="true" autoFocus="false">
@@ -1968,9 +1700,9 @@
                     <AbsDimension x="40" y="16" />
                 </Size>
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup_cbCombatOut" relativePoint="TOPLEFT">
+                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup_cbSkipBGResQueue" relativePoint="TOPLEFT">
                         <Offset>
-                            <AbsDimension x="8" y="-24" />
+                            <AbsDimension x="8" y="-20" />
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -2002,13 +1734,6 @@
                     <OnTextChanged>
                         SmartBuff_BuffSetup_ManaLimitChanged(self);
                     </OnTextChanged>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_BSTT_MANALIMIT, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </EditBox>
             <CheckButton justifyH="LEFT" name="SmartBuff_BuffSetup_cbMH" inherits="UICheckButtonTemplate">
@@ -2016,9 +1741,9 @@
                     <AbsDimension x="20" y="20" />
                 </Size>
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup_cbCombatOut" relativePoint="TOPLEFT">
+                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup_txtManaLimit" relativePoint="BOTTOMLEFT">
                         <Offset>
-                            <AbsDimension x="0" y="-16" />
+                            <AbsDimension x="0" y="20" />
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -2027,19 +1752,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_BST_MAINHAND);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_BST_MAINHAND);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SmartBuff_BuffSetup_OnClick();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_BSTT_MAINHAND, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton justifyH="LEFT" name="SmartBuff_BuffSetup_cbOH" inherits="UICheckButtonTemplate">
@@ -2058,19 +1776,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_BST_OFFHAND);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_BST_OFFHAND);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SmartBuff_BuffSetup_OnClick();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_BSTT_OFFHAND, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton justifyH="LEFT" name="SmartBuff_BuffSetup_cbRH" inherits="UICheckButtonTemplate">
@@ -2089,19 +1800,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_BST_RANGED);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_BST_RANGED);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SmartBuff_BuffSetup_OnClick();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_BSTT_RANGED, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <CheckButton justifyH="LEFT" name="SmartBuff_BuffSetup_cbReminder" inherits="UICheckButtonTemplate">
@@ -2120,19 +1824,12 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Text"):SetText(SMARTBUFF_BST_REMINDER);
-                        getglobal(self:GetName().."Text"):SetFontObject(GameFontNormalSmall);
+                        _G[self:GetName().."Text"]:SetText(SMARTBUFF_BST_REMINDER);
+                        _G[self:GetName().."Text"]:SetFontObject(GameFontNormalSmall);
                     </OnLoad>
                     <OnClick>
                         SmartBuff_BuffSetup_OnClick();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_BSTT_REMINDER, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
             </CheckButton>
             <Button name="SmartBuff_BuffSetup_btnPriorityList" inherits="UIPanelButtonTemplate" text="A">
@@ -2169,6 +1866,23 @@
                     </OnClick>
                 </Scripts>
             </Button>
+            <Button name="SmartBuff_BuffSetup_btnInfo" inherits="UIPanelButtonTemplate" text="Help">
+                <Size>
+                    <AbsDimension x="40" y="20" />
+                </Size>
+                <Anchors>
+                    <Anchor point="LEFT" relativeTo="SmartBuff_BuffSetup_btnIgnoreList" relativePoint="RIGHT">
+                        <Offset>
+                            <AbsDimension x="2" y="0" />
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        SmartBuff_GroupBuffHelp_Toggle();
+                    </OnClick>
+                </Scripts>
+            </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon1">
                 <Size>
                     <AbsDimension x="24" y="24" />
@@ -2180,15 +1894,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[1], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Druid" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon2">
@@ -2202,15 +1907,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[2], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Hunter" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon3">
@@ -2224,15 +1920,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[3], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Mage" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon4">
@@ -2246,15 +1933,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[4], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Paladin" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon5">
@@ -2268,15 +1946,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[5], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Priest" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon6">
@@ -2290,15 +1959,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[6], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Rogue" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon7">
@@ -2312,15 +1972,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[7], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Shaman" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon8">
@@ -2334,15 +1985,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[8], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Warlock" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon9">
@@ -2356,15 +1998,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[9], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Warrior" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon10">
@@ -2378,15 +2011,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[10], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Deathknight" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon11">
@@ -2400,15 +2024,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[11], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Monk" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon12">
@@ -2422,15 +2037,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[12], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Demonhunter" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon13">
@@ -2442,15 +2048,6 @@
                         <Offset y="-28" />
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[13], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\Envoker.tga" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon14">
@@ -2462,15 +2059,6 @@
                         <Offset x="50" y="4" />
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[14], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\HunterPet.tga" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon15">
@@ -2484,15 +2072,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[15], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\WarlockPet" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon16">
@@ -2506,15 +2085,6 @@
                         </Offset>
                     </Anchor>
                 </Anchors>
-                <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[16], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                </Scripts>
                 <NormalTexture file="Interface\AddOns\SmartBuff\Icons\DeathknightPet" />
             </Button>
             <Button name="SmartBuff_BuffSetup_ClassIcon17">
@@ -2533,13 +2103,6 @@
                         t = self:GetNormalTexture();
                         t:SetTexCoord(0.0, 19/64, 22/64, 41/64);
                     </OnLoad>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[17], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
                 <NormalTexture file="Interface\LFGFrame\UI-LFG-ICON-PORTRAITROLES" />
             </Button>
@@ -2559,13 +2122,6 @@
                         t = self:GetNormalTexture();
                         t:SetTexCoord(20/64, 39/64, 1/64, 20/64);
                     </OnLoad>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[18], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
                 <NormalTexture file="Interface\LFGFrame\UI-LFG-ICON-PORTRAITROLES" />
             </Button>
@@ -2585,13 +2141,6 @@
                         t = self:GetNormalTexture();
                         t:SetTexCoord(20/64, 39/64, 22/64, 41/64);
                     </OnLoad>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_CLASSES[19], SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
                 </Scripts>
                 <NormalTexture file="Interface\LFGFrame\UI-LFG-ICON-PORTRAITROLES" />
             </Button>
@@ -2990,14 +2539,6 @@
                     <OnValueChanged>
                         SmartBuff_BuffSetup_RBTime_OnValueChanged(self);
                     </OnValueChanged>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_BSTT_REBUFFTIMER, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                        SmartBuff_BuffSetup_OnClick();
-                    </OnLeave>
                 </Scripts>
             </Slider>
         </Frames>
@@ -3114,7 +2655,7 @@
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="SmartBuff_PlayerSetup_Down" relativePoint="TOPRIGHT">
                         <Offset>
-                            <AbsDimension x="12" y="0" />
+                            <AbsDimension x="4" y="0" />
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -3122,14 +2663,23 @@
                     <OnClick>
                         SmartBuff_PS_Resize();
                     </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(SMARTBUFF_PSTT_RESIZE, SMARTBUFF_TTC_R, SMARTBUFF_TTC_G, SMARTBUFF_TTC_B, SMARTBUFF_TTC_A);
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                        SmartBuff_BuffSetup_OnClick();
-                    </OnLeave>
+                </Scripts>
+            </Button>
+            <Button name="SmartBuff_PlayerSetup_Clear" inherits="UIPanelButtonTemplate" text="c">
+                <Size>
+                    <AbsDimension x="20" y="20" />
+                </Size>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="SmartBuff_PlayerSetup_Resize" relativePoint="TOPRIGHT">
+                        <Offset>
+                            <AbsDimension x="0" y="0" />
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        SmartBuff_PS_ClearList();
+                    </OnClick>
                 </Scripts>
             </Button>
             <ScrollFrame name="SmartBuff_PlayerSetup_ScrollFrame" inherits="UIPanelScrollFrameTemplate" toplevel="true">
@@ -3246,6 +2796,87 @@
             <OnMouseUp>
 
             </OnMouseUp>
+        </Scripts>
+    </Frame>
+    <Frame name="SmartBuff_GroupBuffHelp" hidden="true" parent="UIParent" toplevel="true" movable="true" frameStrata="DIALOG" enableMouse="true">
+        <Size>
+            <AbsDimension x="280" y="320" />
+        </Size>
+        <Anchors>
+            <Anchor point="TOPLEFT" relativeTo="SmartBuff_BuffSetup" relativePoint="TOPRIGHT">
+                <Offset>
+                    <AbsDimension x="4" y="0" />
+                </Offset>
+            </Anchor>
+        </Anchors>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture setAllPoints="true">
+                    <Color r="0" g="0" b="0" a="0.8" />
+                </Texture>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Button name="SmartBuff_GroupBuffHelp_Close" inherits="UIPanelCloseButton">
+                <Anchors>
+                    <Anchor point="TOPRIGHT" relativeTo="$parent" relativePoint="TOPRIGHT">
+                        <Offset>
+                            <AbsDimension x="-4" y="-4" />
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        SmartBuff_GroupBuffHelp:Hide();
+                    </OnClick>
+                </Scripts>
+            </Button>
+            <ScrollFrame name="SmartBuff_GroupBuffHelp_Scroll" inherits="UIPanelScrollFrameTemplate">
+                <Size>
+                    <AbsDimension x="248" y="280" />
+                </Size>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
+                        <Offset>
+                            <AbsDimension x="12" y="-28" />
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <ScrollChild>
+                    <EditBox name="SmartBuff_GroupBuffHelp_Text" multiLine="true" autoFocus="false">
+                        <Size>
+                            <AbsDimension x="220" y="260" />
+                        </Size>
+                        <Anchors>
+                            <Anchor point="TOPLEFT" />
+                        </Anchors>
+                        <Scripts>
+                            <OnLoad>
+                                self:SetAutoFocus(false);
+                                self:EnableMouse(false);
+                                self:EnableKeyboard(false);
+                            </OnLoad>
+                        </Scripts>
+                        <FontString inherits="GameFontNormalSmall" justifyH="LEFT" />
+                    </EditBox>
+                </ScrollChild>
+            </ScrollFrame>
+        </Frames>
+        <Scripts>
+            <OnLoad>
+                Mixin(self, BackdropTemplateMixin);
+                self:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border", insets = {left = 12, right = 12, top = 12, bottom = 11}});
+                self:RegisterForDrag("LeftButton");
+            </OnLoad>
+            <OnHide>
+                self:StopMovingOrSizing();
+            </OnHide>
+            <OnDragStart>
+                self:StartMoving();
+            </OnDragStart>
+            <OnDragStop>
+                self:StopMovingOrSizing();
+            </OnDragStop>
         </Scripts>
     </Frame>
 </Ui>

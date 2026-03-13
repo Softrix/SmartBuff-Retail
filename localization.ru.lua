@@ -173,6 +173,7 @@ SMARTBUFF_BST_OFFHAND        = "Левая рука";
 SMARTBUFF_BST_RANGED         = "Метательное";
 SMARTBUFF_BST_REMINDER       = "Напоминалка";
 SMARTBUFF_BST_MANALIMIT      = "При уровне\nманы не ниже";
+SMARTBUFF_BST_SKIPBGRES      = "Исключить на полях боя";
 
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Баффать только себя любимого.";
@@ -185,6 +186,7 @@ SMARTBUFF_BSTT_RANGED        = "Buffs the ranged slot.";
 SMARTBUFF_BSTT_REMINDER      = "Показывать окошко напоминалки.";
 SMARTBUFF_BSTT_REBUFFTIMER   = "За сколько секунд до спадения баффа,\nнапоминалка должна предупредить.\n0 = общий таймер проверки";
 SMARTBUFF_BSTT_MANALIMIT     = "Уровень Маны/Ярости/Энергии. \nЕсли он окажется ниже,\nто баффа не будет.";
+SMARTBUFF_BSTT_SKIPBGRES    = "Если отмечено, это заклинание не добавляется в очередь после воскрешения на Поле боя или Арене.";
 
 -- Playersetup Frame Tooltip Text
 SMARTBUFF_PSTT_RESIZE        = "Свернуть/развернуть\nосновное окно опций";

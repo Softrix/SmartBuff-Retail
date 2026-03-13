@@ -404,6 +404,7 @@ SMARTBUFF_BST_MAINHAND       = "主手";
 SMARTBUFF_BST_OFFHAND        = "副手";
 SMARTBUFF_BST_REMINDER       = "通报";
 SMARTBUFF_BST_MANALIMIT      = "最低值";
+SMARTBUFF_BST_SKIPBGRES      = "战场中排除";
 
 -- BUFF设置提示信息内容
 SMARTBUFF_BSTT_SELFONLY      = "仅BUFF自己，不给其他队友BUFF。";
@@ -415,6 +416,7 @@ SMARTBUFF_BSTT_OFFHAND       = "给副手武器施放BUFF。";
 SMARTBUFF_BSTT_REMINDER      = "显示提醒信息。";
 SMARTBUFF_BSTT_REBUFFTIMER   = "设定当BUFF消失前多少秒时发出警告信息。\n0 = 不提示";
 SMARTBUFF_BSTT_MANALIMIT     = "当魔法值/怒气值/能量值低于你设置的值时将不会BUFF。";
+SMARTBUFF_BSTT_SKIPBGRES    = "勾选后，此法术在战场或竞技场复活后不会被加入施法队列。";
 
 -- 玩家设置窗口信息提示
 SMARTBUFF_PSTT_RESIZE        = "最小化/最大化\n主设置窗口";

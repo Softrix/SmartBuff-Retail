@@ -7,6 +7,11 @@ SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
   .."          |cffffffffMidnight & Classic versions by Codermik, additional retail\n"
   .."          programming by MrWizard and Speedwaystar.\n"
   .."\n\n"
+  .."          Changes in r40.110326:\n\n"
+  .."             * Single-target group buffs: one buff per group member\n"
+  .."             * BuffSettings: Additional/Ignore list fixed, expanded help\n"
+  .."             * BG/Arena: after resurrection, spellbook buffs queued; no flasks/food/scrolls/potions\n"
+  .."\n\n"
   .."          Changes in r39.130226:\n\n"
   .."             * Add Retain checkbox to copy buff settings when switching to fresh templates\n"
   .."             * Inclusivity: Rename blacklist → blocklist (with migration)\n"
@@ -14,15 +19,9 @@ SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
   .."             * Add PvP prep-only message for Arena/BG\n"
   .."             * Add play-sound tooltip\n"
   .."\n\n"
-  .."          Changes in r39.120226:\n\n"
-  .."             * Template switching: BG/Arena, Solo fallback, single if/elseif chain, merged chat msg\n"
-  .."             * Template split: GENERICS/INSTANCES/CUSTOM, assemble at load, enum lookup, SmartBuffGroup refactor\n"
-  .."             * Localization: de (Danish→German), zhCN (Nerub-ar fix), INSTANCES comment\n"
-  .."             * Whitespace cleanup, .cursorrules\n"
-  .."\n\n"
   .."          |c0000FF96Many thanks to Chris S., Samantha R. and\n"
   .."          Twilight's Sundries for their kind donations.\n"
- .."\n\n"
+  .."\n\n"
 ;
 
 SMARTBUFF_CREDITS = "|cffffffff"
@@ -195,10 +194,12 @@ SMARTBUFF_BST_OFFHAND        = "Off Hand";
 SMARTBUFF_BST_RANGED         = "Thrown";
 SMARTBUFF_BST_REMINDER       = "Notification";
 SMARTBUFF_BST_MANALIMIT      = "Lower bound";
+SMARTBUFF_BST_SKIPBGRES      = "Exclude in BGs";
 
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Buffs only your character.";
 SMARTBUFF_BSTT_SELFNOT       = "Buffs all other selected classes,\nexcept your character.";
+SMARTBUFF_BSTT_SINGLETARGET  = "For single-target buffs (Earth Shield, Soulstone, etc.), prefer role filter (e.g. TANK) over class.";
 SMARTBUFF_BSTT_COMBATIN      = "Buffs if you are in combat.\nAll in-combat logic is disabled unless the main \"in combat\" option (in the options frame) is enabled.";
 SMARTBUFF_BSTT_COMBATOUT     = "Buffs if you are out of combat.";
 SMARTBUFF_BSTT_MAINHAND      = "Buffs the Main Hand.";
@@ -207,9 +208,34 @@ SMARTBUFF_BSTT_RANGED        = "Buffs the ranged slot.";
 SMARTBUFF_BSTT_REMINDER      = "Display reminder message.";
 SMARTBUFF_BSTT_REBUFFTIMER   = "How many seconds before a buff expires,\nthe reminder should alert you.\n0 = global rebuff timer";
 SMARTBUFF_BSTT_MANALIMIT     = "Mana/Rage/Energy threshold\nIf you are below this value\nit will not cast the buff.";
+SMARTBUFF_BSTT_SKIPBGRES    = "If checked, this spell is not added to the cast queue after resurrection in Battleground or Arena.";
+SMARTBUFF_BSTT_ADDLIST       = "Additional list: Add players who should receive this buff even if they don't match the class/role filter. Target a party/raid member and click + to add.";
+SMARTBUFF_BSTT_IGNORELIST    = "Ignore list: Exclude players from this buff even if they match the class/role filter. Target a party/raid member and click + to add.";
 
 -- Playersetup Frame Tooltip Text
 SMARTBUFF_PSTT_RESIZE        = "Minimize/maximize\nthe main options frame";
+SMARTBUFF_PSTT_ADD           = "Add your current target to this list. Target must be in your party or raid.";
+SMARTBUFF_PSTT_REMOVE        = "Remove the selected player from this list.";
+SMARTBUFF_PSTT_UP            = "Move selection up in the list.";
+SMARTBUFF_PSTT_DOWN          = "Move selection down in the list.";
+SMARTBUFF_PSTT_CLEAR         = "Clear all entries from this list.";
+
+-- Group Buff Help (INFO button)
+SMARTBUFF_GROUPBUFFHELP_TT   = "Open group buff configuration help";
+SMARTBUFF_GROUPBUFFHELP      = "|cffffffffGroup Buff Configuration|r\n\n"
+  .."|cffffffffRole vs Class|r\n"
+  .."Class is what someone is (Warrior, Mage, Priest, etc.). Role is what they do (Tank, Healer, Damage).\n\n"
+  .."|cffffffffSingle-target buffs|r\n"
+  .."Some buffs (Earth Shield, Soulstone, Evoker buffs, etc.) can only be on one person at a time. SmartBuff marks these as single-target.\n\n"
+  .."The buff will not jump or move as long as any eligible group member already has your buff. Once someone eligible has it, SmartBuff leaves it alone until it expires or they leave. Prefer role (e.g. Tank) over class for these buffs.\n\n"
+  .."|cffffffffAdditional and Ignore lists|r\n"
+  .."These lists override class/role. Target a party or raid member and click + to add. Select an entry and click - to remove. Click c to clear the list.\n\n"
+  .."Additional list: Buff these players (or NPCs) even if they don't match your class/role checkboxes.\n"
+  .."Ignore list: Don't buff these players even if they do match. The lists take priority over the checkboxes.\n\n"
+  .."|cffffffffYou must select something|r\n"
+  .."At least one class or role checkbox must be checked. Otherwise the buff won't go to anyone (unless they're on the Additional list).\n\n"
+  .."|cffffffffRoles only matter in groups|r\n"
+  .."Tank, Healer, and Damage filters only apply when you're in a party or raid. When solo, they have no effect.";
 
 -- Messages
 SMARTBUFF_MSG_LOADED         = "(Retail) loaded. Please report any problems on Curse or join discord at discord.gg/R6EkZ94TKK.";

@@ -178,6 +178,7 @@ SMARTBUFF_BST_OFFHAND        = "Schildhand";
 SMARTBUFF_BST_RANGED         = "Wurfwaffe";
 SMARTBUFF_BST_REMINDER       = "Benachrichtigung";
 SMARTBUFF_BST_MANALIMIT      = "Grenzwert";
+SMARTBUFF_BST_SKIPBGRES      = "In Schlachtfeldern ausschließen";
 
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Bufft nur deinen eigenen Charakter.";
@@ -190,6 +191,7 @@ SMARTBUFF_BSTT_RANGED        = "Bufft die Wurfwaffe.";
 SMARTBUFF_BSTT_REMINDER      = "Erinnerungs-Nachricht ausgeben.";
 SMARTBUFF_BSTT_REBUFFTIMER   = "Wieviele Sekunden vor Ablauf des Buffs,\nsoll daran erinnert werden.\n0 = Globaler Rebuff Timer";
 SMARTBUFF_BSTT_MANALIMIT     = "Mana/Wut/Energie Grenzwert\nWenn du unter diesen Wert fällst\nwird der Buff nicht mehr verwendet.";
+SMARTBUFF_BSTT_SKIPBGRES    = "Wenn aktiviert, wird dieser Zauber nach Wiederbelebung in Schlachtfeld oder Arena nicht in die Warteschlange aufgenommen.";
 
 -- Playersetup Frame Tooltip Text
 SMARTBUFF_PSTT_RESIZE        = "Minimiert/Maximiert\ndas Optionenfenster";

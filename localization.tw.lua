@@ -180,6 +180,7 @@ SMARTBUFF_BST_OFFHAND        = "副手";
 SMARTBUFF_BST_RANGED         = "投擲";
 SMARTBUFF_BST_REMINDER       = "通知";
 SMARTBUFF_BST_MANALIMIT      = "力能底線";--力能是技能施放來源,如怒氣、能量、法力
+SMARTBUFF_BST_SKIPBGRES      = "戰場中排除";
 
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "僅對自己施法,不對其他隊友施法.";
@@ -192,6 +193,7 @@ SMARTBUFF_BSTT_RANGED        = "Buff遠程武器";
 SMARTBUFF_BSTT_REMINDER      = "顯示提示訊息.";
 SMARTBUFF_BSTT_REBUFFTIMER   = "Buff消失前多少秒,\n發出警告訊息.0 = 不提示";
 SMARTBUFF_BSTT_MANALIMIT     = "設定魔法/怒氣/能量保留門檻.";
+SMARTBUFF_BSTT_SKIPBGRES    = "勾選後，此法術在戰場或競技場復活後不會被加入施法佇列。";
 
 -- Playersetup Frame Tooltip Text
 SMARTBUFF_PSTT_RESIZE        = "最小化/最大化 設定視窗";

@@ -10,8 +10,8 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "130226"; -- EU Date: DDMMYY
-SMARTBUFF_VERSION            = "r39." .. SMARTBUFF_DATE;
+SMARTBUFF_DATE               = "110326"; -- EU Date: DDMMYY
+SMARTBUFF_VERSION            = "r40." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
@@ -581,6 +581,7 @@ local function InitBuffSettings(cBI, reset)
   if (cBuff.AddList == nil) then cBuff.AddList = {}; end                     -- to 2.1a
   if (cBuff.IgnoreList == nil) then cBuff.IgnoreList = {}; end               -- to 2.1a
   if (cBuff.RH == nil) then cBuff.RH = false; end                            -- to 4.0b
+  if (cBuff.SkipBGResQueue == nil) then cBuff.SkipBGResQueue = false; end
 end
 
 local function InitBuffOrder(reset)
@@ -791,6 +792,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     end
   elseif (event == "ADDON_LOADED" and arg1 and (arg1 == SMARTBUFF_TITLE or strfind(arg1, "SmartBuff") == 1)) then
     isLoaded = true;
+    SmartBuff_SetupTooltips();
   end
 
   -- PLAYER_LOGIN
@@ -2027,6 +2029,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
   if (buff[5] ~= nil) then cBuffs[i].Params = buff[5] else cBuffs[i].Params = SG.NIL end
   cBuffs[i].Links = buff[6];
   cBuffs[i].Chain = buff[7];
+  cBuffs[i].SingleTargetGroup = (buff[8] == "single") and "single" or nil;
 
   -- Warlock Nether Ward fix
   --if (cBuffs[i].BuffS == SMARTBUFF_SHADOWWARD and IsTalentSkilled(3, 13, SMARTBUFF_NETHERWARD)) then
@@ -2664,7 +2667,7 @@ function SMARTBUFF_PopulateBGResQueue()
     local cBuff = cBuffs[cBuffIndex[buffnS]];
     local bs = GetBuffSettings(buffnS);
     if (cBuff and bs and bs.EnableS and cBuff.Type ~= SMARTBUFF_CONST_TRACK) then
-      if (cBuff.IDS and not SMARTBUFF_IsItem(cBuff.Type)) then
+      if (cBuff.IDS and not SMARTBUFF_IsItem(cBuff.Type) and not bs.SkipBGResQueue) then
         tinsert(cBuffsToCastAfterBGRes, { actionType = SMARTBUFF_ACTION_SPELL, spellName = buffnS, slot = -1 });
       end
     end
@@ -2965,7 +2968,9 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
             SMARTBUFF_AddMsgD(uc .. " " .. CT());
 
+            -- Note: Only players (and pets) are valid targets for group buffs; NPCs do not benefit from buffs.
             if (not SMARTBUFF_IsInList(unit, un, bs.IgnoreList) and (((cBuff.Type == SMARTBUFF_CONST_GROUP or cBuff.Type == SMARTBUFF_CONST_ITEMGROUP)
+                    and UnitPlayerControlled(unit)
                     and (bs[ur]
                       or (bs.SelfOnly and SMARTBUFF_IsPlayer(unit))
                       or (bs[uc] and (UnitIsPlayer(unit) or uct == SMARTBUFF_HUMANOID or (uc == "DRUID" and (uct == SMARTBUFF_BEAST or uct == SMARTBUFF_ELEMENTAL))))
@@ -3260,6 +3265,15 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
               end
 
               if (buff) then
+                -- Single-target group buffs: if our buff is already on an eligible group member, unset buff (do not move).
+                -- Past this point: buff is either still set (continue to cast) or nil (skip).
+                if (cBuff.SingleTargetGroup == "single" and cBuff.Type == SMARTBUFF_CONST_GROUP
+                    and subgroup and type(subgroup) == "number" and subgroup >= 1 and SMARTBUFF_AnyEligibleGroupUnitHasMyBuff(subgroup, buffnS, bs)) then
+                  buff = nil;
+                  SMARTBUFF_AddMsgD("Single-target buff " .. buffnS .. " already on group member, skipping");
+                end
+              end
+              if (buff) then
                 if (cBuff.IDS) then
                   SMARTBUFF_AddMsgD("Checking " .. i .. " - " .. cBuff.IDS .. " " .. buffnS);
                 end
@@ -3343,7 +3357,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                     end
                   end
 
-                  -- Check mode ---------------------------------------------------------------------------------------
+                -- Check mode ---------------------------------------------------------------------------------------
                 elseif (mode == 1) then
                   currentUnit = nil;
                   currentSpell = nil;
@@ -3444,12 +3458,12 @@ end
 -- END SMARTBUFF_BuffUnit
 
 
+-- Matches any unit by name (players, NPCs, pets). Used for AddList and IgnoreList.
 function SMARTBUFF_IsInList(unit, unitname, list)
-  if (list ~= nil) then
-    for un in pairs(list) do
-      if (un ~= nil and UnitIsPlayer(unit) and un == unitname) then
-        return true;
-      end
+  if (list == nil) then return false end
+  for un in pairs(list) do
+    if (un ~= nil and un == unitname) then
+      return true;
     end
   end
   return false;
@@ -3664,6 +3678,36 @@ function UnitBuffByBuffName(target, buffname, filter)
       end
     end
   end
+end
+
+-- Returns true if any eligible unit in the subgroup has our buff (sourceUnit == "player"). Used for single-target group buffs.
+-- Only considers units that match current buff settings (class, role, AddList, IgnoreList).
+-- Note: Only players (and pets) are valid targets; NPCs do not benefit from buffs.
+function SMARTBUFF_AnyEligibleGroupUnitHasMyBuff(subgroup, buffnS, bs)
+  if (not subgroup or not buffnS or not cGroups or not cGroups[subgroup]) then return false end
+  for _, u in pairs(cGroups[subgroup]) do
+    if (u and UnitExists(u) and UnitPlayerControlled(u)) then
+      local _, _, _, _, _, _, src = UnitBuffByBuffName(u, buffnS, "HELPFUL");
+      if (src and UnitIsUnit("player", src)) then
+        if (not bs) then return true end
+        local un = UnitName(u);
+        local uc = select(2, UnitClass(u));
+        local ur = UnitGroupRolesAssigned(u);
+        local uct = UnitCreatureType(u) or "";
+        local ucf = UnitCreatureFamily(u) or "";
+        if (not SMARTBUFF_IsInList(u, un, bs.IgnoreList)
+            and (bs[ur] or (bs.SelfOnly and SMARTBUFF_IsPlayer(u))
+              or (bs[uc] and (UnitIsPlayer(u) or uct == SMARTBUFF_HUMANOID or (uc == "DRUID" and (uct == SMARTBUFF_BEAST or uct == SMARTBUFF_ELEMENTAL))))
+              or (bs["HPET"] and uct == SMARTBUFF_BEAST and uc ~= "DRUID")
+              or (bs["DKPET"] and uct == SMARTBUFF_UNDEAD)
+              or (bs["WPET"] and (uct == SMARTBUFF_DEMON or (uc ~= "DRUID" and uct == SMARTBUFF_ELEMENTAL)) and ucf ~= SMARTBUFF_DEMONTYPE))
+              or SMARTBUFF_IsInList(u, un, bs.AddList)) then
+          return true;
+        end
+      end
+    end
+  end
+  return false;
 end
 
 -- Will return the name of the buff to cast
@@ -4983,7 +5027,11 @@ function SmartBuff_BuffSetup_Show(i)
 
     local obj = SmartBuff_BuffSetup_BuffText;
     if (name) then
-      obj:SetText(GetBuffDisplayName(name, btype));
+      local displayName = GetBuffDisplayName(name, btype);
+      if (cBuffs[i].SingleTargetGroup) then
+        displayName = displayName .. " - single";
+      end
+      obj:SetText(displayName);
       --SMARTBUFF_AddMsgD(name);
     else
       obj:SetText("");
@@ -5035,16 +5083,25 @@ function SmartBuff_BuffSetup_Show(i)
       end
     end
 
+    if (cBuffs[i].IDS and not SMARTBUFF_IsItem(cBuffs[i].Type)) then
+      SmartBuff_BuffSetup_cbSkipBGResQueue:Show();
+      SmartBuff_BuffSetup_cbSkipBGResQueue:SetChecked(bs.SkipBGResQueue == true);
+    else
+      SmartBuff_BuffSetup_cbSkipBGResQueue:Hide();
+    end
+
     if (cBuffs[i].Type == SMARTBUFF_CONST_GROUP or cBuffs[i].Type == SMARTBUFF_CONST_ITEMGROUP) then
       SmartBuff_BuffSetup_cbSelf:Show();
       SmartBuff_BuffSetup_cbSelfNot:Show();
       SmartBuff_BuffSetup_btnPriorityList:Show();
       SmartBuff_BuffSetup_btnIgnoreList:Show();
+      SmartBuff_BuffSetup_btnInfo:Show();
     else
       SmartBuff_BuffSetup_cbSelf:Hide();
       SmartBuff_BuffSetup_cbSelfNot:Hide();
       SmartBuff_BuffSetup_btnPriorityList:Hide();
       SmartBuff_BuffSetup_btnIgnoreList:Hide();
+      SmartBuff_BuffSetup_btnInfo:Hide();
       SmartBuff_PlayerSetup:Hide();
     end
 
@@ -5075,6 +5132,14 @@ function SmartBuff_BuffSetup_Show(i)
   end
 end
 
+-- Returns tooltip text for cbSelf/cbSelfNot; appends single-target guidance when buff has SingleTargetGroup.
+function SmartBuff_GetSelfTooltipText(baseText)
+  if (iLastBuffSetup and iLastBuffSetup > 0 and cBuffs and cBuffs[iLastBuffSetup] and cBuffs[iLastBuffSetup].SingleTargetGroup) then
+    return { baseText, SMARTBUFF_BSTT_SINGLETARGET };
+  end
+  return baseText;
+end
+
 function SmartBuff_BuffSetup_ManaLimitChanged(self)
   local i = iLastBuffSetup;
   if (i <= 0) then
@@ -5100,6 +5165,7 @@ function SmartBuff_BuffSetup_OnClick()
   cBuff.SelfNot  = SmartBuff_BuffSetup_cbSelfNot:GetChecked();
   cBuff.CIn      = SmartBuff_BuffSetup_cbCombatIn:GetChecked();
   cBuff.COut     = SmartBuff_BuffSetup_cbCombatOut:GetChecked();
+  cBuff.SkipBGResQueue = SmartBuff_BuffSetup_cbSkipBGResQueue:IsShown() and SmartBuff_BuffSetup_cbSkipBGResQueue:GetChecked();
   cBuff.MH       = SmartBuff_BuffSetup_cbMH:GetChecked();
   cBuff.OH       = SmartBuff_BuffSetup_cbOH:GetChecked();
   cBuff.RH       = SmartBuff_BuffSetup_cbRH:GetChecked();
@@ -5483,9 +5549,11 @@ function SmartBuff_PS_GetList()
     local cBuff = GetBuffSettings(name);
     if (cBuff) then
       if (iCurrentList == 1) then
-        return cBuff.AddList or {};
+        if (not cBuff.AddList) then cBuff.AddList = {}; end
+        return cBuff.AddList;
       else
-        return cBuff.IgnoreList or {};
+        if (not cBuff.IgnoreList) then cBuff.IgnoreList = {}; end
+        return cBuff.IgnoreList;
       end
     end
   end
@@ -5528,7 +5596,7 @@ end
 function SmartBuff_PS_AddPlayer()
   local cList = SmartBuff_PS_GetList();
   local un = UnitName("target");
-  if (un and UnitIsPlayer("target") and (UnitInRaid("target") or UnitInParty("target") or O.Debug)) then
+  if (un and (UnitInRaid("target") or UnitInParty("target") or O.Debug)) then
     if (not cList[un]) then
       cList[un] = true;
       SmartBuff_PS_SelectPlayer(0);
@@ -5545,6 +5613,19 @@ function SmartBuff_PS_RemovePlayer()
       cList[player] = nil;
       break;
     end
+  end
+  SmartBuff_PS_SelectPlayer(0);
+end
+
+function SmartBuff_PS_ClearList()
+  local cList = SmartBuff_PS_GetList();
+  for k in pairs(cList) do
+    cList[k] = nil;
+  end
+  if (iCurrentList == 1) then
+    wipe(cAddUnitList);
+  else
+    wipe(cIgnoreUnitList);
   end
   SmartBuff_PS_SelectPlayer(0);
 end
@@ -5900,7 +5981,7 @@ local function CreateScrollButton(name, parent, cBtn, onClick, onDragStop)
   local btn = CreateFrame("CheckButton", name, parent, "UICheckButtonTemplate");
   btn:SetWidth(ScrBtnSize);
   btn:SetHeight(ScrBtnSize);
-  --  btn:RegisterForClicks("LeftButtonUp");
+  btn:RegisterForClicks("LeftButtonUp", "RightButtonUp");
   btn:SetScript("OnClick", onClick);
   --  btn:SetScript("OnMouseUp", onClick);
 
@@ -5978,7 +6059,11 @@ local function OnScroll(self, cData, sBtnName)
         btn:SetHighlightFontObject("GameFontHighlightSmall");
         local idx = cBuffIndex[cData[n]];
         local btype = (idx and cBuffs[idx]) and cBuffs[idx].Type or nil;
-        btn:SetText(GetBuffDisplayName(cData[n], btype));
+        local displayName = GetBuffDisplayName(cData[n], btype);
+        if (idx and cBuffs[idx] and cBuffs[idx].SingleTargetGroup) then
+          displayName = displayName .. " - single";
+        end
+        btn:SetText(displayName);
         local bs = GetBuffSettings(cData[n]);
         if (bs) then
           btn:SetChecked(bs.EnableS);
@@ -6019,14 +6104,21 @@ function SMARTBUFF_BuffOrderOnScroll(self, arg1)
   OnScroll(self, t, name);
 end
 
+-- Left click toggles buff enable; right click opens buff options (checkbox state restored so it does not toggle).
+-- Guards (i and i > 0) avoid nil index if order/index is out of sync when the row is clicked.
 function SMARTBUFF_BuffOrderBtnOnClick(self, button)
   local n = self:GetID() + FauxScrollFrame_GetOffset(self:GetParent());
-  local i = cBuffIndex[B[CS()].Order[n]];
-  --SMARTBUFF_AddMsgD("Buff OnClick = "..n..", "..button);
+  local ord = B[CS()].Order;
+  local buffnS = ord and ord[n];
+  local i = buffnS and cBuffIndex[buffnS];
   if (button == "LeftButton") then
-    SMARTBUFF_OToggleBuff("S", i);
+    if (i and i > 0) then SMARTBUFF_OToggleBuff("S", i); end
   else
-    SmartBuff_BuffSetup_Show(i);
+    if (i and i > 0) then
+      SmartBuff_BuffSetup_Show(i);
+      local bs = GetBuffSettings(buffnS);
+      self:SetChecked(bs and bs.EnableS);
+    end
   end
 end
 
