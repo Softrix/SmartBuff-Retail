@@ -1,4 +1,4 @@
-local _;
+﻿local _;
 local S = SMARTBUFF_GLOBALS;
 
 -- ---------------------------------------------------------------------------
@@ -1057,6 +1057,7 @@ function SMARTBUFF_InitItemList()
   -- Consumables
   GetItemInfoIfNeeded("SMARTBUFF_TWWCrystalAugRune1", 224572); --"Crystallized Augment Rune"
   GetItemInfoIfNeeded("SMARTBUFF_TWWEtherealAugRune", 243191); --"Ethereal Augment Rune"
+  GetItemInfoIfNeeded("SMARTBUFF_MidnightVoidAugRune", 259085); -- Midnight: Void-Touched Augment Rune
 
   -- Flasks and phials
   GetItemInfoIfNeeded("SMARTBUFF_FLASKTWW1_Q1", 212269); --"Flask of Tempered Aggression"
@@ -1433,10 +1434,12 @@ function SMARTBUFF_InitSpellIDs()
   -- TWW
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BTWWCrystalAugRune1", 453250); -- Crystallization/Crystallized Augment Rune
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BTWWEtherealAugRune", 1234969); -- Ethereal Augmentation from Ethereal Augment Rune
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BMidnightVoidAugRune", 1264426); -- Void-Touched (Midnight augment rune)
 
   -- Links as spell IDs so links don't depend on globals at assembly time
   S.LinkSafariHat = { 158486, 158474 }; -- Safari Hat, Savage Safari Hat (spell IDs)
-  S.LinkAugment   = { 190668, 175457, 175456, 175439, 367405, 347901, 393438, 393438, 453250, 1234969 }; -- Empower/Focus/Hyper/Stout, Eternal/Veiled/Dream/Draconic/Crystal/Ethereal augment runes
+  -- Empower/Focus/Hyper/Stout, Eternal/Veiled/Dream/Draconic/Crystal/Ethereal/Void-Touched augment runes
+  S.LinkAugment   = { 190668, 175457, 175456, 175439, 367405, 347901, 393438, 393438, 453250, 1234969, 1264426 };
 
   -- Flasks & Elixirs (these are the buffs that are checked vs item itself)
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTBC1", 28520); --"Flask of Relentless Assault"
@@ -1835,6 +1838,8 @@ function SMARTBUFF_BuildItemTables()
     -- TWW
     {SMARTBUFF_TWWCrystalAugRune1, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BTWWCrystalAugRune1, S.LinkAugment},
     {SMARTBUFF_TWWEtherealAugRune, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BTWWEtherealAugRune, S.LinkAugment},
+    -- Midnight
+    {SMARTBUFF_MidnightVoidAugRune, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BMidnightVoidAugRune, S.LinkAugment},
   };
 
   -- Viable toy buffs: each AddItem(itemId, spellId, duration) appends one entry to SMARTBUFF_SCROLL.
