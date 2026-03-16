@@ -3038,12 +3038,13 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
                   -- dont attempt to use food while moving or we will waste them.
                 elseif (cBuff.Type == SMARTBUFF_CONST_FOOD and isPlayerMoving == false and not SMARTBUFF_IsPicnic(unit)) then
-                  -- unpleasant kludge for hearty buff food, which gives SMARTBUFF_HeartyFedAura
-                  if string.find(cBuff.BuffS, SMARTBUFF_LOC_HEARTY) then
-                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_HeartyFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
-                  else
-                  -- normal buff food, which givevs SMARTBUFF_WellFedAura
-                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_WellFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
+                  if (cBuff.Links == SG.TeaItemIds) then
+                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_RelaxedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
+                  elseif string.find(cBuff.BuffS or "", SMARTBUFF_LOC_HEARTY) then
+                      buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_HeartyFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
+                    else
+                      buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_WellFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
+                    end
                   end
                 else
                   if (cBuff.Params ~= SG.NIL) then

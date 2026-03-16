@@ -1,4 +1,4 @@
-local _;
+﻿local _;
 local S = SMARTBUFF_GLOBALS;
 
 -- ---------------------------------------------------------------------------
@@ -807,6 +807,10 @@ function SMARTBUFF_InitItemList()
     241316, 241312, 241310, 241314, 241318,
   });
 
+  -- Teas: Relaxed buff (separate from well fed; checked by buff name like food). TeaItemIds is source of truth.
+  S.TeaItemIds = { 242297, 242298, 242299, 242300, 242301 };
+  S.TeaItems = GetItems(S.TeaItemIds);
+
   -- Warlock healthstones
   GetItemInfoIfNeeded("SMARTBUFF_HEALTHSTONE", 5512); --"Healthstone"
   GetItemInfoIfNeeded("SMARTBUFF_DEMONICHEALTHSTONE", 224464); --"Demonic Healthstone"
@@ -1351,13 +1355,15 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_WarStomp", 20549, isSpellBookBuff); --"War Stomp"
   GetSpellInfoIfNeeded("SMARTBUFF_Visage", 351239, isSpellBookBuff); --"Evoker Visage"
 
-  -- Eating & Drinking (Generic)
+  -- Eating & Drinking (Generic - These are checked by NAME not ID)
   GetSpellInfoDirectIfNeeded("SMARTBUFF_EatingAura", 433); --"Food"
   GetSpellInfoDirectIfNeeded("SMARTBUFF_DrinkingAura", 430); --"Drink"
   GetSpellInfoDirectIfNeeded("SMARTBUFF_FoodDrinkAura", 192002); --"Food & Drink"
-  -- Well Fed (Generic)
+  -- Well Fed (Generic - These are checked by NAME not ID)
   GetSpellInfoDirectIfNeeded("SMARTBUFF_WellFedAura", 46899); --"Well Fed"
   GetSpellInfoDirectIfNeeded("SMARTBUFF_HeartyFedAura", 462181); --"Hearty Well Fed"
+  -- Relaxed (Generic - These are checked by NAME not ID)
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_RelaxedAura", 1269152); --"Relaxed"
 
   -- Misc
   GetSpellInfoDirectIfNeeded("SMARTBUFF_KIRUSSOV", 46302); --"K'iru's Song of Victory"
@@ -1697,6 +1703,22 @@ function SMARTBUFF_BuildItemTables()
       else
         -- Fallback if we couldn't get an ID (unexpected)
         tinsert(SMARTBUFF_FOOD, 1, {name, 60, SMARTBUFF_CONST_FOOD});
+      end
+    end
+  end
+  -- Add from S.TeaItems (Relaxed buff); set Links = S.TeaItemIds so FOOD branch can detect tea via cBuff.Links == SG.TeaItemIds
+  if (S.TeaItems) then
+    for n, name in pairs(S.TeaItems) do
+      if (name) then
+        local id = itemIdFrom(name);
+        if (id) then
+          if (not seenFoodIds[id] and not foodAlreadyHasItemId(id)) then
+            seenFoodIds[id] = true;
+            tinsert(SMARTBUFF_FOOD, 1, {"item:" .. tostring(id), 60, SMARTBUFF_CONST_FOOD, nil, nil, S.TeaItemIds});
+          end
+        else
+          tinsert(SMARTBUFF_FOOD, 1, {name, 60, SMARTBUFF_CONST_FOOD, nil, nil, S.TeaItemIds});
+        end
       end
     end
   end
