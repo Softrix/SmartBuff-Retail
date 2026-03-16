@@ -1,4 +1,4 @@
-﻿local _;
+local _;
 local S = SMARTBUFF_GLOBALS;
 
 -- ---------------------------------------------------------------------------
@@ -1111,12 +1111,31 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_FLASKTWW16_Q1", 212745); --"Fleeting Flask of Saving Graces"
   GetItemInfoIfNeeded("SMARTBUFF_FLASKTWW16_Q2", 212746); --"Fleeting Flask of Saving Graces"
   GetItemInfoIfNeeded("SMARTBUFF_FLASKTWW16_Q3", 212747); --"Fleeting Flask of Saving Graces"
-  -- midnight flasks
-  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN1", 241326); --"Flask of the shattered sun"
-  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN2", 241324); --"Flask of the blood knights"
-  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN3", 241320); --"Flask of the Thalassian Resistance"
-  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN4", 241322); --"Flask of Magisters"
-  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN5", 241334); --"Vicious Thalassian Flask of Honor"
+  -- Midnight phials and flasks (silver Q1, gold Q2; same buff per pair)
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN1_Q1", 241310); -- Haranir Phial of Finesse
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN1_Q2", 241311); -- Haranir Phial of Finesse
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN2_Q1", 241312); -- Haranir Phial of Ingenuity
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN2_Q2", 241313); -- Haranir Phial of Ingenuity
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN3_Q1", 241316); -- Haranir Phial of Perception
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN3_Q2", 241317); -- Haranir Phial of Perception
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN4_Q1", 241320); -- Flask of Thalassian Resistance
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN4_Q2", 241321); -- Flask of Thalassian Resistance
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN5_Q1", 241322); -- Flask of the Magisters
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN5_Q2", 241323); -- Flask of the Magisters
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN6_Q1", 241324); -- Flask of the Blood Knights
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN6_Q2", 241325); -- Flask of the Blood Knights
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN7_Q1", 241326); -- Flask of the Shattered Sun
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN7_Q2", 241327); -- Flask of the Shattered Sun
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN8", 241334); -- Vicious Thalassian Flask of Honor
+  -- Midnight fleeting flasks (same 4 buffs as main flasks; 60 min)
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN9_Q1", 245926);  -- Fleeting Flask of Thalassian Resistance
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN9_Q2", 245927);  -- Fleeting Flask of Thalassian Resistance
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN10_Q1", 245932); -- Fleeting Flask of the Magisters
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN10_Q2", 245933); -- Fleeting Flask of the Magisters
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN11_Q1", 245930); -- Fleeting Flask of the Blood Knights
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN11_Q2", 245931); -- Fleeting Flask of the Blood Knights
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN12_Q1", 245928); -- Fleeting Flask of the Shattered Sun
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN12_Q2", 245929); -- Fleeting Flask of the Shattered Sun
 
   -- Draught of Ten Lands (consumable)
   GetItemInfoIfNeeded("SMARTBUFF_EXP_POTION", 166750); --"Draught of Ten Lands"
@@ -1419,7 +1438,7 @@ function SMARTBUFF_InitSpellIDs()
   S.LinkSafariHat = { 158486, 158474 }; -- Safari Hat, Savage Safari Hat (spell IDs)
   S.LinkAugment   = { 190668, 175457, 175456, 175439, 367405, 347901, 393438, 393438, 453250, 1234969 }; -- Empower/Focus/Hyper/Stout, Eternal/Veiled/Dream/Draconic/Crystal/Ethereal augment runes
 
-  -- Flasks & Elixirs
+  -- Flasks & Elixirs (these are the buffs that are checked vs item itself)
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTBC1", 28520); --"Flask of Relentless Assault"
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTBC2", 28540); --"Flask of Pure Death"
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTBC3", 28518); --"Flask of Fortification"
@@ -1500,12 +1519,15 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTWWPvP_2", 432430); -- Vicious Flask of Honor
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTWWPvP_3", 432497); -- Vicious Flask of Manifested Fury
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTWWPvP_4", 432452); -- Vicious Flask of the Wrecking Ball
-  -- midnight flasks
-  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN1", 1235111); -- Flask of the shattered sun
-  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN2", 1235110); -- Flask of the blood knights
-  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN3", 1235057); -- Flask of the Thalassian Resistance
-  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN4", 1235108); -- Flask of Magisters
-  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN5", 1239355); -- Vicious Thalassian Flask of Honor
+  -- Midnight phials and flasks
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN1", 1236767); -- Haranir Phial of Finesse
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN2", 1239755); -- Haranir Phial of Ingenuity
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN3", 1236763); -- Haranir Phial of Perception
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN4", 1235057); -- Flask of Thalassian Resistance
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN5", 1235108); -- Flask of the Magisters
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN6", 1235110); -- Flask of the Blood Knights
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN7", 1235111); -- Flask of the Shattered Sun
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN8", 1239355); -- Vicious Thalassian Flask of Honor
 
   -- Flask/Phial links as spell IDs so links don't depend on globals at assembly time
   S.LinkFlaskTBC     = { 28520, 28540, 28518, 28521, 28519 }; -- TBC flasks
@@ -1517,7 +1539,7 @@ function SMARTBUFF_InitSpellIDs()
   S.LinkFlaskSL      = { 307185, 307187 }; -- Shadowlands flasks
   S.LinkFlaskDF      = { 371345, 371204, 371036, 374000, 371386, 373257, 370652, 371172, 393700, 393717, 371186, 393714, 371348, 371350, 371351, 371353, 393665 }; -- Dragonflight phials
   S.LinkFlaskTWW     = { 431971, 431972, 431973, 431974, 432021, 432473, 432306, 432265, 432304, 432286, 432403, 432430, 432497, 432452 }; -- TWW flasks
-  S.LinkFlaskMidnight = { 1235111, 1235110, 1235057, 1235108, 1239355 }; -- Midnight flasks
+  S.LinkFlaskMidnight = { 1236767, 1239755, 1236763, 1235057, 1235108, 1235110, 1235111, 1239355 }; -- Midnight phials + flasks (main + fleeting share same buff IDs for 4–7)
 
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BELIXIRTBC1", 54494); --"Major Agility" B
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BELIXIRTBC2", 33726); --"Mastery" B
@@ -2136,12 +2158,31 @@ function SMARTBUFF_BuildItemTables()
     {SMARTBUFF_FLASKTWWPvP_2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWWPvP2, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWWPvP_3, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWWPvP3, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWWPvP_4, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWWPvP4, S.LinkFlaskTWW},
-    -- midnight flasks
-    {SMARTBUFF_FLASKMIDN1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN1, S.LinkFlaskMidnight},
-    {SMARTBUFF_FLASKMIDN2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN2, S.LinkFlaskMidnight},
-    {SMARTBUFF_FLASKMIDN3, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN3, S.LinkFlaskMidnight},
-    {SMARTBUFF_FLASKMIDN4, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN4, S.LinkFlaskMidnight},
-    {SMARTBUFF_FLASKMIDN5, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN5, S.LinkFlaskMidnight},
+    -- Midnight phials (30 min) and flasks (60 min); one row per item so user can choose silver vs gold (different effect)
+    {SMARTBUFF_FLASKMIDN1_Q1, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN1, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN1_Q2, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN1, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN2_Q1, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN2, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN2_Q2, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN2, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN3_Q1, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN3, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN3_Q2, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN3, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN4_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN4, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN4_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN4, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN5_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN5, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN5_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN5, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN6_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN6, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN6_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN6, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN7_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN7, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN7_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN7, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN8, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN8, S.LinkFlaskMidnight},
+    -- Midnight fleeting flasks (same buff as main flasks 4–7; 60 min)
+    {SMARTBUFF_FLASKMIDN9_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN4, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN9_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN4, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN10_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN5, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN10_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN5, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN11_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN6, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN11_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN6, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN12_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN7, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN12_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN7, S.LinkFlaskMidnight},
 
   }
 end
