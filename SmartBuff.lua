@@ -3041,10 +3041,9 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   if (cBuff.Links == SG.TeaItemIds) then
                     buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_RelaxedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
                   elseif string.find(cBuff.BuffS or "", SMARTBUFF_LOC_HEARTY) then
-                      buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_HeartyFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
-                    else
-                      buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_WellFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
-                    end
+                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_HeartyFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
+                  else
+                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_WellFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
                   end
                 else
                   if (cBuff.Params ~= SG.NIL) then
@@ -4010,7 +4009,7 @@ function SMARTBUFF_IsPicnic(unit)
   return false
 end
 
----Scan localized aura names for "well fed" or "hearty well fed"
+---Scan localized aura names for "well fed" or "hearty well fed". Currently unused.
 ---@param unit? string default: "player"
 ---@return boolean returns `true` if the player is well fed, `false` otherwise
 function SMARTBUFF_IsWellFed(unit)
