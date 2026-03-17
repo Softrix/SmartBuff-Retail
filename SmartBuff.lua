@@ -10,8 +10,8 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "110326"; -- EU Date: DDMMYY
-SMARTBUFF_VERSION            = "r40." .. SMARTBUFF_DATE;
+SMARTBUFF_DATE               = "170326"; -- EU Date: DDMMYY
+SMARTBUFF_VERSION            = "r41." .. SMARTBUFF_DATE;
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
@@ -781,7 +781,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
   -- Surface item-buff errors to chat
   if (event == "UI_ERROR_MESSAGE") then
     if (tLastItemBuffAttempt > 0 and (GetTime() - tLastItemBuffAttempt) < 1.5) then
-      print("[SmartBuff] Item buff error: " .. tostring(arg2 or arg1 or "?"));
+      print("[SmartBuff] Buff error: " .. tostring(arg2 or arg1 or "?"));
       tLastItemBuffAttempt = 0;
     end
   end
