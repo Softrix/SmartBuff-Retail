@@ -25,6 +25,10 @@ SMARTBUFF_DESC               = "Cast the most important buffs on you, your tanks
 SMARTBUFF_VERS_TITLE         = SMARTBUFF_TITLE .. " " .. SMARTBUFF_VERSION;
 SMARTBUFF_OPTIONS_TITLE      = SMARTBUFF_VERS_TITLE .. " Retail ";
 
+-- Profession tool slots (Razorstone: same role as INVSLOT_MAINHAND / INVSLOT_OFFHAND for weapon buffs)
+INVSLOT_PROF1_TOOL           = 23;  -- Top main profession tool slot
+INVSLOT_PROF2_TOOL           = 20;  -- Second main profession tool slot
+
 -- Assemble SMARTBUFF_TEMPLATES from generics + instances + custom (localization sets the three parts).
 -- Order matters: generics first (indices 1-9), then instances (10-14), then custom (15-19). Matches Enum.SmartBuffGroup.
 do
@@ -132,6 +136,7 @@ local cFonts                 = { "NumberFontNormal", "NumberFontNormalLarge", "N
 local currentUnit            = nil;
 local currentSpell           = nil;
 local tCastRequested         = 0;
+local tLastItemBuffAttempt   = 0;  -- when > 0, next UI_ERROR_MESSAGE within 1.5s (one GCD) is printed to chat
 local currentTemplate        = nil;
 local currentSpec            = nil;
 
@@ -737,6 +742,7 @@ function SMARTBUFF_OnLoad(self)
   self:RegisterEvent("BAG_UPDATE");
   self:RegisterEvent("ITEM_DATA_LOAD_RESULT");
   self:RegisterEvent("SPELL_DATA_LOAD_RESULT");
+  self:RegisterEvent("UI_ERROR_MESSAGE");  -- surface item-buff errors to chat
   --auto template events
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -772,6 +778,13 @@ end
 -- SMARTBUFF_OnEvent
 function SMARTBUFF_OnEvent(self, event, ...)
 local arg1, arg2, arg3, arg4, arg5 = ...;
+  -- Surface item-buff errors to chat
+  if (event == "UI_ERROR_MESSAGE") then
+    if (tLastItemBuffAttempt > 0 and (GetTime() - tLastItemBuffAttempt) < 1.5) then
+      print("[SmartBuff] Item buff error: " .. tostring(arg2 or arg1 or "?"));
+      tLastItemBuffAttempt = 0;
+    end
+  end
 
   if ((event == "UNIT_NAME_UPDATE" and arg1 == "player") or event == "PLAYER_ENTERING_WORLD") then
     -- Clear valid-spells on login/reload so next buff list build re-validates
@@ -858,6 +871,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
         SmartBuff_KeyButton:SetAttribute("unit", nil);
         SmartBuff_KeyButton:SetAttribute("spell", nil);
         SmartBuff_KeyButton:SetAttribute("item", nil);
+        SmartBuff_KeyButton:SetAttribute("target-slot", nil);
         SmartBuff_KeyButton:SetAttribute("macrotext", nil);
         SmartBuff_KeyButton:SetAttribute("action", nil);
       end
@@ -2027,8 +2041,11 @@ function SMARTBUFF_SetBuff(buff, i, ia)
 
   if (buff[4] ~= nil) then cBuffs[i].LevelsS = buff[4] else cBuffs[i].LevelsS = nil end
   if (buff[5] ~= nil) then cBuffs[i].Params = buff[5] else cBuffs[i].Params = SG.NIL end
+  -- buff[6]=Links, buff[7]=Chain. Chain = exclusivity (one-of-these).
+  -- Links = established groups that act in unexpected ways (e.g. weapon vs profession-tool).
   cBuffs[i].Links = buff[6];
   cBuffs[i].Chain = buff[7];
+  cBuffs[i].IsProfessionTool = SMARTBUFF_IsProfessionToolBuff(cBuffs[i]);
   cBuffs[i].SingleTargetGroup = (buff[8] == "single") and "single" or nil;
 
   -- Warlock Nether Ward fix
@@ -2153,7 +2170,16 @@ function SMARTBUFF_SetBuff(buff, i, ia)
         cBuffs[i] = nil;
         return i;
       end
-      local _, _, count, findItemTexture = SMARTBUFF_FindItem(cBuffs[i].BuffS, cBuffs[i].Chain);
+      -- For chained/linked items (e.g. Razorstone q1/q2/q3): count only this row's quality so we show each quality the player has
+      local itemList = cBuffs[i].Chain or cBuffs[i].Links;
+      local searchChain = itemList;
+      if (itemList and #itemList > 1) then
+        local requestedID = ExtractItemID(cBuffs[i].BuffS);
+        if (requestedID) then
+          searchChain = { requestedID };
+        end
+      end
+      local _, _, count, findItemTexture = SMARTBUFF_FindItem(cBuffs[i].BuffS, searchChain);
       -- Use texture from cache if available, otherwise use FindItem result
       if (not texture) then
         texture = findItemTexture;
@@ -2166,11 +2192,12 @@ function SMARTBUFF_SetBuff(buff, i, ia)
           -- For FOOD/SCROLL/POTION types, count == 0 means item not available - filter out
           if (cBuffs[i].Type == SMARTBUFF_CONST_ITEM) then
             SMARTBUFF_AddMsgD("  Item not found (count=0), keeping buff (ITEM type - spell creates item)");
-            -- Try to get texture from item name/chain for icon
+            -- Try to get texture from item name/chain or links for icon
             local chainTexture = nil;
-            if (cBuffs[i].Chain and #cBuffs[i].Chain > 0) then
-              -- Try first item in chain for texture
-              local itemID = ExtractItemID(cBuffs[i].Chain[1]);
+            local iconList = cBuffs[i].Chain or cBuffs[i].Links;
+            if (iconList and #iconList > 0) then
+              -- Try first item in list for texture
+              local itemID = ExtractItemID(iconList[1]);
               if (itemID) then
                 local _, _, _, _, _, _, _, _, _, chainTexture = C_Item.GetItemInfo(itemID);
                 if (chainTexture) then
@@ -3103,78 +3130,90 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                 -- Weapon buff ------------------------------------------------------------------------
               elseif (cBuff.Type == SMARTBUFF_CONST_WEAPON or cBuff.Type == SMARTBUFF_CONST_INV) then
                 SMARTBUFF_AddMsgD("Check weapon Buff");
-                hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID =
-                GetWeaponEnchantInfo();
-                bMh = hasMainHandEnchant;
-                tMh = mainHandExpiration;
-                cMh = mainHandCharges;
-                bOh = hasOffHandEnchant;
-                tOh = offHandExpiration;
-                cOh = offHandCharges;
-
-
-                if (bs.MH) then
-                  iSlot = INVSLOT_MAINHAND;
-                  iId = GetInventoryItemID("player", iSlot);
-                  if (iId and SMARTBUFF_CanApplyWeaponBuff(buffnS, iSlot)) then
-                    if (bMh) then
-                      if (rbTime > 0 and cBuff.DurationS >= 1) then
-                        --if (tMh == nil) then tMh = 0; end
-                        tMh = floor(tMh / 1000);
-                        charges = cMh;
-                        if (charges == nil) then charges = -1; end
-                        if (charges > 1) then cBuff.CanCharge = true; end
-                        SMARTBUFF_AddMsgD(un ..
-                        " (WMH): " ..
-                        buffnS .. string.format(" %.0f sec left", tMh) .. ", " .. charges .. " charges left");
-                        if (tMh <= rbTime or (O.CheckCharges and cBuff.CanCharge and charges > 0 and charges <= O.MinCharges)) then
-                          buff = buffnS;
-                          bt = tMh;
-                          bExpire = true;
-                        end
-                      end
-                    else
-                      handtype = "main";
-                      buff = buffnS;
-                    end
-                  else
-                    SMARTBUFF_AddMsgD(
-                    "Weapon Buff cannot be cast, no mainhand weapon equipped or wrong weapon/stone type");
+                if (SMARTBUFF_IsProfessionToolBuff(cBuff)) then
+                  -- Each Razorstone row (q1/q2/q3) has its own MH/OH so user can e.g. q1 on tool1, q3 on tool2; check = any Razor present
+                  local slotToApply, razorHandtype, razorBt, razorBExpire = SMARTBUFF_CheckRazorstoneBuff("player", bs.MH, bs.OH, cBuff.DurationS, rbTime, buffloc);
+                  if (slotToApply) then
+                    iSlot = slotToApply;
+                    buff = buffnS;
+                    handtype = razorHandtype;
+                    bt = razorBt;
+                    bExpire = razorBExpire;
                   end
-                end
+                else
+                  hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID =
+                  GetWeaponEnchantInfo();
+                  bMh = hasMainHandEnchant;
+                  tMh = mainHandExpiration;
+                  cMh = mainHandCharges;
+                  bOh = hasOffHandEnchant;
+                  tOh = offHandExpiration;
+                  cOh = offHandCharges;
 
-                if (bs.OH and not bExpire and not buffloc) then
-                  iSlot = INVSLOT_OFFHAND
-                  iId = GetInventoryItemID("player", iSlot);
-                  if (iId and SMARTBUFF_CanApplyWeaponBuff(buffnS, iSlot)) then
-                    if (bOh) then
-                      if (rbTime > 0 and cBuff.DurationS >= 1) then
-                        --if (tOh == nil) then tOh = 0; end
-                        tOh = floor(tOh / 1000);
-                        charges = cOh;
-                        if (charges == nil) then charges = -1; end
-                        if (charges > 1) then cBuff.CanCharge = true; end
-                        SMARTBUFF_AddMsgD(un ..
-                        " (WOH): " ..
-                        buffnS .. string.format(" %.0f sec left", tOh) .. ", " .. charges .. " charges left");
-                        if (tOh <= rbTime or (O.CheckCharges and cBuff.CanCharge and charges > 0 and charges <= O.MinCharges)) then
-                          buff = buffnS;
-                          bt = tOh;
-                          bExpire = true;
+
+                  if (bs.MH) then
+                    iSlot = INVSLOT_MAINHAND;
+                    iId = GetInventoryItemID("player", iSlot);
+                    if (iId and SMARTBUFF_CanApplyWeaponBuff(buffnS, iSlot)) then
+                      if (bMh) then
+                        if (rbTime > 0 and cBuff.DurationS >= 1) then
+                          --if (tMh == nil) then tMh = 0; end
+                          tMh = floor(tMh / 1000);
+                          charges = cMh;
+                          if (charges == nil) then charges = -1; end
+                          if (charges > 1) then cBuff.CanCharge = true; end
+                          SMARTBUFF_AddMsgD(un ..
+                          " (WMH): " ..
+                          buffnS .. string.format(" %.0f sec left", tMh) .. ", " .. charges .. " charges left");
+                          if (tMh <= rbTime or (O.CheckCharges and cBuff.CanCharge and charges > 0 and charges <= O.MinCharges)) then
+                            buff = buffnS;
+                            bt = tMh;
+                            bExpire = true;
+                          end
                         end
+                      else
+                        handtype = "main";
+                        buff = buffnS;
                       end
                     else
-                      handtype = "off";
-                      buff = buffnS;
+                      SMARTBUFF_AddMsgD(
+                      "Weapon Buff cannot be cast, no mainhand weapon equipped or wrong weapon/stone type");
                     end
-                  else
-                    SMARTBUFF_AddMsgD(
-                    "Weapon Buff cannot be cast, no offhand weapon equipped or wrong weapon/stone type");
+                  end
+
+                  if (bs.OH and not bExpire and not buffloc) then
+                    iSlot = INVSLOT_OFFHAND
+                    iId = GetInventoryItemID("player", iSlot);
+                    if (iId and SMARTBUFF_CanApplyWeaponBuff(buffnS, iSlot)) then
+                      if (bOh) then
+                        if (rbTime > 0 and cBuff.DurationS >= 1) then
+                          --if (tOh == nil) then tOh = 0; end
+                          tOh = floor(tOh / 1000);
+                          charges = cOh;
+                          if (charges == nil) then charges = -1; end
+                          if (charges > 1) then cBuff.CanCharge = true; end
+                          SMARTBUFF_AddMsgD(un ..
+                          " (WOH): " ..
+                          buffnS .. string.format(" %.0f sec left", tOh) .. ", " .. charges .. " charges left");
+                          if (tOh <= rbTime or (O.CheckCharges and cBuff.CanCharge and charges > 0 and charges <= O.MinCharges)) then
+                            buff = buffnS;
+                            bt = tOh;
+                            bExpire = true;
+                          end
+                        end
+                      else
+                        handtype = "off";
+                        buff = buffnS;
+                      end
+                    else
+                      SMARTBUFF_AddMsgD(
+                      "Weapon Buff cannot be cast, no offhand weapon equipped or wrong weapon/stone type");
+                    end
                   end
                 end
 
                 if (buff and cBuff.Type == SMARTBUFF_CONST_INV) then
-                  local cr = SMARTBUFF_CountReagent(buffnS, cBuff.Chain);
+                  local cr = SMARTBUFF_CountReagent(buffnS, cBuff.Chain or cBuff.Links);
                   if (cr > 0) then
                     SMARTBUFF_AddMsgD(cr .. " " .. buffnS .. " found");
                   else
@@ -3286,9 +3325,13 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   --try to apply weapon buffs on main/off hand
                   if (cBuff.Type == SMARTBUFF_CONST_INV) then
                     if (iSlot and (handtype ~= "" or bExpire)) then
-                      local bag, slot, count = SMARTBUFF_FindItem(buffnS, cBuff.Chain);
+                      local bag, slot, count = SMARTBUFF_FindItem(buffnS, cBuff.Chain or cBuff.Links);
                       if (count > 0) then
                         sMsgWarning = "";
+                        if (SMARTBUFF_IsProfessionToolBuff(cBuff) and (iSlot == INVSLOT_MAINHAND or iSlot == INVSLOT_OFFHAND)) then
+                          local slotToApply = SMARTBUFF_CheckRazorstoneBuff("player", bs.MH, bs.OH, cBuff.DurationS, rbTime, buffloc);
+                          if (slotToApply) then iSlot = slotToApply; end
+                        end
                         local itemInfo = C_Item.GetItemInfo(buffnS);
                         if (not itemInfo) then
                           -- Item data not loaded - request loading (AllTheThings pattern)
@@ -3311,7 +3354,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
                     -- eat food or use scroll or potion
                   elseif (cBuff.Type == SMARTBUFF_CONST_FOOD or cBuff.Type == SMARTBUFF_CONST_SCROLL or cBuff.Type == SMARTBUFF_CONST_POTION) then
-                    local bag, slot, count = SMARTBUFF_FindItem(buffnS, cBuff.Chain);
+                    local bag, slot, count = SMARTBUFF_FindItem(buffnS, cBuff.Chain or cBuff.Links);
                     if (count > 0 or bExpire) then
                       sMsgWarning = "";
                       return 0, SMARTBUFF_ACTION_ITEM, buffnS, 0, "player", cBuff.Type;
@@ -3320,7 +3363,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
                     -- use item on a unit
                   elseif (cBuff.Type == SMARTBUFF_CONST_ITEMGROUP) then
-                    local bag, slot, count = SMARTBUFF_FindItem(buffnS, cBuff.Chain);
+                    local bag, slot, count = SMARTBUFF_FindItem(buffnS, cBuff.Chain or cBuff.Links);
                     if (count > 0) then
                       sMsgWarning = "";
                       return 0, SMARTBUFF_ACTION_ITEM, buffnS, 0, unit, cBuff.Type;
@@ -3330,8 +3373,9 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                     -- create item
                   elseif (cBuff.Type == SMARTBUFF_CONST_ITEM) then
                     SMARTBUFF_AddMsgD("BuffUnit ITEM type: " .. buffnS);
-                    SMARTBUFF_AddMsgD("  Chain: " .. (cBuff.Chain and tostring(#cBuff.Chain) .. " items" or "nil"));
-                    local bag, slot, count = SMARTBUFF_FindItem(buff, cBuff.Chain);
+                    local itemList = cBuff.Chain or cBuff.Links;
+                    SMARTBUFF_AddMsgD("  Chain/Links: " .. (itemList and tostring(#itemList) .. " items" or "nil"));
+                    local bag, slot, count = SMARTBUFF_FindItem(buff, itemList);
                     SMARTBUFF_AddMsgD("  FindItem result: count=" .. tostring(count) .. ", bag=" .. tostring(bag) .. ", slot=" .. tostring(slot));
                     if (count == 0) then
                       SMARTBUFF_AddMsgD("  Item not found (count=0), attempting to cast: " .. buffnS .. " (IDS: " .. tostring(cBuff.IDS) .. ")");
@@ -3541,6 +3585,134 @@ function SMARTBUFF_SetMissingBuffMessage(target, buff, icon, bCanCharge, nCharge
   if (O.ToggleAutoSound) then
     PlaySound(Sounds[O.AutoSoundSelection]);
   end
+end
+
+-- True if buff uses profession-tool logic (slots 20/23, tooltip). Flag, Links, or BuffS item ID in list.
+function SMARTBUFF_IsProfessionToolBuff(cBuff)
+  if (cBuff.IsProfessionTool) then return true; end
+  if (SG and SG.ProfessionToolItemIds and cBuff.Links == SG.ProfessionToolItemIds) then return true; end
+  if (cBuff.Type ~= SMARTBUFF_CONST_INV or not SG or not SG.ProfessionToolItemIds) then return false; end
+  local id = (type(cBuff.BuffS) == "number") and cBuff.BuffS
+    or (type(cBuff.BuffS) == "string") and tonumber(string.match(cBuff.BuffS, "item:(%d+)"));
+  if (not id) then return false; end
+  for _, listId in ipairs(SG.ProfessionToolItemIds) do
+    if (listId == id) then return true; end
+  end
+  return false;
+end
+
+-- Profession tool (Razorstone): check one inventory slot's tooltip for "Razor" buff and optional duration in parentheses.
+-- Returns: hasRazor, durationText, tooltipKnown. When tooltip not ready, returns (nil, nil, false) so caller does not treat as "missing".
+function SMARTBUFF_GetProfessionToolRazorstoneInfo(unit, invSlot)
+  local hasRazor = false;
+  local durationText = nil;
+  if (not C_TooltipInfo or not C_TooltipInfo.GetInventoryItem) then
+    return nil, nil, false;
+  end
+  local tip = C_TooltipInfo.GetInventoryItem(unit, invSlot);
+  if (not tip or not tip.lines) then
+    return nil, nil, false;
+  end
+  local seenPlaceholder = false;
+  for _, line in ipairs(tip.lines) do
+    local left = (line.leftText or line.leftString or line.leftLabel or "");
+    if (type(left) == "string" and left ~= "") then
+      if (left:lower():find("retrieving item information")) then
+        seenPlaceholder = true;
+        break;
+      end
+      if (left:lower():find("razor")) then
+        hasRazor = true;
+      end
+      local inParens = left:match("%((%d+.-)%)");
+      if (inParens and not durationText) then
+        durationText = inParens;
+      end
+    end
+  end
+  if (seenPlaceholder) then
+    return nil, nil, false;
+  end
+  return hasRazor, durationText, true;
+end
+
+-- Parse Razorstone duration text from tooltip (e.g. "2 hr", "30 min") to seconds; returns nil if unparseable.
+function SMARTBUFF_ParseRazorstoneDurationToSeconds(durationText)
+  if (not durationText or type(durationText) ~= "string") then
+    return nil;
+  end
+  local sec = 0;
+  local hr = durationText:match("(%d+)%s*hr");
+  if (hr) then
+    sec = sec + tonumber(hr) * 3600;
+  end
+  local min = durationText:match("(%d+)%s*min");
+  if (min) then
+    sec = sec + tonumber(min) * 60;
+  end
+  return (sec > 0) and sec or nil;
+end
+
+-- Razorstone: check profession tool slots per buff options. None selected = check nothing. MH = slot 20 only, OH = slot 23 only. Both = both; apply to 20 first if needed, else 23.
+-- Returns: slotToApply, handtype, bt, bExpire.
+function SMARTBUFF_CheckRazorstoneBuff(unit, checkMH, checkOH, durationS, rbTime, buffloc)
+  local slotToApply = nil;
+  local handtype = "";
+  local bt = nil;
+  local bExpire = false;
+  if (checkMH) then
+    local iSlot = INVSLOT_PROF1_TOOL;
+    if (GetInventoryItemID(unit, iSlot)) then
+      local hasRazor, durationText, tooltipKnown = SMARTBUFF_GetProfessionToolRazorstoneInfo(unit, iSlot);
+      if (not tooltipKnown) then
+        SMARTBUFF_AddMsgD("Razorstone: slot " .. tostring(iSlot) .. " (main) tooltip not ready, skip");
+      elseif (hasRazor) then
+        if (rbTime > 0 and durationS >= 1 and durationText) then
+          local tSec = SMARTBUFF_ParseRazorstoneDurationToSeconds(durationText);
+          if (tSec and tSec <= rbTime) then
+            slotToApply = iSlot;
+            bt = tSec;
+            bExpire = true;
+            SMARTBUFF_AddMsgD(" (Razor MH): " .. string.format(" %.0f sec left", tSec));
+          end
+        end
+      else
+        slotToApply = iSlot;
+        handtype = "main";
+        SMARTBUFF_AddMsgD("Razorstone: slot " .. tostring(iSlot) .. " (main) missing Razor buff");
+      end
+    else
+      SMARTBUFF_AddMsgD("Razorstone: no tool in main slot " .. tostring(INVSLOT_PROF1_TOOL));
+    end
+  end
+  if (checkOH and not bExpire and not buffloc) then
+    local iSlot = INVSLOT_PROF2_TOOL;
+    if (GetInventoryItemID(unit, iSlot)) then
+      local hasRazor, durationText, tooltipKnown = SMARTBUFF_GetProfessionToolRazorstoneInfo(unit, iSlot);
+      if (not tooltipKnown) then
+        SMARTBUFF_AddMsgD("Razorstone: slot " .. tostring(iSlot) .. " (off) tooltip not ready, skip");
+      elseif (hasRazor) then
+        if (rbTime > 0 and durationS >= 1 and durationText) then
+          local tSec = SMARTBUFF_ParseRazorstoneDurationToSeconds(durationText);
+          if (tSec and tSec <= rbTime and not slotToApply) then
+            slotToApply = iSlot;
+            bt = tSec;
+            bExpire = true;
+            SMARTBUFF_AddMsgD(" (Razor OH): " .. string.format(" %.0f sec left", tSec));
+          end
+        end
+      else
+        if (not slotToApply) then
+          slotToApply = iSlot;
+          handtype = "off";
+          SMARTBUFF_AddMsgD("Razorstone: slot " .. tostring(iSlot) .. " (off) missing Razor buff");
+        end
+      end
+    else
+      SMARTBUFF_AddMsgD("Razorstone: no tool in off slot " .. tostring(INVSLOT_PROF2_TOOL));
+    end
+  end
+  return slotToApply, handtype, bt, bExpire;
 end
 
 -- check if a spell/reagent could applied on a weapon
@@ -5197,7 +5369,7 @@ function SmartBuff_BuffSetup_ToolTip(mode)
 
   GameTooltip:ClearLines();
   if (SMARTBUFF_IsItem(btype)) then
-    local bag, slot, count, texture = SMARTBUFF_FindItem(cBuffs[i].BuffS, cBuffs[i].Chain);
+    local bag, slot, count, texture = SMARTBUFF_FindItem(cBuffs[i].BuffS, cBuffs[i].Chain or cBuffs[i].Links);
     if (bag and slot) then
       if (bag == 999) then -- Toy
         GameTooltip:SetToyByItemID(slot);
@@ -5814,6 +5986,7 @@ function SMARTBUFF_OnPreClick(self, button, down)
     elseif (actionType == SMARTBUFF_ACTION_ITEM) then
       self:SetAttribute("item", spellName);
       if (slot and slot > 0) then
+        tLastItemBuffAttempt = GetTime();
         self:SetAttribute("type", "macro");
         self:SetAttribute("macrotext", string.format("/use %s\n/use %i\n/click StaticPopup1Button1", spellName, slot));
       end

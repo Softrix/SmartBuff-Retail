@@ -1,4 +1,4 @@
-﻿local _;
+local _;
 local S = SMARTBUFF_GLOBALS;
 
 -- ---------------------------------------------------------------------------
@@ -683,16 +683,16 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_PrimalWhetstone_q1", 191933); -- Primal Whestone (Quality 1)
   GetItemInfoIfNeeded("SMARTBUFF_PrimalWhetstone_q2", 191939); -- Primal Whestone (Quality 2)
   GetItemInfoIfNeeded("SMARTBUFF_PrimalWhetstone_q3", 191940); -- Primal Whestone (Quality 3)
-  -- The War Within
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q1", 222503); -- Ironclaw Razorstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q2", 222504); -- Ironclaw Razorstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q3", 222505); -- Ironclaw Razorstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q1", 222506); -- Ironclaw Weightstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q2", 222506); -- Ironclaw Weightstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q3", 222507); -- Ironclaw Weightstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q1", 222508); -- Ironclaw Whetstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q2", 222509); -- Ironclaw Whetstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q3", 222510); -- Ironclaw Whetstone
+  -- The War Within (groups in ascending item ID order: 222502+ Whetstone, 222505+ Razorstone, 222508+ Weightstone)
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q1", 222502); -- Ironclaw Whetstone (bladed)
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q2", 222503); -- Ironclaw Whetstone
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q3", 222504); -- Ironclaw Whetstone
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q1", 222505); -- Ironclaw Razorstone (profession tools)
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q2", 222506); -- Ironclaw Razorstone
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q3", 222507); -- Ironclaw Razorstone
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q1", 222508); -- Ironclaw Weightstone (blunt)
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q2", 222509); -- Ironclaw Weightstone
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q3", 222510); -- Ironclaw Weightstone
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance4_q1", 224108); -- Oil of Beledar's Grace
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance4_q2", 224109); -- Oil of Beledar's Grace
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance4_q3", 224110); -- Oil of Beledar's Grace
@@ -1249,6 +1249,10 @@ function SMARTBUFF_InitSpellIDs()
 
   -- Shaman buff links
   S.ChainShamanShield = { 192106, 52127, 974 }; -- Lightning Shield, Water Shield, Earth Shield
+
+  -- Profession-tool buffs (Razorstone etc.): unified item ID list. Links = this table + IsProfessionTool flag.
+  -- TWW Ironclaw Razorstone; add Midnight Refulgent (237373, 237374) etc. when implementing Part 2.
+  S.ProfessionToolItemIds = { 222505, 222506, 222507 };
 
   -- Warrior
   GetSpellInfoIfNeeded("SMARTBUFF_BATTLESHOUT", 6673, isSpellBookBuff); --"Battle Shout"
@@ -2432,13 +2436,13 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_PrimalWhetstone_q1, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_PrimalWhetstone_q2, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_PrimalWhetstone_q3, 120, SMARTBUFF_CONST_INV},
-    -- TWW
+    -- TWW (ascending item ID: Enhance1 Whetstone, Enhance2 Razorstone, Enhance3 Weightstone). Razorstone: Links = unified list, flag = profession-tool.
     {SMARTBUFF_TWWWeaponEnhance1_q1, 60, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance1_q2, 60, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance1_q3, 60, SMARTBUFF_CONST_INV},
-    {SMARTBUFF_TWWWeaponEnhance2_q1, 60, SMARTBUFF_CONST_INV},
-    {SMARTBUFF_TWWWeaponEnhance2_q2, 60, SMARTBUFF_CONST_INV},
-    {SMARTBUFF_TWWWeaponEnhance2_q3, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance2_q1, 60, SMARTBUFF_CONST_INV, nil, nil, S.ProfessionToolItemIds},
+    {SMARTBUFF_TWWWeaponEnhance2_q2, 60, SMARTBUFF_CONST_INV, nil, nil, S.ProfessionToolItemIds},
+    {SMARTBUFF_TWWWeaponEnhance2_q3, 60, SMARTBUFF_CONST_INV, nil, nil, S.ProfessionToolItemIds},
     {SMARTBUFF_TWWWeaponEnhance3_q1, 60, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance3_q2, 60, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance3_q3, 60, SMARTBUFF_CONST_INV},
