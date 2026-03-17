@@ -1,4 +1,4 @@
-local _;
+﻿local _;
 local S = SMARTBUFF_GLOBALS;
 
 -- ---------------------------------------------------------------------------
@@ -702,6 +702,19 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance6_q1", 224105); -- Algari Mana Oil
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance6_q2", 224106); -- Algari Mana Oil
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance6_q3", 224107); -- Algari Mana Oil
+  -- Midnight weapon enhancements (stones + oils; two qualities each)
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance1_Q1", 237367); -- Refulgent Weightstone Q1
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance1_Q2", 237369); -- Refulgent Weightstone Q2
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance2_Q1", 237370); -- Refulgent Whetstone Q1
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance2_Q2", 237371); -- Refulgent Whetstone Q2
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance3_Q1", 237372); -- Refulgent Razorstone Q1 (profession tools)
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance3_Q2", 237373); -- Refulgent Razorstone Q2 (profession tools)
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance4_Q1", 243733); -- Thalassian Phoenix Oil Q1
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance4_Q2", 243734); -- Thalassian Phoenix Oil Q2
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance5_Q1", 243735); -- Oil of Dawn Q1
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance5_Q2", 243736); -- Oil of Dawn Q2
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance6_Q1", 243737); -- Smuggler's Enchanted Edge Q1
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance6_Q2", 243738); -- Smuggler's Enchanted Edge Q2
 
   -- Food (well-fed) item vars
 --  SMARTBUFF_KIBLERSBITS         = C_Item.GetItemInfo(33874); --"Kibler's Bits"
@@ -1057,7 +1070,8 @@ function SMARTBUFF_InitItemList()
   -- Consumables
   GetItemInfoIfNeeded("SMARTBUFF_TWWCrystalAugRune1", 224572); --"Crystallized Augment Rune"
   GetItemInfoIfNeeded("SMARTBUFF_TWWEtherealAugRune", 243191); --"Ethereal Augment Rune"
-  GetItemInfoIfNeeded("SMARTBUFF_MidnightVoidAugRune", 259085); -- Midnight: Void-Touched Augment Rune
+  -- Midnight
+  GetItemInfoIfNeeded("SMARTBUFF_MidnightVoidAugRune", 259085); --Void-Touched Augment Rune
 
   -- Flasks and phials
   GetItemInfoIfNeeded("SMARTBUFF_FLASKTWW1_Q1", 212269); --"Flask of Tempered Aggression"
@@ -1251,8 +1265,8 @@ function SMARTBUFF_InitSpellIDs()
   S.ChainShamanShield = { 192106, 52127, 974 }; -- Lightning Shield, Water Shield, Earth Shield
 
   -- Profession-tool buffs (Razorstone etc.): unified item ID list. Links = this table + IsProfessionTool flag.
-  -- TWW Ironclaw Razorstone; add Midnight Refulgent (237373, 237374) etc. when implementing Part 2.
-  S.ProfessionToolItemIds = { 222505, 222506, 222507 };
+  -- TWW Ironclaw Razorstone (222505–222507) + Midnight Refulgent Razorstone (237372, 237373).
+  S.ProfessionToolItemIds = { 222505, 222506, 222507, 237372, 237373 };
 
   -- Warrior
   GetSpellInfoIfNeeded("SMARTBUFF_BATTLESHOUT", 6673, isSpellBookBuff); --"Battle Shout"
@@ -2455,6 +2469,19 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_TWWWeaponEnhance6_q1, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance6_q2, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance6_q3, 120, SMARTBUFF_CONST_INV},
+    -- Midnight weapon enhancements (all 120 min; two qualities each)
+    {SMARTBUFF_MIDNWeaponEnhance1_Q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance1_Q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance2_Q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance2_Q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance3_Q1, 120, SMARTBUFF_CONST_INV, nil, nil, S.ProfessionToolItemIds},
+    {SMARTBUFF_MIDNWeaponEnhance3_Q2, 120, SMARTBUFF_CONST_INV, nil, nil, S.ProfessionToolItemIds},
+    {SMARTBUFF_MIDNWeaponEnhance4_Q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance4_Q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance5_Q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance5_Q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance6_Q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance6_Q2, 120, SMARTBUFF_CONST_INV},
 
   };
 
