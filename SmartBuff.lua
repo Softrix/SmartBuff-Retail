@@ -2318,9 +2318,17 @@ function SMARTBUFF_PreCheck(mode, force)
     return false;
   end
 
-  -- Buff list rebuild is now scheduled via SMARTBUFF_ScheduleSetBuffs() only (no SetBuffs from OnUpdate).
+  -- True when mounted/flying and we should skip the buff check: not Paladin/DK, or already have Crusader/Path.
+  -- Only Paladin (missing Crusader Aura) or DK (missing Path of Frost) while mounted get to run the check.
+  local function shouldSkipBuffCheckWhenMounted()
+    if (not (IsMounted() or IsFlying())) then return false; end
+    if (sPlayerClass == "PALADIN" and not SMARTBUFF_CheckBuff("player", SMARTBUFF_CRUSADERAURA)) then return false; end
+    if (sPlayerClass == "DEATHKNIGHT" and not SMARTBUFF_CheckBuff("player", SMARTBUFF_PATHOFFROST)) then return false; end
+    return true;
+  end
 
-  if ((mode == 1 and not O.ToggleAuto) or IsMounted() or IsFlying() or LootFrame:IsVisible()
+  -- Skip buff check when any of the following are true; only if all are false do we proceed to run buffs.
+  if ((mode == 1 and not O.ToggleAuto) or shouldSkipBuffCheckWhenMounted() or LootFrame:IsVisible()
         or UnitOnTaxi("player") or UnitIsDeadOrGhost("player") or UnitIsCorpse("player")
         or (mode ~= 1 and (SMARTBUFF_IsPicnic("player") or SMARTBUFF_IsFishing("player")))
         or (UnitInVehicle("player") or UnitHasVehicleUI("player"))
@@ -2353,14 +2361,6 @@ function SMARTBUFF_PreCheck(mode, force)
 
   SMARTBUFF_SetButtonTexture(SmartBuff_KeyButton, imgSB);
   if (SmartBuffOptionsFrame:IsVisible()) then return false; end
-
-  -- check for mount-spells
-  if (sPlayerClass == "PALADIN" and (IsMounted() or IsFlying()) and not SMARTBUFF_CheckBuff("player", SMARTBUFF_CRUSADERAURA)) then
-    return true;
-  elseif (sPlayerClass == "DEATHKNIGHT" and IsMounted() and not SMARTBUFF_CheckBuff("player", SMARTBUFF_PATHOFFROST)) then
-    return true;
-  end
-  --SMARTBUFF_AddMsgD("2: " .. GetTime() - tLastCheck);
 
   if (UnitAffectingCombat("player")) then
     isCombat = true;
@@ -4356,10 +4356,18 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
   local firstCount = 0;
   local texture = nil;
 
+  -- Resolve reagent to itemID so we always search for the requested item, not only chain (e.g. buff key "item:147707" with Chain=LinkFlaskLeg would never match 147707)
+  local reagentItemID = nil;
+  if type(reagent) == "number" then
+    reagentItemID = reagent;
+  elseif type(reagent) == "string" then
+    reagentItemID = tonumber(string.match(reagent, "item:(%d+)"));
+  end
+
   if not (chain) then chain = { reagent }; end
 
   if (debug) then
-    SMARTBUFF_AddMsgD("FindItem: Searching for reagent=" .. tostring(reagent) .. ", chain size=" .. #chain);
+    SMARTBUFF_AddMsgD("FindItem: Searching for reagent=" .. tostring(reagent) .. " (reagentItemID=" .. tostring(reagentItemID) .. "), chain size=" .. #chain);
     for i = 1, #chain do
       local chainItem = chain[i];
       SMARTBUFF_AddMsgD("  Chain[" .. i .. "]: " .. tostring(chainItem) .. " (type: " .. type(chainItem) .. ")");
@@ -4370,33 +4378,45 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
     for slot = 1, C_Container.GetContainerNumSlots(bag) do
       local bagItemID = C_Container.GetContainerItemID(bag, slot);
       if (bagItemID) then
-        for i = 1, #chain, 1 do
-          -- Handle both numeric IDs and item link strings
-          -- Supports Dragonflight item qualities by extracting ID from item links
-          local buffItemID = nil;
-          if type(chain[i]) == "number" then
-            buffItemID = chain[i];
-          elseif type(chain[i]) == "string" then
-            buffItemID = tonumber(string.match(chain[i], "item:(%d+)"));
+        local matched = false;
+        -- Match reagent's item ID first (so e.g. "item:147707" is found even when chain is LinkFlaskLeg)
+        if (reagentItemID and bagItemID == reagentItemID) then
+          matched = true;
+        end
+        if (not matched) then
+          for i = 1, #chain, 1 do
+            -- Handle both numeric IDs and item link strings
+            -- Supports Dragonflight item qualities by extracting ID from item links
+            local buffItemID = nil;
+            if type(chain[i]) == "number" then
+              buffItemID = chain[i];
+            elseif type(chain[i]) == "string" then
+              buffItemID = tonumber(string.match(chain[i], "item:(%d+)"));
+            end
+
+            if buffItemID and buffItemID == bagItemID then
+              matched = true;
+              break;
+            end
           end
+        end
+        if (matched) then
+          local buffItemID = bagItemID;
+          local containerInfo = C_Container.GetContainerItemInfo(bag, slot);
+          if (containerInfo) then
+            -- Store first match location, count, and icon
+            if (firstBag == nil) then
+              firstBag = bag;
+              firstSlot = slot;
+              firstCount = containerInfo.stackCount;
+              itemID = buffItemID;
+              texture = containerInfo.iconFileID;
+            end
+            -- Sum all matches for total count
+            totalCount = totalCount + containerInfo.stackCount;
 
-          if buffItemID and buffItemID == bagItemID then
-            local containerInfo = C_Container.GetContainerItemInfo(bag, slot);
-            if (containerInfo) then
-              -- Store first match location, count, and icon
-              if (firstBag == nil) then
-                firstBag = bag;
-                firstSlot = slot;
-                firstCount = containerInfo.stackCount;
-                itemID = buffItemID;
-                texture = containerInfo.iconFileID;
-              end
-              -- Sum all matches for total count
-              totalCount = totalCount + containerInfo.stackCount;
-
-              if (debug) then
-                SMARTBUFF_AddMsgD("FindItem: MATCH! bagItemID=" .. bagItemID .. " matches chain[" .. i .. "]=" .. buffItemID);
-              end
+            if (debug) then
+              SMARTBUFF_AddMsgD("FindItem: MATCH! bagItemID=" .. bagItemID .. " (reagent or chain)");
             end
           end
         end

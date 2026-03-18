@@ -1,4 +1,4 @@
-﻿local _;
+local _;
 local S = SMARTBUFF_GLOBALS;
 
 -- ---------------------------------------------------------------------------
@@ -1342,7 +1342,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_RITEOFSANTIFICATION", 433568, true); --"Right of Sanctification, Hero"
   GetSpellInfoIfNeeded("SMARTBUFF_RITEOFADJURATION", 433583, isSpellBookBuff); --"Right of Adjuration, Hero"
   -- Paladin buff links
-  S.ChainPaladinAura = { 32223, 465, 317920 }; -- Crusader Aura, Devotion Aura, Concentration Aura
+  S.ChainPaladinAura = { 465, 317920 }; -- Devotion Aura, Concentration Aura (Crusader not in chain; mounted-only, no chain)
 
   -- Death Knight
   GetSpellInfoIfNeeded("SMARTBUFF_DANCINGRW", 49028, isSpellBookBuff); --"Dancing Rune Weapon"
@@ -2354,7 +2354,7 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_BEACONOFLIGHT, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
       {SMARTBUFF_BEACONOFAITH, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
       {SMARTBUFF_BEACONOFVIRTUE, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
-      {SMARTBUFF_CRUSADERAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
+      {SMARTBUFF_CRUSADERAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, nil}, -- Crusader: no chain, mounted-only
       {SMARTBUFF_DEVOTIONAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
       {SMARTBUFF_CONCENTRATIONAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
       {SMARTBUFF_RITEOFADJURATION, 60, SMARTBUFF_CONST_WEAPON},
