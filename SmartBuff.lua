@@ -136,7 +136,7 @@ local cFonts                 = { "NumberFontNormal", "NumberFontNormalLarge", "N
 local currentUnit            = nil;
 local currentSpell           = nil;
 local tCastRequested         = 0;
-local tLastItemBuffAttempt   = 0;  -- when > 0, next UI_ERROR_MESSAGE within 1.5s (one GCD) is printed to chat
+local tLastBuffAttempt       = 0;  -- when > 0, next UI_ERROR_MESSAGE within 1.5s (one GCD) is printed to chat (spell or item)
 local currentTemplate        = nil;
 local currentSpec            = nil;
 
@@ -780,9 +780,9 @@ function SMARTBUFF_OnEvent(self, event, ...)
 local arg1, arg2, arg3, arg4, arg5 = ...;
   -- Surface item-buff errors to chat
   if (event == "UI_ERROR_MESSAGE") then
-    if (tLastItemBuffAttempt > 0 and (GetTime() - tLastItemBuffAttempt) < 1.5) then
-      print("[SmartBuff] Buff error: " .. tostring(arg2 or arg1 or "?"));
-      tLastItemBuffAttempt = 0;
+    if (tLastBuffAttempt > 0 and (GetTime() - tLastBuffAttempt) < 1.5) then
+      SMARTBUFF_AddMsgWarn("[SmartBuff] Buff Warning: " .. tostring(arg2 or arg1 or "?"));
+      tLastBuffAttempt = 0;
     end
   end
 
@@ -5985,6 +5985,7 @@ function SMARTBUFF_OnPreClick(self, button, down)
   -- Call Check regardless of combat so BG-res queue can return a buff (user clicks when they have a non-combat moment)
   local ret, actionType, spellName, slot, unit, buffType, isBGRes = SMARTBUFF_Check(mode);
   if (ret and ret == 0 and actionType and spellName and unit and (not InCombatLockdown())) then
+    tLastBuffAttempt = GetTime();
     lastBuffType = buffType or (isBGRes and spellName) or "";
     self:SetAttribute("type", actionType);
     self:SetAttribute("unit", unit);
@@ -6006,7 +6007,6 @@ function SMARTBUFF_OnPreClick(self, button, down)
     elseif (actionType == SMARTBUFF_ACTION_ITEM) then
       self:SetAttribute("item", spellName);
       if (slot and slot > 0) then
-        tLastItemBuffAttempt = GetTime();
         self:SetAttribute("type", "macro");
         self:SetAttribute("macrotext", string.format("/use %s\n/use %i\n/click StaticPopup1Button1", spellName, slot));
       end
