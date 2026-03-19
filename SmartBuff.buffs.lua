@@ -683,16 +683,16 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_PrimalWhetstone_q1", 191933); -- Primal Whestone (Quality 1)
   GetItemInfoIfNeeded("SMARTBUFF_PrimalWhetstone_q2", 191939); -- Primal Whestone (Quality 2)
   GetItemInfoIfNeeded("SMARTBUFF_PrimalWhetstone_q3", 191940); -- Primal Whestone (Quality 3)
-  -- The War Within
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q1", 222503); -- Ironclaw Razorstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q2", 222504); -- Ironclaw Razorstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q3", 222505); -- Ironclaw Razorstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q1", 222506); -- Ironclaw Weightstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q2", 222506); -- Ironclaw Weightstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q3", 222507); -- Ironclaw Weightstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q1", 222508); -- Ironclaw Whetstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q2", 222509); -- Ironclaw Whetstone
-  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q3", 222510); -- Ironclaw Whetstone
+  -- The War Within (groups in ascending item ID order: 222502+ Whetstone, 222505+ Razorstone, 222508+ Weightstone)
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q1", 222502); -- Ironclaw Whetstone (bladed)
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q2", 222503); -- Ironclaw Whetstone
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance1_q3", 222504); -- Ironclaw Whetstone
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q1", 222505); -- Ironclaw Razorstone (profession tools)
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q2", 222506); -- Ironclaw Razorstone
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance2_q3", 222507); -- Ironclaw Razorstone
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q1", 222508); -- Ironclaw Weightstone (blunt)
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q2", 222509); -- Ironclaw Weightstone
+  GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance3_q3", 222510); -- Ironclaw Weightstone
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance4_q1", 224108); -- Oil of Beledar's Grace
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance4_q2", 224109); -- Oil of Beledar's Grace
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance4_q3", 224110); -- Oil of Beledar's Grace
@@ -702,6 +702,19 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance6_q1", 224105); -- Algari Mana Oil
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance6_q2", 224106); -- Algari Mana Oil
   GetItemInfoIfNeeded("SMARTBUFF_TWWWeaponEnhance6_q3", 224107); -- Algari Mana Oil
+  -- Midnight weapon enhancements (stones + oils; two qualities each)
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance1_Q1", 237367); -- Refulgent Weightstone Q1
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance1_Q2", 237369); -- Refulgent Weightstone Q2
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance2_Q1", 237370); -- Refulgent Whetstone Q1
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance2_Q2", 237371); -- Refulgent Whetstone Q2
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance3_Q1", 237372); -- Refulgent Razorstone Q1 (profession tools)
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance3_Q2", 237373); -- Refulgent Razorstone Q2 (profession tools)
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance4_Q1", 243733); -- Thalassian Phoenix Oil Q1
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance4_Q2", 243734); -- Thalassian Phoenix Oil Q2
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance5_Q1", 243735); -- Oil of Dawn Q1
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance5_Q2", 243736); -- Oil of Dawn Q2
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance6_Q1", 243737); -- Smuggler's Enchanted Edge Q1
+  GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance6_Q2", 243738); -- Smuggler's Enchanted Edge Q2
 
   -- Food (well-fed) item vars
 --  SMARTBUFF_KIBLERSBITS         = C_Item.GetItemInfo(33874); --"Kibler's Bits"
@@ -798,14 +811,22 @@ function SMARTBUFF_InitItemList()
     -- WoD -- Deprecating
     -- 111431, 111432, 111433, 111434, 111435, 111436, 111437, 111438, 111439, 111440, 11441, 111442, 111443, 111444, 111445, 111446, 111447, 111448, 111449, 111450, 111451, 111452, 111453, 111454,127991, 111457, 111458, 118576,
     -- TWW almost all food items
-    222733, 222728, 222732, 222720, 222735, 222731, 222721, 222730, 225855, 222729, 225592, 222736, 222726, 222718, 222724, 222745, 222725, 222703, 222715, 222710, 222712, 222704,
-    222727, 222722, 222711, 222705, 222708, 222707, 223968, 222713, 222723, 222714, 222702, 222709, 222719, 222717, 222716, 222706,
+    222733, 222728, 222732, 222720, 222735, 222731, 222721, 222730, 225855, 222729, 225592, 222736, 222726, 222718, 222724, 222745, 222725, 222703, 222715,
+    222710, 222712, 222704, 222727, 222722, 222711, 222705, 222708, 222707, 223968, 222713, 222723, 222714, 222702, 222709, 222719, 222717, 222716, 222706,
     -- TWW adds hearty food version to 31 the above foods that make it persist through death
-    222781, 222766, 222776, 222780, 222778, 222768, 222783, 222779, 222751, 222773, 222753, 222774, 222752, 222758, 222770, 222775, 222777, 222759,
-    222760, 222765, 222763, 222769, 222761, 222772, 222757, 222762, 222754, 222755, 222756, 222767, 222750, 222764, 222771,
-    -- Midnight
-    241316, 241312, 241310, 241314, 241318,
+    222781, 222766, 222776, 222780, 222778, 222768, 222783, 222779, 222751, 222773, 222753, 222774, 222752, 222758, 222770, 222775, 222777, 222759, 222760,
+    222765, 222763, 222769, 222761, 222772, 222757, 222762, 222754, 222755, 222756, 222767, 222750, 222764, 222771,
+    -- Midnight foods 36 IDs
+    242272, 242273, 242274, 242275, 242276, 242277, 242278, 242280, 242281, 242282, 242283, 242284, 242285, 242286, 242287, 242288, 242289, 242290,
+    242291, 242292, 242293, 242294, 242295, 242296, 242302, 242303, 242304, 242305, 242306, 242307, 242308, 242309, 255845, 255846, 255847, 255848,
+    -- Midnight hearty foods 36 IDs
+    242744, 242745, 242746, 242747, 242748, 242749, 242750, 242751, 242752, 242753, 242754, 242755, 242756, 242757, 242758, 242759, 242760, 242761,
+    242762, 242763, 242764, 242765, 242766, 242767, 242768, 242769, 242770, 242771, 242772, 242773, 242774, 242775, 242776, 266985, 266996, 268679
   });
+
+  -- Teas: Relaxed buff (separate from well fed; checked by buff name like food). TeaItemIds is source of truth.
+  S.TeaItemIds = { 242297, 242298, 242299, 242300, 242301 };
+  S.TeaItems = GetItems(S.TeaItemIds);
 
   -- Warlock healthstones
   GetItemInfoIfNeeded("SMARTBUFF_HEALTHSTONE", 5512); --"Healthstone"
@@ -1049,6 +1070,8 @@ function SMARTBUFF_InitItemList()
   -- Consumables
   GetItemInfoIfNeeded("SMARTBUFF_TWWCrystalAugRune1", 224572); --"Crystallized Augment Rune"
   GetItemInfoIfNeeded("SMARTBUFF_TWWEtherealAugRune", 243191); --"Ethereal Augment Rune"
+  -- Midnight
+  GetItemInfoIfNeeded("SMARTBUFF_MidnightVoidAugRune", 259085); --Void-Touched Augment Rune
 
   -- Flasks and phials
   GetItemInfoIfNeeded("SMARTBUFF_FLASKTWW1_Q1", 212269); --"Flask of Tempered Aggression"
@@ -1103,12 +1126,31 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_FLASKTWW16_Q1", 212745); --"Fleeting Flask of Saving Graces"
   GetItemInfoIfNeeded("SMARTBUFF_FLASKTWW16_Q2", 212746); --"Fleeting Flask of Saving Graces"
   GetItemInfoIfNeeded("SMARTBUFF_FLASKTWW16_Q3", 212747); --"Fleeting Flask of Saving Graces"
-  -- midnight flasks
-  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN1", 241326); --"Flask of the shattered sun"
-  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN2", 241324); --"Flask of the blood knights"
-  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN3", 241320); --"Flask of the Thalassian Resistance"
-  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN4", 241322); --"Flask of Magisters"
-  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN5", 241334); --"Vicious Thalassian Flask of Honor"
+  -- Midnight phials and flasks (silver Q1, gold Q2; same buff per pair)
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN1_Q1", 241310); -- Haranir Phial of Finesse
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN1_Q2", 241311); -- Haranir Phial of Finesse
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN2_Q1", 241312); -- Haranir Phial of Ingenuity
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN2_Q2", 241313); -- Haranir Phial of Ingenuity
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN3_Q1", 241316); -- Haranir Phial of Perception
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN3_Q2", 241317); -- Haranir Phial of Perception
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN4_Q1", 241320); -- Flask of Thalassian Resistance
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN4_Q2", 241321); -- Flask of Thalassian Resistance
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN5_Q1", 241322); -- Flask of the Magisters
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN5_Q2", 241323); -- Flask of the Magisters
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN6_Q1", 241324); -- Flask of the Blood Knights
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN6_Q2", 241325); -- Flask of the Blood Knights
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN7_Q1", 241326); -- Flask of the Shattered Sun
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN7_Q2", 241327); -- Flask of the Shattered Sun
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN8", 241334); -- Vicious Thalassian Flask of Honor
+  -- Midnight fleeting flasks (same 4 buffs as main flasks; 60 min)
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN9_Q1", 245926);  -- Fleeting Flask of Thalassian Resistance
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN9_Q2", 245927);  -- Fleeting Flask of Thalassian Resistance
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN10_Q1", 245932); -- Fleeting Flask of the Magisters
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN10_Q2", 245933); -- Fleeting Flask of the Magisters
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN11_Q1", 245930); -- Fleeting Flask of the Blood Knights
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN11_Q2", 245931); -- Fleeting Flask of the Blood Knights
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN12_Q1", 245928); -- Fleeting Flask of the Shattered Sun
+  GetItemInfoIfNeeded("SMARTBUFF_FLASKMIDN12_Q2", 245929); -- Fleeting Flask of the Shattered Sun
 
   -- Draught of Ten Lands (consumable)
   GetItemInfoIfNeeded("SMARTBUFF_EXP_POTION", 166750); --"Draught of Ten Lands"
@@ -1222,6 +1264,10 @@ function SMARTBUFF_InitSpellIDs()
   -- Shaman buff links
   S.ChainShamanShield = { 192106, 52127, 974 }; -- Lightning Shield, Water Shield, Earth Shield
 
+  -- Profession-tool buffs (Razorstone etc.): unified item ID list. Links = this table + IsProfessionTool flag.
+  -- TWW Ironclaw Razorstone (222505–222507) + Midnight Refulgent Razorstone (237372, 237373).
+  S.ProfessionToolItemIds = { 222505, 222506, 222507, 237372, 237373 };
+
   -- Warrior
   GetSpellInfoIfNeeded("SMARTBUFF_BATTLESHOUT", 6673, isSpellBookBuff); --"Battle Shout"
   --SMARTBUFF_COMMANDINGSHOUT = getSpellBookItemByName(97462);    --"Reallying Cry"
@@ -1296,7 +1342,7 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_RITEOFSANTIFICATION", 433568, true); --"Right of Sanctification, Hero"
   GetSpellInfoIfNeeded("SMARTBUFF_RITEOFADJURATION", 433583, isSpellBookBuff); --"Right of Adjuration, Hero"
   -- Paladin buff links
-  S.ChainPaladinAura = { 32223, 465, 317920 }; -- Crusader Aura, Devotion Aura, Concentration Aura
+  S.ChainPaladinAura = { 465, 317920 }; -- Devotion Aura, Concentration Aura (Crusader not in chain; mounted-only, no chain)
 
   -- Death Knight
   GetSpellInfoIfNeeded("SMARTBUFF_DANCINGRW", 49028, isSpellBookBuff); --"Dancing Rune Weapon"
@@ -1351,13 +1397,15 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_WarStomp", 20549, isSpellBookBuff); --"War Stomp"
   GetSpellInfoIfNeeded("SMARTBUFF_Visage", 351239, isSpellBookBuff); --"Evoker Visage"
 
-  -- Eating & Drinking (Generic)
+  -- Eating & Drinking (Generic - These are checked by NAME not ID)
   GetSpellInfoDirectIfNeeded("SMARTBUFF_EatingAura", 433); --"Food"
   GetSpellInfoDirectIfNeeded("SMARTBUFF_DrinkingAura", 430); --"Drink"
   GetSpellInfoDirectIfNeeded("SMARTBUFF_FoodDrinkAura", 192002); --"Food & Drink"
-  -- Well Fed (Generic)
+  -- Well Fed (Generic - These are checked by NAME not ID)
   GetSpellInfoDirectIfNeeded("SMARTBUFF_WellFedAura", 46899); --"Well Fed"
   GetSpellInfoDirectIfNeeded("SMARTBUFF_HeartyFedAura", 462181); --"Hearty Well Fed"
+  -- Relaxed (Generic - These are checked by NAME not ID)
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_RelaxedAura", 1269152); --"Relaxed"
 
   -- Misc
   GetSpellInfoDirectIfNeeded("SMARTBUFF_KIRUSSOV", 46302); --"K'iru's Song of Victory"
@@ -1404,12 +1452,14 @@ function SMARTBUFF_InitSpellIDs()
   -- TWW
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BTWWCrystalAugRune1", 453250); -- Crystallization/Crystallized Augment Rune
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BTWWEtherealAugRune", 1234969); -- Ethereal Augmentation from Ethereal Augment Rune
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BMidnightVoidAugRune", 1264426); -- Void-Touched (Midnight augment rune)
 
   -- Links as spell IDs so links don't depend on globals at assembly time
   S.LinkSafariHat = { 158486, 158474 }; -- Safari Hat, Savage Safari Hat (spell IDs)
-  S.LinkAugment   = { 190668, 175457, 175456, 175439, 367405, 347901, 393438, 393438, 453250, 1234969 }; -- Empower/Focus/Hyper/Stout, Eternal/Veiled/Dream/Draconic/Crystal/Ethereal augment runes
+  -- Empower/Focus/Hyper/Stout, Eternal/Veiled/Dream/Draconic/Crystal/Ethereal/Void-Touched augment runes
+  S.LinkAugment   = { 190668, 175457, 175456, 175439, 367405, 347901, 393438, 393438, 453250, 1234969, 1264426 };
 
-  -- Flasks & Elixirs
+  -- Flasks & Elixirs (these are the buffs that are checked vs item itself)
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTBC1", 28520); --"Flask of Relentless Assault"
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTBC2", 28540); --"Flask of Pure Death"
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTBC3", 28518); --"Flask of Fortification"
@@ -1490,12 +1540,15 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTWWPvP_2", 432430); -- Vicious Flask of Honor
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTWWPvP_3", 432497); -- Vicious Flask of Manifested Fury
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKTWWPvP_4", 432452); -- Vicious Flask of the Wrecking Ball
-  -- midnight flasks
-  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN1", 1235111); -- Flask of the shattered sun
-  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN2", 1235110); -- Flask of the blood knights
-  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN3", 1235057); -- Flask of the Thalassian Resistance
-  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN4", 1235108); -- Flask of Magisters
-  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN5", 1239355); -- Vicious Thalassian Flask of Honor
+  -- Midnight phials and flasks
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN1", 1236767); -- Haranir Phial of Finesse
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN2", 1239755); -- Haranir Phial of Ingenuity
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN3", 1236763); -- Haranir Phial of Perception
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN4", 1235057); -- Flask of Thalassian Resistance
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN5", 1235108); -- Flask of the Magisters
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN6", 1235110); -- Flask of the Blood Knights
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN7", 1235111); -- Flask of the Shattered Sun
+  GetSpellInfoDirectIfNeeded("SMARTBUFF_BFLASKMIDN8", 1239355); -- Vicious Thalassian Flask of Honor
 
   -- Flask/Phial links as spell IDs so links don't depend on globals at assembly time
   S.LinkFlaskTBC     = { 28520, 28540, 28518, 28521, 28519 }; -- TBC flasks
@@ -1507,7 +1560,7 @@ function SMARTBUFF_InitSpellIDs()
   S.LinkFlaskSL      = { 307185, 307187 }; -- Shadowlands flasks
   S.LinkFlaskDF      = { 371345, 371204, 371036, 374000, 371386, 373257, 370652, 371172, 393700, 393717, 371186, 393714, 371348, 371350, 371351, 371353, 393665 }; -- Dragonflight phials
   S.LinkFlaskTWW     = { 431971, 431972, 431973, 431974, 432021, 432473, 432306, 432265, 432304, 432286, 432403, 432430, 432497, 432452 }; -- TWW flasks
-  S.LinkFlaskMidnight = { 1235111, 1235110, 1235057, 1235108, 1239355 }; -- Midnight flasks
+  S.LinkFlaskMidnight = { 1236767, 1239755, 1236763, 1235057, 1235108, 1235110, 1235111, 1239355 }; -- Midnight phials + flasks (main + fleeting share same buff IDs for 4–7)
 
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BELIXIRTBC1", 54494); --"Major Agility" B
   GetSpellInfoDirectIfNeeded("SMARTBUFF_BELIXIRTBC2", 33726); --"Mastery" B
@@ -1700,6 +1753,22 @@ function SMARTBUFF_BuildItemTables()
       end
     end
   end
+  -- Add from S.TeaItems (Relaxed buff); set Links = S.TeaItemIds so FOOD branch can detect tea via cBuff.Links == SG.TeaItemIds
+  if (S.TeaItems) then
+    for n, name in pairs(S.TeaItems) do
+      if (name) then
+        local id = itemIdFrom(name);
+        if (id) then
+          if (not seenFoodIds[id] and not foodAlreadyHasItemId(id)) then
+            seenFoodIds[id] = true;
+            tinsert(SMARTBUFF_FOOD, 1, {"item:" .. tostring(id), 60, SMARTBUFF_CONST_FOOD, nil, nil, S.TeaItemIds});
+          end
+        else
+          tinsert(SMARTBUFF_FOOD, 1, {name, 60, SMARTBUFF_CONST_FOOD, nil, nil, S.TeaItemIds});
+        end
+      end
+    end
+  end
 
   --[[
   for _, v in pairs(SMARTBUFF_FOOD) do
@@ -1787,6 +1856,8 @@ function SMARTBUFF_BuildItemTables()
     -- TWW
     {SMARTBUFF_TWWCrystalAugRune1, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BTWWCrystalAugRune1, S.LinkAugment},
     {SMARTBUFF_TWWEtherealAugRune, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BTWWEtherealAugRune, S.LinkAugment},
+    -- Midnight
+    {SMARTBUFF_MidnightVoidAugRune, 60, SMARTBUFF_CONST_SCROLL, nil, SMARTBUFF_BMidnightVoidAugRune, S.LinkAugment},
   };
 
   -- Viable toy buffs: each AddItem(itemId, spellId, duration) appends one entry to SMARTBUFF_SCROLL.
@@ -2110,12 +2181,31 @@ function SMARTBUFF_BuildItemTables()
     {SMARTBUFF_FLASKTWWPvP_2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWWPvP2, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWWPvP_3, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWWPvP3, S.LinkFlaskTWW},
     {SMARTBUFF_FLASKTWWPvP_4, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKTWWPvP4, S.LinkFlaskTWW},
-    -- midnight flasks
-    {SMARTBUFF_FLASKMIDN1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN1, S.LinkFlaskMidnight},
-    {SMARTBUFF_FLASKMIDN2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN2, S.LinkFlaskMidnight},
-    {SMARTBUFF_FLASKMIDN3, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN3, S.LinkFlaskMidnight},
-    {SMARTBUFF_FLASKMIDN4, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN4, S.LinkFlaskMidnight},
-    {SMARTBUFF_FLASKMIDN5, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN5, S.LinkFlaskMidnight},
+    -- Midnight phials (30 min) and flasks (60 min); one row per item so user can choose silver vs gold (different effect)
+    {SMARTBUFF_FLASKMIDN1_Q1, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN1, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN1_Q2, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN1, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN2_Q1, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN2, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN2_Q2, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN2, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN3_Q1, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN3, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN3_Q2, 30, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN3, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN4_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN4, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN4_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN4, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN5_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN5, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN5_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN5, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN6_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN6, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN6_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN6, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN7_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN7, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN7_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN7, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN8, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN8, S.LinkFlaskMidnight},
+    -- Midnight fleeting flasks (same buff as main flasks 4–7; 60 min)
+    {SMARTBUFF_FLASKMIDN9_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN4, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN9_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN4, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN10_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN5, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN10_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN5, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN11_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN6, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN11_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN6, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN12_Q1, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN7, S.LinkFlaskMidnight},
+    {SMARTBUFF_FLASKMIDN12_Q2, 60, SMARTBUFF_CONST_POTION, nil, SMARTBUFF_BFLASKMIDN7, S.LinkFlaskMidnight},
 
   }
 end
@@ -2264,7 +2354,7 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_BEACONOFLIGHT, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
       {SMARTBUFF_BEACONOFAITH, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
       {SMARTBUFF_BEACONOFVIRTUE, 5, SMARTBUFF_CONST_GROUP, {39}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER;HPET;WPET;DKPET"},
-      {SMARTBUFF_CRUSADERAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
+      {SMARTBUFF_CRUSADERAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, nil}, -- Crusader: no chain, mounted-only
       {SMARTBUFF_DEVOTIONAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
       {SMARTBUFF_CONCENTRATIONAURA, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainPaladinAura},
       {SMARTBUFF_RITEOFADJURATION, 60, SMARTBUFF_CONST_WEAPON},
@@ -2360,13 +2450,13 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_PrimalWhetstone_q1, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_PrimalWhetstone_q2, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_PrimalWhetstone_q3, 120, SMARTBUFF_CONST_INV},
-    -- TWW
+    -- TWW (ascending item ID: Enhance1 Whetstone, Enhance2 Razorstone, Enhance3 Weightstone). Razorstone: Links = unified list, flag = profession-tool.
     {SMARTBUFF_TWWWeaponEnhance1_q1, 60, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance1_q2, 60, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance1_q3, 60, SMARTBUFF_CONST_INV},
-    {SMARTBUFF_TWWWeaponEnhance2_q1, 60, SMARTBUFF_CONST_INV},
-    {SMARTBUFF_TWWWeaponEnhance2_q2, 60, SMARTBUFF_CONST_INV},
-    {SMARTBUFF_TWWWeaponEnhance2_q3, 60, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_TWWWeaponEnhance2_q1, 60, SMARTBUFF_CONST_INV, nil, nil, S.ProfessionToolItemIds},
+    {SMARTBUFF_TWWWeaponEnhance2_q2, 60, SMARTBUFF_CONST_INV, nil, nil, S.ProfessionToolItemIds},
+    {SMARTBUFF_TWWWeaponEnhance2_q3, 60, SMARTBUFF_CONST_INV, nil, nil, S.ProfessionToolItemIds},
     {SMARTBUFF_TWWWeaponEnhance3_q1, 60, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance3_q2, 60, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance3_q3, 60, SMARTBUFF_CONST_INV},
@@ -2379,6 +2469,19 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_TWWWeaponEnhance6_q1, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance6_q2, 120, SMARTBUFF_CONST_INV},
     {SMARTBUFF_TWWWeaponEnhance6_q3, 120, SMARTBUFF_CONST_INV},
+    -- Midnight weapon enhancements (all 120 min; two qualities each)
+    {SMARTBUFF_MIDNWeaponEnhance1_Q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance1_Q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance2_Q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance2_Q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance3_Q1, 120, SMARTBUFF_CONST_INV, nil, nil, S.ProfessionToolItemIds},
+    {SMARTBUFF_MIDNWeaponEnhance3_Q2, 120, SMARTBUFF_CONST_INV, nil, nil, S.ProfessionToolItemIds},
+    {SMARTBUFF_MIDNWeaponEnhance4_Q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance4_Q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance5_Q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance5_Q2, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance6_Q1, 120, SMARTBUFF_CONST_INV},
+    {SMARTBUFF_MIDNWeaponEnhance6_Q2, 120, SMARTBUFF_CONST_INV},
 
   };
 

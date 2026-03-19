@@ -26,6 +26,7 @@
 - Clean up debug code and temporary variables after implementation
 - Keep modifications minimal, focused, and avoid over-engineering solutions
 - Minimize structural changes to the addon unless absolutely necessary
+- When solving a specific problem: understand what the existing code does first; prefer simplifying or shrinking the solution over adding new code or special cases where possible
 
 ## File Structure
 - Don't create new files unless absolutely necessary
