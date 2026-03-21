@@ -137,6 +137,8 @@ local currentUnit            = nil;
 local currentSpell           = nil;
 local tCastRequested         = 0;
 local tLastBuffAttempt       = 0;  -- when > 0, next UI_ERROR_MESSAGE within 1.5s (one GCD) is printed to chat (spell or item)
+local sHunterPetNeedsRevive  = false; -- Call Pet row should cast Revive Pet (dead pet or UI error hint)
+local sHunterReviveTimerOrderKey = nil; -- Order buff name for cBuffTimer when cast spell is Revive Pet
 local currentTemplate        = nil;
 local currentSpec            = nil;
 
@@ -781,7 +783,15 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
   -- Surface item-buff errors to chat
   if (event == "UI_ERROR_MESSAGE") then
     if (tLastBuffAttempt > 0 and (GetTime() - tLastBuffAttempt) < 1.5) then
-      SMARTBUFF_AddMsgWarn("[SmartBuff] Buff Warning: " .. tostring(arg2 or arg1 or "?"));
+      local errText = arg2 or arg1;
+      local rp = SMARTBUFF_REVIVE_PET;
+      if (sPlayerClass == "HUNTER" and errText and type(rp) == "table" and rp.name and rp.name ~= "" and
+          string.find(errText, rp.name, 1, true)) then
+        sHunterPetNeedsRevive = true;
+        SMARTBUFF_AddMsgWarn("[SmartBuff] Need Revive Pet; I'll cast it next instead of Call Pet.");
+      else
+        SMARTBUFF_AddMsgWarn("[SmartBuff] Buff Warning: " .. tostring(errText or "?"));
+      end
       tLastBuffAttempt = 0;
     end
   end
@@ -952,6 +962,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     currentUnit = nil;
     currentSpell = nil;
     tCastRequested = 0;
+    sHunterReviveTimerOrderKey = nil;
   elseif (event == "UNIT_SPELLCAST_SUCCEEDED") then
     if (arg1 and arg1 == "player") then
       local unit = nil;
@@ -978,7 +989,13 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
         if (cBuffTimer[unit] == nil) then
           cBuffTimer[unit] = {};
         end
-        cBuffTimer[unit][spell] = GetTime();
+        local timerSpellKey = spell;
+        if (SMARTBUFF_REVIVE_PET and type(SMARTBUFF_REVIVE_PET) == "table" and SMARTBUFF_REVIVE_PET.name and spell and
+            spell == SMARTBUFF_REVIVE_PET.name and sHunterReviveTimerOrderKey) then
+          timerSpellKey = sHunterReviveTimerOrderKey;
+          sHunterReviveTimerOrderKey = nil;
+        end
+        cBuffTimer[unit][timerSpellKey] = GetTime();
 
         -- Check if this is an ITEM type creation spell (like Create Healthstone)
         -- If so, reset tLastCheck to prevent immediate extra check before item appears in inventory
@@ -2845,12 +2862,24 @@ end
 -- END SMARTBUFF_Check
 
 
+-- Maps Call Pet row values to Revive Pet (name, spell id, icon). Caller stores results in cast* locals only;
+-- never mutates cBuff (shared row template).
+function SMARTBUFF_HunterResolvePetSummonSpell(callSpellName, callSpellId, callIcon)
+  local rp = SMARTBUFF_REVIVE_PET;
+  if (type(rp) ~= "table" or not rp.name or not rp.spellID) then
+    return callSpellName, callSpellId, callIcon;
+  end
+  local tex = C_Spell.GetSpellTexture(rp.spellID) or callIcon;
+  return rp.name, rp.spellID, tex;
+end
+
+
 -- Buffs a unit
 function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
   local bs = nil;  -- Buff settings for current buff
   local buff = nil;  -- Current buff name being checked
   local buffname = nil; -- Name of current buff
-  local buffnS = nil; -- Name of current buff in cBuffs array
+  local buffnS = nil; -- Order/list spell name for this row (template key; keep for timers and buff checks)
   local uc = nil; -- Unit class
   local ur = "NONE"; -- Unit role
   local un = nil; -- Unit name
@@ -2915,17 +2944,42 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
       if (cBuff and bs) then bUsable = bs.EnableS end
 
+      -- Effective cast for this iteration only: copy row spell/id/icon into locals—do not mutate cBuff (shared).
+      -- buffnS stays the Order entry for timers, SMARTBUFF_CheckUnitBuffs, exclusives, and messages. castBuffnS,
+      -- castSpellID, castIconS are what C_Spell, doCast, the spell returned to PreClick, and reminder icon use;
+      -- hunter Revive overwrites those three when substituting. On enabled hunter SG.CheckPet self rows, refresh
+      -- sHunterPetNeedsRevive: true if pet dead/ghost, false if alive; if no pet unit, leave flag (UI error path).
+      local castBuffnS = buffnS;
+      local castSpellID = cBuff and cBuff.IDS or nil;
+      local castIconS = cBuff and cBuff.IconS or nil;
+      if (cBuff and cBuff.Params == SG.CheckPet and sPlayerClass == "HUNTER" and SMARTBUFF_IsPlayer(unit) and bs and bs.EnableS) then
+        if (UnitExists("pet")) then
+          if (UnitIsDeadOrGhost("pet")) then
+            sHunterPetNeedsRevive = true;
+          else
+            sHunterPetNeedsRevive = false;
+          end
+        end
+      end
+      local hunterSubstituteRevive = (cBuff and sPlayerClass == "HUNTER" and cBuff.Params == SG.CheckPet and sHunterPetNeedsRevive);
+      if (hunterSubstituteRevive and cBuff) then
+        castBuffnS, castSpellID, castIconS = SMARTBUFF_HunterResolvePetSummonSpell(buffnS, cBuff.IDS, cBuff.IconS);
+      end
+
       if (bUsable and spell and spell ~= buffnS) then
         bUsable = false;
         SMARTBUFF_AddMsgD("Exclusive check on " .. spell .. ", current spell = " .. buffnS);
       end
       if (bUsable and cBuff.Type == SMARTBUFF_CONST_SELF and not SMARTBUFF_IsPlayer(unit)) then bUsable = false end
-      if (bUsable and not cBuff.Type == SMARTBUFF_CONST_TRACK and not SMARTBUFF_IsItem(cBuff.Type) and not C_Spell.IsSpellUsable(buffnS)) then bUsable = false end
+      if (bUsable and not cBuff.Type == SMARTBUFF_CONST_TRACK and not SMARTBUFF_IsItem(cBuff.Type) and not C_Spell.IsSpellUsable(castBuffnS)) then bUsable = false end
       if (bUsable and bs.SelfNot and SMARTBUFF_IsPlayer(unit)) then bUsable = false end
       if (bUsable and cBuff.Params == SG.CheckFishingPole and SMARTBUFF_IsFishingPoleEquiped()) then bUsable = false end
 
       -- Check for buffs which depends on a pet
-      if (bUsable and cBuff.Params == SG.CheckPet and UnitExists("pet")) then bUsable = false end
+      if (bUsable and cBuff.Params == SG.CheckPet and UnitExists("pet")
+          and not (sPlayerClass == "HUNTER" and hunterSubstituteRevive)) then
+        bUsable = false;
+      end
       if (bUsable and cBuff.Params == SG.CheckPetNeeded and not UnitExists("pet")) then bUsable = false end
 
       -- Check for mount auras
@@ -2946,7 +3000,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
       if (bUsable and not (cBuff.Type == SMARTBUFF_CONST_TRACK or SMARTBUFF_IsItem(cBuff.Type))) then
         -- check if you have enough mana/rage/energy to cast
-        local isUsable, notEnoughMana = C_Spell.IsSpellUsable(buffnS);
+        local isUsable, notEnoughMana = C_Spell.IsSpellUsable(castBuffnS);
         if (notEnoughMana) then
           bUsable = false;
           SMARTBUFF_AddMsgD("Buff " .. (GetBuffDisplayName(cBuff.BuffS, cBuff.Type) or cBuff.BuffS) .. ", not enough mana!");
@@ -2967,7 +3021,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
           cd = 0;
           cds = 0;
           if (cBuff.IDS) then
-            local cooldown = C_Spell.GetSpellCooldown(buffnS);
+            local cooldown = C_Spell.GetSpellCooldown(castBuffnS);
             if cooldown and type(cooldown) == "table" then
               cds = tonumber(cooldown["startTime"]) or 0;
               cd = tonumber(cooldown["duration"]) or 0;
@@ -2979,7 +3033,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
             if (cd < 0) then
               cd = 0;
             end
-            SMARTBUFF_AddMsgD(buffnS .. " cd = " .. cd);
+            SMARTBUFF_AddMsgD(castBuffnS .. " cd = " .. cd);
           end
 
           -- check if spell has cooldown
@@ -3391,12 +3445,12 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                       return 0;
                     end
 
-                    -- cast spell
+                    -- cast spell (castSpellID / castBuffnS = effective spell for this pass, not mutating cBuff)
                   else
-                    r = SMARTBUFF_doCast(unit, cBuff.IDS, buffnS, cBuff.LevelsS, cBuff.Type);
+                    r = SMARTBUFF_doCast(unit, castSpellID, castBuffnS, cBuff.LevelsS, cBuff.Type);
                     if (r == 0) then
                       currentUnit = unit;
-                      currentSpell = buffnS;
+                      currentSpell = castBuffnS;
                       tCastRequested = GetTime();
                     end
                   end
@@ -3429,8 +3483,10 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                       return 0;
                     end
 
-                    SMARTBUFF_SetMissingBuffMessage(bufftarget, buff, cBuff.IconS, cBuff.CanCharge, charges, bt, bExpire);
-                    SMARTBUFF_SetButtonTexture(SmartBuff_KeyButton, cBuff.IconS);
+                    -- Splash/chat: effective spell when substituting; else buff (may differ from buffnS for links)
+                    SMARTBUFF_SetMissingBuffMessage(bufftarget, hunterSubstituteRevive and castBuffnS or buff, castIconS,
+                      cBuff.CanCharge, charges, bt, bExpire);
+                    SMARTBUFF_SetButtonTexture(SmartBuff_KeyButton, castIconS);
                     return 0;
                   end
                 end
@@ -3439,7 +3495,12 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   -- target buffed
                   -- Message will printed in the "SPELLCAST_STOP" event
                   sMsgWarning = "";
-                  return 0, SMARTBUFF_ACTION_SPELL, buffnS, -1, unit, cBuff.Type;
+                  if (hunterSubstituteRevive) then
+                    -- cBuffTimer keys stay on Order name; UNIT_SPELLCAST_SUCCEEDED remaps Revive cast to buffnS
+                    sHunterReviveTimerOrderKey = buffnS;
+                  end
+                  -- PreClick / secure button need effective spell name (Revive when substituting)
+                  return 0, SMARTBUFF_ACTION_SPELL, hunterSubstituteRevive and castBuffnS or buffnS, -1, unit, cBuff.Type;
                 elseif (r == 1) then
                   -- spell cooldown
                   if (mode == 0) then SMARTBUFF_AddMsgWarn(buffnS .. " " .. SMARTBUFF_MSG_CD); end
@@ -6000,6 +6061,10 @@ function SMARTBUFF_OnPreClick(self, button, down)
       end
 
       if (cBuffIndex and cBuffIndex[spellName]) then
+        currentUnit = unit;
+        currentSpell = spellName;
+        tCastRequested = GetTime();
+      elseif (SMARTBUFF_REVIVE_PET and type(SMARTBUFF_REVIVE_PET) == "table" and SMARTBUFF_REVIVE_PET.name and spellName == SMARTBUFF_REVIVE_PET.name) then
         currentUnit = unit;
         currentSpell = spellName;
         tCastRequested = GetTime();
