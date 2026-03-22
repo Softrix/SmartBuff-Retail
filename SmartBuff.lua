@@ -3338,10 +3338,12 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                 elseif (cBuff.Type == SMARTBUFF_CONST_FOOD and isPlayerMoving == false and not SMARTBUFF_IsPicnic(unit)) then
                   if (cBuff.Links == SG.TeaItemIds) then
                     buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_RelaxedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
-                  elseif string.find(cBuff.BuffS or "", SMARTBUFF_LOC_HEARTY) then
-                    buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_HeartyFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
                   else
+                    -- Satiety is either Well Fed or Hearty Well Fed (localized names from spell info, not ids).
                     buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_WellFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
+                    if (buff ~= nil and SMARTBUFF_HeartyFedAura and SMARTBUFF_HeartyFedAura.name) then
+                      buff, index, buffname, bt, charges = SMARTBUFF_CheckUnitBuffs(unit, SMARTBUFF_HeartyFedAura, cBuff.Type, cBuff.Links, cBuff.Chain);
+                    end
                   end
                 else
                   if (cBuff.Params ~= SG.NIL) then
