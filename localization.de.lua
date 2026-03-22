@@ -160,7 +160,7 @@ SMARTBUFF_OFTT_MINIGRP       = "Zeigt die Raid-Subgruppen Einstellungen in einem
 SMARTBUFF_OFTT_ANTIDAZE      = "Bricht automatisch den\nAspekt des Geparden/Rudels ab,\nwenn jemand betäubt wird\n(Selbst oder Gruppe).";
 SMARTBUFF_OFTT_SPLASHSTYLE   = "Wechselt die Schriftart\nder Buff-Meldungen.";
 SMARTBUFF_OFTT_HIDESABUTTON  = "Verbirgt den SmartBuff Action-Knopf.";
-SMARTBUFF_OFTT_INCOMBAT      = "Funktioniert nur auf dich selbst.\nDer erste Buff, welcher als 'im Kampf'\ngesetzt ist, wird verwendet\nund kann im Kampf benutzt werden.\n!!! Achtung !!!\nSämtliche Buff-Logik ist inaktiv im Kampf!";
+SMARTBUFF_OFTT_INCOMBAT      = "Mit „Im Kampf“ markierte Buffs (pro Buff) werden EINMAL bestmöglich\nin einer Reihenfolge gewirkt — zu Kampfbeginn und erneut nach Kampf-Wiederauferstehung, falls du weiter kämpfst.\nNormale Buff-Logik ist im Kampf deaktiviert!\nKeine Zauber mit Abklingzeit in die Kampfsequenz — die unterbrechen sie.";
 SMARTBUFF_OFTT_SMARTDEBUFF   = "Zeigt das SmartDebuff Fenster.";
 SMARTBUFF_OFTT_SPLASHDURATION= "Wieviele Sekunden die Splash Meldung angezeigt wird,\nbevor sie ausgeblendet wird.";
 SMARTBUFF_OFTT_INSHAPESHIFT  = "Bufft auch wenn du\nverwandelt bist.";
@@ -224,6 +224,7 @@ SMARTBUFF_MSG_CHARGES        = "Aufladungen";
 SMARTBUFF_MSG_SOUNDS         = "Splash-Sound-Auswahl: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec gewechselt (%s), lade Buff-Vorlagen...";
 SMARTBUFF_MSG_PVP_PREP_ONLY  = "Aufgrund von API-Einschränkungen funktioniert Buffen nur in der Vorbereitungsphase und wird deaktiviert, sobald das Match beginnt.";
+SMARTBUFF_MSG_CASTSEQUENCE_SUFFIX = " (im Kampf)";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "Links Klick: Optionen Menü\nRechts Klick: An/Aus\nAlt-Links Klick: SmartDebuff\nShift-Ziehen: Knopf verschieben";

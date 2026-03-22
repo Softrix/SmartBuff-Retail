@@ -156,7 +156,7 @@ SMARTBUFF_OFTT_MINIGRP       = "Show raid subgoup settings in an\nown movable mi
 SMARTBUFF_OFTT_ANTIDAZE      = "Automatically cancels the\naspect of the cheetah/pack\nif someone gets dazed\n(self or group)."; -- NOT TRANSLATED
 SMARTBUFF_OFTT_SPLASHSTYLE   = "Changes the fontstyle of\nthe buff messages."; -- NOT TRANSLATED
 SMARTBUFF_OFTT_HIDESABUTTON  = "Cache le bouton SmartBuff de action."; -- NOT TRANSLATED
-SMARTBUFF_OFTT_INCOMBAT      = "At the moment it only works on yourself.\nThe first buff you mark as in combat,\nwill set on the button before combat\nand you can use it in combat.\nWarning! All logic is disabled in combat!";
+SMARTBUFF_OFTT_INCOMBAT      = "Les buffs marqu\195\169s \194\171 En combat \194\187 (options par buff) sont lanc\195\169s UNE FOIS,\nau mieux en s\195\169quence \226\128\148 \195\160 l\'entr\195\169e en combat, puis de nouveau apr\195\168s une r\195\169surrection en combat si vous combattez encore.\nLa logique normale des buffs est d\195\169sactiv\195\169e en combat !\nN\'ajoutez pas de sorts avec un temps de recharge \226\128\148 ils cassent la s\195\169quence.";
 SMARTBUFF_OFTT_SMARTDEBUFF   = "Shows the SmartDebuff frame.";
 SMARTBUFF_OFTT_SPLASHDURATION= "How many seconds the splash\nmessage will displayed,\nbefore it fades.";
 SMARTBUFF_OFTT_INSHAPESHIFT  = "Cast buffs also if you\nare shapeshifted.";
@@ -180,7 +180,7 @@ SMARTBUFF_BST_SKIPBGRES      = "Exclure en Champs de bataille";
 -- Buffsetup Frame Tooltip Text
 SMARTBUFF_BSTT_SELFONLY      = "Buffs uniquement votre personnage.";
 SMARTBUFF_BSTT_SELFNOT       = "Buffs all other selected classes,\nexcept your character."; -- NOT TRANSLATED
-SMARTBUFF_BSTT_COMBATIN      = "Buffs si vous \195\170tes en combat.\nToute logique en combat est d\195\169sactiv\195\169e sauf si l'option principale \"en combat\" (dans la fen\195\170tre d'options) est activ\195\169e.";
+SMARTBUFF_BSTT_COMBATIN      = "Inclure ce buff dans la s\195\169quence en combat (uniquement si l\'option principale \194\171 en combat \194\187 est activ\195\169e).\n\195\137vitez les sorts avec temps de recharge \226\128\148 ils cassent la s\195\169quence.";
 SMARTBUFF_BSTT_COMBATOUT     = "Buffs si vous \195\170tes hors combat.";
 SMARTBUFF_BSTT_MAINHAND      = "Buffs La Main Principale.";
 SMARTBUFF_BSTT_OFFHAND       = "Buffs La Main Gauche.";
@@ -221,6 +221,7 @@ SMARTBUFF_MSG_CHARGES        = "charges";
 SMARTBUFF_MSG_SOUNDS         = "Son Splash sélectionné: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec changed (%s), loading buff templates...";
 SMARTBUFF_MSG_PVP_PREP_ONLY  = "En raison des limitations de l'API, le buff ne fonctionne que pendant la préparation et est désactivé une fois le match commencé.";
+SMARTBUFF_MSG_CASTSEQUENCE_SUFFIX = " (en combat)";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "Left Click: Menu d\'options\nRight Click: ON/OFF\nAlt-Left Click: SmartDebuff\nShift drag: Move button"; -- NOT TRANSLATED

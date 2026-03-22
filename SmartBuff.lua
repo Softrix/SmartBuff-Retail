@@ -119,8 +119,28 @@ local cBuffIndex             = {};
 local cBuffTimer             = {};
 local cBlocklist             = {};
 local cUnits                 = {};
-local cBuffsCombat           = {};
 local cBuffsToCastAfterBGRes = {};  -- Queue of {actionType, spellName, slot} for post-resurrection in BG (aura state secret)
+-- Throttle SetMissingBuffMessage for in-combat castsequence (per next-spell key + AutoTimer) to avoid spam every Check tick.
+local lastInCombatCastsequenceNotifyKey = nil;
+local lastInCombatCastsequenceNotifyAt = 0;
+-- Debounce duplicate UNIT_SPELLCAST_SUCCEEDED for in-combat castsequence index advance.
+local inCombatCastsequenceLastSucceededAt = 0;
+local SMARTBUFF_IN_COMBAT_CASTSEQUENCE_POP_DEBOUNCE = 0.35;
+-- O.InCombat CIn path: KeyButton holds /castsequence reset=combat ... (non-PvP instance or arena/BG prep; off during active match).
+local inCombatCastsequenceActive = false;
+local SMARTBUFF_IN_COMBAT_CASTSEQUENCE_MACRO_MAX = 255;
+-- Invalid spell name appended to /castsequence: sequence sticks here after real casts until reset=combat (no wrap to spell 1).
+local SMARTBUFF_IN_COMBAT_CASTSEQUENCE_SENTINEL = "null";
+-- Snapshot of spell names in the macro (after truncation), in cast order; UNIT_SPELLCAST_SUCCEEDED advances next index.
+local inCombatCastsequenceExpectedSpells = {};
+local inCombatCastsequenceNextIndex = 1;
+local inCombatCastsequenceAllDone = false;
+
+local function SMARTBUFF_ResetInCombatCastsequenceProgress()
+  wipe(inCombatCastsequenceExpectedSpells);
+  inCombatCastsequenceNextIndex = 1;
+  inCombatCastsequenceAllDone = false;
+end
 
 local cScrBtnBO              = nil;
 
@@ -857,26 +877,11 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
 
     if (O.Toggle) then
       if (O.InCombat) then
-        for spell, data in pairs(cBuffsCombat) do
-          if (data and data.Unit and data.ActionType) then
-            if (data.Type == SMARTBUFF_CONST_SELF or data.Type == SMARTBUFF_CONST_FORCESELF or data.Type == SMARTBUFF_CONST_STANCE or data.Type == SMARTBUFF_CONST_ITEM) then
-              SmartBuff_KeyButton:SetAttribute("unit", nil);
-            else
-              SmartBuff_KeyButton:SetAttribute("unit", data.Unit);
-            end
-            SmartBuff_KeyButton:SetAttribute("type", data.ActionType);
-            SmartBuff_KeyButton:SetAttribute("spell", spell);
-            SmartBuff_KeyButton:SetAttribute("item", nil);
-            SmartBuff_KeyButton:SetAttribute("target-slot", nil);
-            SmartBuff_KeyButton:SetAttribute("target-item", nil);
-            SmartBuff_KeyButton:SetAttribute("macrotext", nil);
-            SmartBuff_KeyButton:SetAttribute("action", nil);
-            SMARTBUFF_AddMsgD("Enter Combat, set button: " .. spell .. " on " .. data.Unit .. ", " .. data.ActionType);
-            break;
-          end
-        end
+        -- Filtered CIn /castsequence (template order). No CIn buffs enabled → build empty → stamp fails → key cleared.
+        SMARTBUFF_StampInCombatCastsequence();
       else
         -- In-combat option off: clear button so we don't show a stale out-of-combat reminder in combat
+        SMARTBUFF_DisableInCombatCastsequenceMacro();
         SmartBuff_KeyButton:SetAttribute("type", nil);
         SmartBuff_KeyButton:SetAttribute("unit", nil);
         SmartBuff_KeyButton:SetAttribute("spell", nil);
@@ -892,10 +897,15 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     SMARTBUFF_Ticker(true);
 
     if (O.Toggle) then
+      -- Leave combat: clear in-combat castsequence below. BGRes: wipe if we are not in arena/BG anymore
+      -- (e.g. left the match/instance — avoids carrying cBuffsToCastAfterBGRes into open world). Still inside
+      -- arena/BG OOC → keep queue so the next secure click can consume it.
+      local _, instanceTypeRE = GetInstanceInfo();
+      if (instanceTypeRE ~= "arena" and instanceTypeRE ~= "pvp") then
+        wipe(cBuffsToCastAfterBGRes);
+      end
       if (O.InCombat) then
-        SmartBuff_KeyButton:SetAttribute("type", nil);
-        SmartBuff_KeyButton:SetAttribute("unit", nil);
-        SmartBuff_KeyButton:SetAttribute("spell", nil);
+        SMARTBUFF_DisableInCombatCastsequenceMacro();
       end
       SMARTBUFF_SyncBuffTimers();
       SMARTBUFF_Check(1, true);
@@ -965,6 +975,13 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     sHunterReviveTimerOrderKey = nil;
   elseif (event == "UNIT_SPELLCAST_SUCCEEDED") then
     if (arg1 and arg1 == "player") then
+      local castSpellId = nil;
+      if (type(arg3) == "number") then
+        castSpellId = arg3;
+      elseif (arg3 ~= nil and arg3 ~= "") then
+        castSpellId = tonumber(arg3);
+      end
+      SMARTBUFF_UpdateInCombatCastsequenceAfterSpellSucceeded(castSpellId);
       local unit = nil;
       local spell = nil;
       local target = nil;
@@ -1031,6 +1048,11 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     local pvPMatchActive = (pvPMatchState >= 3);
     if (inPvPInstance and pvPMatchActive) then
       SMARTBUFF_PopulateBGResQueue();
+    end
+    -- Still in combat after rez: rebuild castsequence (same rules as REGEN). Client resets /castsequence on death;
+    -- Enable path here resets Lua progress (nextIndex, expected list, notifies) and refreshes the macro.
+    if (O and O.Toggle and O.InCombat and UnitAffectingCombat("player")) then
+      SMARTBUFF_StampInCombatCastsequence();
     end
   end
 
@@ -1779,9 +1801,6 @@ function SMARTBUFF_SetBuffs()
     n = SMARTBUFF_SetBuff(buff, n);
   end
 
-  wipe(cBuffsCombat);
-  SMARTBUFF_SetInCombatBuffs();
-
   numBuffs = n - 1;
 
   -- Accept current state (even if incomplete) - following AllTheThings pattern
@@ -2273,7 +2292,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
   end
   ]] --
   cBuffIndex[cBuffs[i].BuffS] = i;
-  -- Register canonical item key so B[][][] iteration (e.g. SetInCombatBuffs) finds this buff when key is "item:ID"
+  -- Register canonical item key so template / lookups find this buff when key is "item:ID"
   local itemID = ExtractItemID(cBuffs[i].BuffS);
   if (itemID) then
     cBuffIndex["item:" .. tostring(itemID)] = i;
@@ -2284,33 +2303,6 @@ function SMARTBUFF_SetBuff(buff, i, ia)
   InitBuffSettings(cBuffs[i]);
 
   return i + 1;
-end
-
-function SMARTBUFF_SetInCombatBuffs()
-  local ct = currentTemplate;
-  if (ct == nil or B[CS()] == nil or B[CS()][ct] == nil) then
-    return;
-  end
-  for name, data in pairs(B[CS()][ct]) do
-    --SMARTBUFF_AddMsgD(name .. ", type = " .. type(data));
-    if (type(data) == "table" and cBuffIndex[name] and (B[CS()][ct][name].EnableS or B[CS()][ct][name].EnableG) and B[CS()][ct][name].CIn) then
-      local cBI = cBuffs[cBuffIndex[name]];  -- Get definition data from cBuffs[]
-      if (cBI) then
-        if (cBuffsCombat[name]) then
-          wipe(cBuffsCombat[name]);
-        else
-          cBuffsCombat[name] = {};
-        end
-        cBuffsCombat[name].Unit = "player";
-        cBuffsCombat[name].Type = cBI.Type;  -- ✅ From cBuffs[]
-        cBuffsCombat[name].Links = cBI.Links;  -- ✅ Copy Links for future use
-        cBuffsCombat[name].Chain = cBI.Chain;  -- ✅ Copy Chain for future use
-        cBuffsCombat[name].ActionType = "spell";
-        SMARTBUFF_AddMsgD("Set combat spell: " .. name);
-      end
-      --break;
-    end
-  end
 end
 
 -- END SMARTBUFF_SetBuffs
@@ -2720,6 +2712,233 @@ end
 
 -- END SMARTBUFF_PopulateBGResQueue
 
+-- Ephemeral list: all template-enabled CIn spellbook buffs in list order (UI state). Not stored globally.
+function SMARTBUFF_BuildInCombatCInEntryList()
+  local list = {};
+  local ct = currentTemplate;
+  if (not B or not B[CS()] or not B[CS()][ct] or not B[CS()].Order or not cBuffIndex) then return list; end
+  local ord = B[CS()].Order;
+  for _, buffnS in ipairs(ord) do
+    local cBuff = cBuffs[cBuffIndex[buffnS]];
+    local bs = GetBuffSettings(buffnS);
+    if (cBuff and bs and bs.EnableS and cBuff.Type ~= SMARTBUFF_CONST_TRACK) then
+      if (B[CS()][ct][buffnS] and B[CS()][ct][buffnS].CIn) then
+        if (cBuff.IDS and not SMARTBUFF_IsItem(cBuff.Type)) then
+          tinsert(list, { actionType = SMARTBUFF_ACTION_SPELL, spellName = buffnS, slot = -1 });
+        end
+      end
+    end
+  end
+  return list;
+end
+
+-- Template order entries → only those missing on player (aura / create-item) at snapshot time (combat enter or rez).
+-- PvP match active: auras always secret — CheckUnitBuffs not authoritative. Outside PvP: auras unreliable in combat;
+-- filter is best-effort at stamp time; OOC scans elsewhere use normal visibility.
+function SMARTBUFF_FilterInCombatCInEntriesMissingOnPlayer(entries)
+  local out = {};
+  if (not entries) then return out; end
+  for _, e in ipairs(entries) do
+    local sn = e and e.spellName;
+    if (sn and sn ~= "") then
+      local n = cBuffIndex and cBuffIndex[sn];
+      local cBuff = n and cBuffs[n];
+      local miss = true;
+      if (cBuff) then
+        if (cBuff.Type == SMARTBUFF_CONST_ITEM) then
+          local bag, slot, count = SMARTBUFF_FindItem(sn, cBuff.Chain or cBuff.Links);
+          miss = ((count or 0) == 0);
+        elseif (cBuff.Type ~= SMARTBUFF_CONST_WEAPON) then
+          miss = (SMARTBUFF_CheckUnitBuffs("player", sn, cBuff.Type, cBuff.Links, cBuff.Chain) ~= nil);
+        end
+      end
+      if (miss) then
+        tinsert(out, { actionType = e.actionType or SMARTBUFF_ACTION_SPELL, spellName = sn, slot = e.slot or -1 });
+      end
+    end
+  end
+  return out;
+end
+
+-- Build CIn list (template order) → filter missing on player → /castsequence macro (first spell = step 1).
+-- Called from REGEN / PLAYER_ALIVE when O.InCombat; empty CIn → nothing stamped.
+-- If stamp fails (lockdown, empty, macro too long), clear key attrs when allowed so OOC/normal Check can recover.
+function SMARTBUFF_StampInCombatCastsequence()
+  local base = SMARTBUFF_BuildInCombatCInEntryList();
+  local filtered = SMARTBUFF_FilterInCombatCInEntriesMissingOnPlayer(base);
+  if (SMARTBUFF_EnableInCombatCastsequenceMacroFromEntries(filtered)) then
+    return;
+  end
+  SMARTBUFF_DisableInCombatCastsequenceMacro();
+end
+
+-- Turn off in-combat castsequence tracking and clear SmartBuff_KeyButton secure attrs when not in combat lockdown.
+function SMARTBUFF_DisableInCombatCastsequenceMacro()
+  inCombatCastsequenceActive = false;
+  SMARTBUFF_ResetInCombatCastsequenceProgress();
+  if (InCombatLockdown() or not SmartBuff_KeyButton) then return; end
+  SmartBuff_KeyButton:SetAttribute("type", nil);
+  SmartBuff_KeyButton:SetAttribute("unit", nil);
+  SmartBuff_KeyButton:SetAttribute("spell", nil);
+  SmartBuff_KeyButton:SetAttribute("item", nil);
+  SmartBuff_KeyButton:SetAttribute("target-slot", nil);
+  SmartBuff_KeyButton:SetAttribute("target-item", nil);
+  SmartBuff_KeyButton:SetAttribute("macrotext", nil);
+  SmartBuff_KeyButton:SetAttribute("action", nil);
+end
+
+-- Stamp KeyButton from filtered CIn entries (spell names only in macro + null sentinel). Fails if lockdown or nothing to cast.
+function SMARTBUFF_EnableInCombatCastsequenceMacroFromEntries(filteredEntries)
+  if (InCombatLockdown() or not SmartBuff_KeyButton) then return false; end
+  inCombatCastsequenceActive = false;
+  SMARTBUFF_ResetInCombatCastsequenceProgress();
+  if (not filteredEntries or #filteredEntries == 0) then
+    return false;
+  end
+  local parts = {};
+  for _, e in ipairs(filteredEntries) do
+    local sn = e and e.spellName;
+    if (sn and sn ~= "") then
+      tinsert(parts, sn);
+    end
+  end
+  if (#parts == 0) then
+    return false;
+  end
+  local prefix = "/castsequence reset=combat ";
+  local sent = SMARTBUFF_IN_COMBAT_CASTSEQUENCE_SENTINEL;
+  local function macroWithSpellList(realParts)
+    return prefix .. table.concat(realParts, ", ") .. ", " .. sent;
+  end
+  local macro = macroWithSpellList(parts);
+  if (#macro > SMARTBUFF_IN_COMBAT_CASTSEQUENCE_MACRO_MAX) then
+    SMARTBUFF_AddMsgWarn("[SmartBuff] In-combat castsequence exceeds " .. SMARTBUFF_IN_COMBAT_CASTSEQUENCE_MACRO_MAX .. " chars; truncating.", true);
+    while (#macro > SMARTBUFF_IN_COMBAT_CASTSEQUENCE_MACRO_MAX and #parts > 1) do
+      tremove(parts);
+      macro = macroWithSpellList(parts);
+    end
+    if (#macro > SMARTBUFF_IN_COMBAT_CASTSEQUENCE_MACRO_MAX) then
+      return false;
+    end
+  end
+  local snapshot = parts;
+  for i, sn in ipairs(snapshot) do
+    inCombatCastsequenceExpectedSpells[i] = sn;
+  end
+  inCombatCastsequenceNextIndex = 1;
+  inCombatCastsequenceAllDone = false;
+  lastInCombatCastsequenceNotifyKey = nil;
+  lastInCombatCastsequenceNotifyAt = 0;
+  SmartBuff_KeyButton:SetAttribute("unit", nil);
+  SmartBuff_KeyButton:SetAttribute("spell", nil);
+  SmartBuff_KeyButton:SetAttribute("item", nil);
+  SmartBuff_KeyButton:SetAttribute("target-slot", nil);
+  SmartBuff_KeyButton:SetAttribute("target-item", nil);
+  SmartBuff_KeyButton:SetAttribute("action", nil);
+  SmartBuff_KeyButton:SetAttribute("type", "macro");
+  SmartBuff_KeyButton:SetAttribute("macrotext", macro);
+  inCombatCastsequenceActive = true;
+  SMARTBUFF_AddMsgD("In-combat castsequence on key (" .. tostring(#macro) .. " chars, " .. tostring(#snapshot) .. " spells)");
+  return true;
+end
+
+-- Whether UNIT_SPELLCAST_SUCCEEDED matches expected CIn spell (template id, display name, or base spell).
+function SMARTBUFF_InCombatCastsequenceMatchesSucceededSpell(spellId, spellKey)
+  if (not spellId or not spellKey) then return false; end
+  local okC, castName = pcall(C_Spell.GetSpellName, spellId);
+  if (not okC or not castName) then return false; end
+  if (castName == spellKey) then return true; end
+  local idx = cBuffIndex and cBuffIndex[spellKey];
+  local bookId = idx and cBuffs[idx] and cBuffs[idx].IDS;
+  if (not bookId) then return false; end
+  if (spellId == bookId) then return true; end
+  local okB, bookName = pcall(C_Spell.GetSpellName, bookId);
+  if (okB and bookName and castName == bookName) then return true; end
+  if (C_Spell and C_Spell.GetBaseSpell) then
+    local ok1, baseCast = pcall(C_Spell.GetBaseSpell, spellId);
+    local ok2, baseBook = pcall(C_Spell.GetBaseSpell, bookId);
+    if (ok1 and ok2 and type(baseCast) == "number" and type(baseBook) == "number" and baseCast == baseBook) then
+      return true;
+    end
+  end
+  return false;
+end
+
+-- Advance in-combat castsequence on spell success (any instance; BGRes is separate queue / Check path).
+function SMARTBUFF_UpdateInCombatCastsequenceAfterSpellSucceeded(spellId)
+  if (not spellId) then return; end
+  if (not O or not O.Toggle or not O.InCombat) then return; end
+  if (not UnitAffectingCombat("player")) then return; end
+
+  if (not inCombatCastsequenceActive) then return; end
+  if (inCombatCastsequenceAllDone) then return; end
+  local n = inCombatCastsequenceNextIndex;
+  local expected = inCombatCastsequenceExpectedSpells and inCombatCastsequenceExpectedSpells[n];
+  if (not expected or not SMARTBUFF_InCombatCastsequenceMatchesSucceededSpell(spellId, expected)) then return; end
+  local now = GetTime();
+  if ((now - inCombatCastsequenceLastSucceededAt) < SMARTBUFF_IN_COMBAT_CASTSEQUENCE_POP_DEBOUNCE) then return; end
+  inCombatCastsequenceLastSucceededAt = now;
+  inCombatCastsequenceNextIndex = n + 1;
+  lastInCombatCastsequenceNotifyKey = nil;
+  if (inCombatCastsequenceNextIndex > #(inCombatCastsequenceExpectedSpells)) then
+    inCombatCastsequenceAllDone = true;
+  end
+end
+
+-- Castsequence macro: no per-spell secure attrs — next step’s spell name + icon (same info as OOC “needs X”); throttled per step.
+function SMARTBUFF_NotifyInCombatCastsequenceVisual(mode)
+  if (mode ~= 1) then return; end
+  if (inCombatCastsequenceAllDone) then
+    SMARTBUFF_SetButtonTexture(SmartBuff_KeyButton, imgSB);
+    return;
+  end
+  local spellKey = inCombatCastsequenceExpectedSpells[inCombatCastsequenceNextIndex]
+    or inCombatCastsequenceExpectedSpells[1];
+  if (not spellKey) then
+    SMARTBUFF_SetButtonTexture(SmartBuff_KeyButton, imgSB);
+    return;
+  end
+  local idx = cBuffIndex and cBuffIndex[spellKey];
+  local cBuff = idx and cBuffs[idx];
+  local icon = (cBuff and cBuff.IconS) or nil;
+  if (not icon and cBuff and cBuff.IDS) then
+    icon = C_Spell.GetSpellTexture(cBuff.IDS);
+  end
+  if (not icon) then
+    icon = imgSB;
+  end
+  SMARTBUFF_SetButtonTexture(SmartBuff_KeyButton, icon);
+  local minGap = (O and O.AutoTimer) or 3;
+  if (minGap < 1) then minGap = 1; end
+  local now = GetTime();
+  if (lastInCombatCastsequenceNotifyKey == spellKey and (now - lastInCombatCastsequenceNotifyAt) < minGap) then
+    return;
+  end
+  lastInCombatCastsequenceNotifyKey = spellKey;
+  lastInCombatCastsequenceNotifyAt = now;
+  local target = UnitName("player") or "player";
+  -- Same path as BuffUnit: spell name + short "in combat" tag (localized); GetBuffDisplayName in SetMissingBuffMessage.
+  local combatTag = SMARTBUFF_MSG_CASTSEQUENCE_SUFFIX;
+  if (combatTag == nil) then
+    combatTag = " (in-combat)";
+  end
+  local buffLabel = spellKey .. combatTag;
+  SMARTBUFF_SetMissingBuffMessage(target, buffLabel, icon, (cBuff and cBuff.CanCharge) or false, -1, nil, false);
+end
+
+-- Mode 1 reminder path: BuffUnit is skipped for "player" when skipPlayerBuffUnitForInCombatCastsequence (O.InCombat castsequence path).
+-- PvP OOC during active match uses BGRes list, not this. In combat: castsequence icon + throttled hint, or default icon if no macro.
+function SMARTBUFF_NotifyInCombatCastsequenceReminders(mode)
+  if (mode ~= 1) then return; end
+  if (inCombatCastsequenceActive) then
+    SMARTBUFF_NotifyInCombatCastsequenceVisual(mode);
+    return;
+  end
+  lastInCombatCastsequenceNotifyKey = nil;
+  if (SmartBuff_KeyButton) then
+    SMARTBUFF_SetButtonTexture(SmartBuff_KeyButton, imgSB);
+  end
+end
 
 local IsChecking = false;
 function SMARTBUFF_Check(mode, force)
@@ -2751,14 +2970,24 @@ function SMARTBUFF_Check(mode, force)
 
   SMARTBUFF_checkBlocklist();
 
-  -- Skip when: (in combat and O.InCombat disabled) OR (in PvP and match active, matchState >= 3). Allow PvP prep and combat buffs when O.InCombat.
+  -- Retail fact: (1) PvP match active — buffs secret to addons whether OOC or IC. (2) Outside PvP — secret in combat,
+  -- visible OOC. skipChecks during match skips aura-based scan; BGRes + castsequence paths do not rely on match auras.
+  -- Skip when: (in combat and O.InCombat disabled) OR (in PvP and match active). Allow PvP prep when O.InCombat.
   local _, instanceType = GetInstanceInfo();
   local inPvPInstance = (instanceType == "arena" or instanceType == "pvp");
   local pvPMatchState = inPvPInstance and (C_PvP.GetActiveMatchState() or 0) or 0;
   local pvPMatchActive = (pvPMatchState >= 3);
   local skipChecks = (InCombatLockdown() and not O.InCombat) or (inPvPInstance and pvPMatchActive);
-  -- BG resurrection: when match active and we have queued buffs, return first buff for SecureActionButton (aura state secret; cast once only).
-  -- Caller must remove from queue only when it successfully sets the button (requires non-combat moment).
+  -- O.InCombat: skip BuffUnit for "player" when non-PvP instance (always) or PvP with castsequence macro on key.
+  -- Reminders: SMARTBUFF_NotifyInCombatCastsequenceReminders. Active match: skipChecks; BGRes returns before skipChecks.
+  local skipPlayerBuffUnitForInCombatCastsequence = O.InCombat and (InCombatLockdown() or UnitAffectingCombat("player"))
+    and ((not inPvPInstance) or inCombatCastsequenceActive);
+  -- In combat + castsequence: mode-1 splash/icon (BuffUnit not run for player).
+  if (mode == 1 and skipPlayerBuffUnitForInCombatCastsequence) then
+    SMARTBUFF_NotifyInCombatCastsequenceReminders(mode);
+  end
+  -- BG resurrection: match active → auras secret (OOC or IC); return first BGRes buff for SecureActionButton.
+  -- Caller removes from queue only when it successfully sets the button (often needs non-combat moment).
   if (inPvPInstance and pvPMatchActive and cBuffsToCastAfterBGRes and #cBuffsToCastAfterBGRes > 0) then
     local entry = cBuffsToCastAfterBGRes[1];
     if (entry and entry.actionType and entry.spellName) then
@@ -2771,21 +3000,7 @@ function SMARTBUFF_Check(mode, force)
     return;
   end
 
-  -- 1. check in combat buffs (logic when O.InCombat; surface notification only when O.ToggleAutoCombat too)
-  if (InCombatLockdown() and O.InCombat) then
-    for spell in pairs(cBuffsCombat) do
-      if (spell) then
-        local ret, actionType, spellName, slot, unit, buffType = SMARTBUFF_BuffUnit("player", 0, mode, spell)
-        if (O.Debug) then SMARTBUFF_AddMsgD("Check combat spell: " .. spell .. ", ret = " .. ret); end
-        if (ret and ret == 0 and O.ToggleAutoCombat) then
-          IsChecking = false;
-          return ret, actionType, spellName, slot, unit, buffType;
-        end
-      end
-    end
-  end
-
-  -- 2. buff target, if enabled
+  -- 1. buff target, if enabled
   if ((mode == 0 or mode == 5) and O.BuffTarget) then
     local actionType, spellName, slot, buffType;
     i, actionType, spellName, slot, _, buffType = SMARTBUFF_BuffUnit("target", 0, mode);
@@ -2800,7 +3015,7 @@ function SMARTBUFF_Check(mode, force)
     end
   end
 
-  -- 3. check groups
+  -- 2. check groups
   local cGrp = cGroups;
   local cOrd = cOrderGrp;
   isMounted = IsMounted() or IsFlying();
@@ -2824,22 +3039,24 @@ function SMARTBUFF_Check(mode, force)
         for _, unit in pairs(units) do
           if (isSetBuffs) then break; end
           if (O.Debug) then SMARTBUFF_AddMsgD("Checking single unit = " .. unit); end
-          local spellName, actionType, slot, buffType;
-          i, actionType, spellName, slot, _, buffType = SMARTBUFF_BuffUnit(unit, subgroup, mode);
+          if (not (unit == "player" and skipPlayerBuffUnitForInCombatCastsequence)) then
+            local spellName, actionType, slot, buffType;
+            i, actionType, spellName, slot, _, buffType = SMARTBUFF_BuffUnit(unit, subgroup, mode);
 
-          if (i <= 1) then
-            -- Don't surface missing-buff when in combat and O.InCombat disabled (aura check unreliable at combat start)
-            if (i == 0 and InCombatLockdown() and not O.InCombat) then
-              -- skip, continue to next unit
-            elseif (not InCombatLockdown() or (O.InCombat and O.ToggleAutoCombat)) then
-              if (i == 0 and mode ~= 1) then
-                --tLastCheck = GetTime() - O.AutoTimer + GlobalCd;
-                if (actionType == SMARTBUFF_ACTION_ITEM) then
-                  --tLastCheck = tLastCheck + 2;
+            if (i <= 1) then
+              -- Don't surface missing-buff when in combat and O.InCombat disabled (aura check unreliable at combat start)
+              if (i == 0 and InCombatLockdown() and not O.InCombat) then
+                -- skip, continue to next unit
+              elseif (not InCombatLockdown() or (O.InCombat and O.ToggleAutoCombat)) then
+                if (i == 0 and mode ~= 1) then
+                  --tLastCheck = GetTime() - O.AutoTimer + GlobalCd;
+                  if (actionType == SMARTBUFF_ACTION_ITEM) then
+                    --tLastCheck = tLastCheck + 2;
+                  end
                 end
+                IsChecking = false;
+                return i, actionType, spellName, slot, unit, buffType;
               end
-              IsChecking = false;
-              return i, actionType, spellName, slot, unit, buffType;
             end
           end
         end
@@ -5563,8 +5780,6 @@ function SMARTBUFF_Options_OnHide()
   SMARTBUFF_ToggleTutorial(true);
   SmartBuffOptionsFrame:SetHeight(SMARTBUFF_OPTIONSFRAME_HEIGHT);
   --SmartBuff_BuffSetup:SetHeight(SMARTBUFF_OPTIONSFRAME_HEIGHT);
-  wipe(cBuffsCombat);
-  SMARTBUFF_SetInCombatBuffs();
   SmartBuff_BuffSetup:Hide();
   SmartBuff_PlayerSetup:Hide();
   SMARTBUFF_Splash_Hide();
@@ -6004,7 +6219,10 @@ function SMARTBUFF_OnPreClick(self, button, down)
     tCastRequested = 0;
   end
 
-  if (not InCombatLockdown()) then
+  -- Do not wipe secure attrs while in combat: InCombatLockdown() is often still false on the first combat
+  -- ticks while UnitAffectingCombat("player") is true — that erased REGEN in-combat castsequence macro on SmartBuff_KeyButton.
+  -- OOC clears so normal PreClick+Check can repopulate; in combat we keep attrs set by the macro stamp.
+  if (not InCombatLockdown() and not UnitAffectingCombat("player")) then
     self:SetAttribute("type", nil);
     self:SetAttribute("unit", nil);
     self:SetAttribute("spell", nil);
@@ -6032,6 +6250,17 @@ function SMARTBUFF_OnPreClick(self, button, down)
     --print("Channeling...reset AutoBuff timer");
     tAutoBuff = GetTime() + 0.7;
     return;
+  end
+
+  -- In-combat castsequence macro: each key press must reach the secure button; skip tAutoBuff throttle and Check remap.
+  if (inCombatCastsequenceActive and O and O.Toggle and O.InCombat and UnitAffectingCombat("player")) then
+    local _, itPre = GetInstanceInfo();
+    if (itPre ~= "arena" and itPre ~= "pvp") then
+      return;
+    end
+    if ((C_PvP.GetActiveMatchState() or 0) < 3) then
+      return;
+    end
   end
 
   if (GetTime() < (tAutoBuff + td)) then return end
