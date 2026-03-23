@@ -1,6 +1,6 @@
-﻿## Interface: 120000, 120001
+﻿## Interface: 120000, 120001, 120005
 ## Title: SmartBuff |cff0099ffRetail|r
-## Version: 40.120001
+## Version: 41.120001
 ## Author: |cff20d2ffCodermik & Aeldra|r (EU-Proudmoore)
 ## Contributing Author: |cff20d2ffSpeedwaystar
 ## Notes: Cast the most important buffs on you or party/raid members/pets. Use /sbm for options menu.
