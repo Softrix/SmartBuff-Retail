@@ -3423,6 +3423,9 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                   tOh = offHandExpiration;
                   cOh = offHandCharges;
 
+                  -- MH first, then OH: if both need oil, the old code always evaluated OH after MH and overwrote
+                  -- buff/iSlot/handtype (MH missing leaves bExpire false, so OH still ran). Skip OH while MH is the target.
+                  local skipOffHandWeaponCheck = false;
 
                   if (bs.MH) then
                     iSlot = INVSLOT_MAINHAND;
@@ -3447,6 +3450,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                       else
                         handtype = "main";
                         buff = buffnS;
+                        skipOffHandWeaponCheck = true;
                       end
                     else
                       SMARTBUFF_AddMsgD(
@@ -3454,7 +3458,7 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
                     end
                   end
 
-                  if (bs.OH and not bExpire and not buffloc) then
+                  if (bs.OH and not skipOffHandWeaponCheck and not bExpire and not buffloc) then
                     iSlot = INVSLOT_OFFHAND
                     iId = GetInventoryItemID("player", iSlot);
                     if (iId and SMARTBUFF_CanApplyWeaponBuff(buffnS, iSlot)) then
