@@ -13,6 +13,10 @@
 - Every non-external code file should end with a new line, unless the language rules prohibit it
 - Use spaces instead of tabs for compatibility
 
+## Retail: buff visibility (authoritative for this addon)
+- **PvP match active** (`C_PvP.GetActiveMatchState() >= 3`): player buffs are **secret to addons regardless of combat** (OOC or IC). Do not trust aura/`BuffUnit` for real state; **BGRes**, **skipChecks**, castsequence / spell-succeeded progress apply.
+- **Outside PvP** (open world, dungeons, raids, non-PvP instances, etc.): buffs are **secret while in combat**, **visible OOC**. Normal **`Check`** / **`BuffUnit`** self scans are for out-of-combat; in-combat use **castsequence** / progress paths.
+
 ## Implementation Guidelines
 - Always ask for permission before implementing changes
 - When iterating on same logic, try to roll back to original state and re-implement instead of building on top of a failed implementation

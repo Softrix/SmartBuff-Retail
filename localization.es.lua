@@ -155,7 +155,7 @@ SMARTBUFF_OFTT_MINIGRP       = "Mostrar los ajustes del subgrupo de banda en un\
 SMARTBUFF_OFTT_ANTIDAZE      = "Autom\195\161ticamente cancela el\naspecto del mono/manada\nsi alguien est\195\161 aturdido\n(\195\169l mismo o el grupo).";
 SMARTBUFF_OFTT_SPLASHSTYLE   = "Cambia la fuente de\nlos mensajes de buff.";
 SMARTBUFF_OFTT_HIDESABUTTON  = "Oculta el bot\195\179n de acci\195\179n de SmartBuff.";
-SMARTBUFF_OFTT_INCOMBAT      = "De momento s\195\179lo funciona sobre t\195\173 mismo.\nEl primer buff que marcas para combate,\nse establecer\195\161 en el bot\195\179n antes del combate\ny puede ser usado en combate.\nAviso! Toda l\195\179gica se inutiliza en combate";
+SMARTBUFF_OFTT_INCOMBAT      = "Los buffs marcados para combate (en opciones de cada buff) se lanzan UNA VEZ,\nen lo mejor posible en secuencia: al entrar en combate y otra vez tras resurrecci\195\179n en combate si sigues luchando.\n\194\161La l\195\179gica normal de buffs queda desactivada en combate!\nNo incluyas hechizos con tiempo de reutilizaci\195\179n; rompen la secuencia.";
 SMARTBUFF_OFTT_SMARTDEBUFF   = "Muestra la pesta\195\177a de SmartDeBuff";
 SMARTBUFF_OFTT_SPLASHDURATION= "Cu\195\161ntos segundos estar\195\161 en pantalla el\nmensaje,\nantes de atenuarse.";
 SMARTBUFF_OFTT_INSHAPESHIFT  = "Cast buffs also if you\nare shapeshifted.";
@@ -220,6 +220,7 @@ SMARTBUFF_MSG_CHARGES        = "cargas";
 SMARTBUFF_MSG_SOUNDS         = "Selección de sonido: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec changed (%s), loading buff templates...";
 SMARTBUFF_MSG_PVP_PREP_ONLY  = "Debido a limitaciones de la API, el buffeo solo funciona durante la preparación y se desactiva cuando comienza la partida.";
+SMARTBUFF_MSG_CASTSEQUENCE_SUFFIX = " (en combate)";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "Click izquierdo: men\195\186 de opciones\nClick derecho: On/Off\nAlt-Click izquierdo: SmartDebuff\nMay\195\186scuals arrastrar: Mover bot\195\179n";

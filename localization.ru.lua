@@ -154,7 +154,7 @@ SMARTBUFF_OFTT_MINIGRP       = "Показывать выбор подгрупп
 SMARTBUFF_OFTT_ANTIDAZE      = "Автоматически прерывать\nДух Гепарда/Стаи\nесли на ком-то из группы\nповисло замедление.";
 SMARTBUFF_OFTT_SPLASHSTYLE   = "Изменить шрифт сообщений о баффах.";
 SMARTBUFF_OFTT_HIDESABUTTON  = "Спрятать кнопку действия SmartBuff.";
-SMARTBUFF_OFTT_INCOMBAT      = "At the moment it only works on yourself.\nThe first buff you mark as in combat,\nwill set on the button before combat\nand you can use it in combat.\nWarning! All logic is disabled in combat!";
+SMARTBUFF_OFTT_INCOMBAT      = "Баффы с меткой «В бою» (в настройках каждого баффа) накладываются ОДИН РАЗ,\nпо очереди — при входе в бой и снова после боевого воскрешения, если вы всё ещё в бою.\nОбычная логика баффов в бою отключена!\nНе добавляйте заклинания с восстановлением — они ломают последовательность.";
 SMARTBUFF_OFTT_SMARTDEBUFF   = "Shows the SmartDebuff frame.";
 SMARTBUFF_OFTT_SPLASHDURATION= "Сколько секунд будут отображаться\nвсплывающие сообщения.";
 SMARTBUFF_OFTT_INSHAPESHIFT  = "Cast buffs also if you\nare shapeshifted.";
@@ -218,6 +218,7 @@ SMARTBUFF_MSG_CHARGES        = "зарядов";
 SMARTBUFF_MSG_SOUNDS         = "Выбранный звук всплеска: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec changed (%s), loading buff templates...";
 SMARTBUFF_MSG_PVP_PREP_ONLY  = "Из-за ограничений API баффы работают только во время подготовки и отключаются после начала матча.";
+SMARTBUFF_MSG_CASTSEQUENCE_SUFFIX = " (в бою)";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "Левой кнопкой: меню опций\nПравой кнопкой: Вкл/Выкл\nAlt+Левой Кнопкой: SmartDebuff\nТащить с Shift-ом: Двигать кнопку";

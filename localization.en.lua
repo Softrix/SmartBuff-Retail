@@ -7,16 +7,19 @@ SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
   .."          |cffffffffMidnight & Classic versions by Codermik, additional retail\n"
   .."          programming by MrWizard and Speedwaystar.\n"
   .."\n\n"
+  .."          Changes in r41.230326:\n\n"
+  .."             * Bugfix: fix main-hand/offhand buffing\n"
+  .."             * Bugfix: fix heartily well fed detection\n"
+  .."             * New: OOC - cast Revive Pet if pet is dead\n"
+  .."             * New: More robust in-combat buffing,\n"
+  .."               - at start of combat, buff once only what's missing\n"
+  .."               - very finicky due to Blizzard restrictions, less broken than before\n"
+  .."\n\n"
   .."          Changes in r41.170326:\n\n"
   .."             * Midnight: weapon enhancements (Refulgent Weightstone, Whetstone, Razorstone, oils;\n"
   .."             * Midnight: profession-tool buffing (Razorstone); TWW Razorstone item IDs fixed\n"
   .."             * Midnight: flasks/phials, food, teas, Void-Touched Augment Rune\n"
   .."             * Accessibility: Item buff errors (e.g. invalid target) printed once to chat within 1.5 s\n"
-  .."\n\n"
-  .."          Changes in r40.110326:\n\n"
-  .."             * Single-target group buffs: one buff per group member\n"
-  .."             * BuffSettings: Additional/Ignore list fixed, expanded help\n"
-  .."             * BG/Arena: after resurrection, spellbook buffs queued; no flasks/food/scrolls/potions\n"
   .."\n\n"
   .."          |c0000FF96Many thanks to Chris S., Samantha R. and\n"
   .."          Twilight's Sundries for their kind donations.\n"
@@ -174,7 +177,7 @@ SMARTBUFF_OFTT_ANTIDAZE      = "Automatically cancels the\naspect of the cheetah
 SMARTBUFF_OFTT_SPLASHSTYLE   = "Changes the fontstyle of\nthe buff messages.";
 SMARTBUFF_OFTT_HIDESABUTTON  = "Hides the SmartBuff action button.";
 SMARTBUFF_OFTT_RETAINTEMPLATE = "When switching to a fresh template (never used, or no buffs enabled),\nthe current buff settings will be copied to it when this is checked.\nBlank templates are never copied over, so you cannot accidentally overwrite a configured template.";
-SMARTBUFF_OFTT_INCOMBAT      = "At the moment it only works on yourself.\nThe first buff you mark as in combat,\nwill set on the button before combat\nand you can use it in combat.\n!!! Warning !!!\nAll logic is disabled in combat!";
+SMARTBUFF_OFTT_INCOMBAT      = "Buffs flagged In-Combat (in per-buff options) are cast **ONCE** in as a best-effort\nsequence — when combat starts, and once again after combat resurrection if still fighting.\nNormal buff logic is disabled in combat!\nDo not add in-combat spells with cooldowns — they break the sequence.";
 SMARTBUFF_OFTT_SMARTDEBUFF   = "Shows the SmartDebuff frame.";
 SMARTBUFF_OFTT_SPLASHDURATION= "How many seconds the splash\nmessage will displayed,\nbefore it fades.";
 SMARTBUFF_OFTT_INSHAPESHIFT  = "Cast buffs also if you\nare shapeshifted.";
@@ -199,7 +202,7 @@ SMARTBUFF_BST_SKIPBGRES      = "Exclude in BGs";
 SMARTBUFF_BSTT_SELFONLY      = "Buffs only your character.";
 SMARTBUFF_BSTT_SELFNOT       = "Buffs all other selected classes,\nexcept your character.";
 SMARTBUFF_BSTT_SINGLETARGET  = "For single-target buffs (Earth Shield, Soulstone, etc.), prefer role filter (e.g. TANK) over class.";
-SMARTBUFF_BSTT_COMBATIN      = "Buffs if you are in combat.\nAll in-combat logic is disabled unless the main \"in combat\" option (in the options frame) is enabled.";
+SMARTBUFF_BSTT_COMBATIN      = "Include this buff in the in-combat sequence (only if the main in-combat option is on).\nAvoid spells with cooldowns — they break the sequence.";
 SMARTBUFF_BSTT_COMBATOUT     = "Buffs if you are out of combat.";
 SMARTBUFF_BSTT_MAINHAND      = "Buffs the Main Hand.";
 SMARTBUFF_BSTT_OFFHAND       = "Buffs the Off Hand.";
@@ -264,6 +267,8 @@ SMARTBUFF_MSG_CHARGES        = "charges";
 SMARTBUFF_MSG_SOUNDS         = "Splash Sound Selection: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec changed (%s), loading buff templates...";
 SMARTBUFF_MSG_PVP_PREP_ONLY  = "Due to API limitation, buffing only works during prep and is disabled once the match starts.";
+-- After next castsequence spell: "Player needs <spell> (in-combat)" — aligns with in-combat option wording. "" = OOC-style only.
+SMARTBUFF_MSG_CASTSEQUENCE_SUFFIX = " (in-combat)";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "Left click: options menu\nRight click: On/Off\nAlt-Left Click: SmartDebuff\nShift drag: Move button";
@@ -271,10 +276,6 @@ SMARTBUFF_TITAN_TT           = "Left Click: Open options\nRight Click: On/Off\nA
 SMARTBUFF_FUBAR_TT           = "\nLeft Click: Open options\nShift-Left Click: On/Off\nAlt-Left Click: SmartDebuff";
 
 SMARTBUFF_DEBUFF_TT          = "Shift-Left drag: Move frame\n|cff20d2ff- S button -|r\nLeft click: Show by classes\nShift-Left click: Class colors\nAlt-Left click: Highlight L/R\n|cff20d2ff- P button -|r\nLeft click: Hide pets on/off";
-
--- Misc
-SMARTBUFF_LOC_HEARTY         = "Hearty"
-
 
 -- Code table
 -- à : \195\160    è : \195\168    ì : \195\172    ò : \195\178    ù : \195\185

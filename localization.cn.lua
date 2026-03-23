@@ -389,7 +389,7 @@ SMARTBUFF_OFTT_MINIGRP       = "用迷你团队模式显示合理化的团队框
 SMARTBUFF_OFTT_ANTIDAZE      = "当自己队伍中有成员晕眩时，自动取消猎豹守护/豹群守护。";
 SMARTBUFF_OFTT_SPLASHSTYLE   = "改变BUFF提示信息的字体。";
 SMARTBUFF_OFTT_HIDESABUTTON  = "隐藏SmartBuff动作按钮。";
-SMARTBUFF_OFTT_INCOMBAT      = "目前只能用于你自己身上。\n你设定的第一个战斗中可释放的BUFF将在战斗前放置到动作按钮上，\n因此你可以在战斗中施放这个法术。\n警告：战斗中所有逻辑判断都将不可用！";
+SMARTBUFF_OFTT_INCOMBAT      = "在单个 Buff 设置中勾选「战斗中」的 Buff，会尽量按顺序各施放一轮：\n进入战斗时一轮；若仍在战斗中，战复后再一轮。\n战斗中常规 Buff 逻辑会关闭！\n不要加入有冷却的战斗法术 — 会打乱序列。";
 SMARTBUFF_OFTT_SMARTDEBUFF   = "显示SmartDebuff窗口。";
 SMARTBUFF_OFTT_SPLASHDURATION= "设定多少秒后提示信息消失。";
 SMARTBUFF_OFTT_SOUNDSELECT   = "选择所需的飞溅声.";
@@ -398,7 +398,7 @@ SMARTBUFF_OFTT_SOUNDSELECT   = "选择所需的飞溅声.";
 -- BUFF设置内容
 SMARTBUFF_BST_SELFONLY       = "仅对自身施法";
 SMARTBUFF_BST_SELFNOT        = "不对自身施法";
-SMARTBUFF_BST_COMBATIN       = "战斗状态触发";
+SMARTBUFF_BST_COMBATIN       = "战斗中";
 SMARTBUFF_BST_COMBATOUT      = "非战斗状态触发";
 SMARTBUFF_BST_MAINHAND       = "主手";
 SMARTBUFF_BST_OFFHAND        = "副手";
@@ -448,6 +448,7 @@ SMARTBUFF_MSG_CLASS          = "职业";
 SMARTBUFF_MSG_CHARGES        = "次数";
 SMARTBUFF_MSG_SOUNDS         = "飞溅声音选择: "
 SMARTBUFF_MSG_PVP_PREP_ONLY  = "由于API限制，增益仅在准备阶段有效，比赛开始后将停用。";
+SMARTBUFF_MSG_CASTSEQUENCE_SUFFIX = "（战斗中）";
 
 -- Support
 SMARTBUFF_MINIMAP_TT         = "左键：选项菜单\n右键：开/关\nAlt+左键：SmartDebuff\n按Shift拖拽：移动按钮";

@@ -1,4 +1,4 @@
-local _;
+﻿local _;
 local S = SMARTBUFF_GLOBALS;
 
 -- ---------------------------------------------------------------------------
@@ -1240,6 +1240,8 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_CALL_PET_3", 83243, isSpellBookBuff); -- "Call Pet 3"
   GetSpellInfoIfNeeded("SMARTBUFF_CALL_PET_4", 83244, isSpellBookBuff); -- "Call Pet 4"
   GetSpellInfoIfNeeded("SMARTBUFF_CALL_PET_5", 83245, isSpellBookBuff); -- "Call Pet 5"
+  -- Revive Pet if pet is dead instead of calling it
+  GetSpellInfoIfNeeded("SMARTBUFF_REVIVE_PET", 982, isSpellBookBuff); -- "Revive Pet"
   -- Hunter buff links
   S.LinkAspects = { 186257, 193530, 186289 }; -- Aspect of the Cheetah, Wild, Eagle
 --  S.LinkAmmo     = { SMARTBUFF_AMMOI, SMARTBUFF_AMMOP, SMARTBUFF_AMMOF };
