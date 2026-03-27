@@ -4638,6 +4638,20 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
 
   if not (chain) then chain = { reagent }; end
 
+  -- Precompute chain item IDs once (avoids string.match per bag slot per FindItem call)
+  local chainMatch = {};
+  for i = 1, #chain do
+    local cid = nil;
+    if type(chain[i]) == "number" then
+      cid = chain[i];
+    elseif type(chain[i]) == "string" then
+      cid = tonumber(string.match(chain[i], "item:(%d+)"));
+    end
+    if cid then
+      chainMatch[cid] = true;
+    end
+  end
+
   if (debug) then
     SMARTBUFF_AddMsgD("FindItem: Searching for reagent=" .. tostring(reagent) .. " (reagentItemID=" .. tostring(reagentItemID) .. "), chain size=" .. #chain);
     for i = 1, #chain do
@@ -4654,23 +4668,8 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
         -- Match reagent's item ID first (so e.g. "item:147707" is found even when chain is LinkFlaskLeg)
         if (reagentItemID and bagItemID == reagentItemID) then
           matched = true;
-        end
-        if (not matched) then
-          for i = 1, #chain, 1 do
-            -- Handle both numeric IDs and item link strings
-            -- Supports Dragonflight item qualities by extracting ID from item links
-            local buffItemID = nil;
-            if type(chain[i]) == "number" then
-              buffItemID = chain[i];
-            elseif type(chain[i]) == "string" then
-              buffItemID = tonumber(string.match(chain[i], "item:(%d+)"));
-            end
-
-            if buffItemID and buffItemID == bagItemID then
-              matched = true;
-              break;
-            end
-          end
+        elseif chainMatch[bagItemID] then
+          matched = true;
         end
         if (matched) then
           local buffItemID = bagItemID;
@@ -4718,7 +4717,7 @@ end
 -- we now search on ItemLink in addition to itemText, in order to support Dragonflight item qualities
 -- Returns: bag, slot, count, texture (first match only - count is stackCount of first match)
 function SMARTBUFF_FindItem(reagent, chain)
-  local bag, slot, firstCount, _, _, texture = SMARTBUFF_FindItemInternal(reagent, chain, true);
+  local bag, slot, firstCount, _, _, texture = SMARTBUFF_FindItemInternal(reagent, chain, O and O.Debug);
   if (reagent == nil) then
     return nil, nil, -1, nil;
   end
