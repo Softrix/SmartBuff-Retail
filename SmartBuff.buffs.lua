@@ -1,4 +1,4 @@
-﻿local _;
+local _;
 local S = SMARTBUFF_GLOBALS;
 
 -- ---------------------------------------------------------------------------
@@ -402,6 +402,7 @@ local function GetItemInfoIfNeeded(varName, itemId)
     SmartBuffItemSpellCache.items[varName] = itemLink;
     SmartBuffItemSpellCache.itemIDs[varName] = itemId;
     SmartBuffItemSpellCache.itemData[varName] = {minLevel or 0, texture or 0};  -- Store minLevel and texture
+    SMARTBUFF_ItemCacheBindItemID(SmartBuffItemSpellCache, itemId, varName);
     SmartBuffItemSpellCache.needsRefresh[varName] = false;  -- Mark as valid
     SmartBuffItemSpellCache.version = SMARTBUFF_VERSION;
     SmartBuffItemSpellCache.lastUpdate = GetTime();
@@ -459,6 +460,7 @@ local function InsertItem(t, type, itemId, spellId, duration, link)
       SmartBuffItemSpellCache.items[varName] = item;
       SmartBuffItemSpellCache.itemIDs[varName] = itemId;
       SmartBuffItemSpellCache.itemData[varName] = {minLevel or 0, texture or 0};
+      SMARTBUFF_ItemCacheBindItemID(SmartBuffItemSpellCache, itemId, varName);
       SmartBuffItemSpellCache.needsRefresh[varName] = false;
     elseif (item) then
       -- Item link exists but data incomplete - mark for refresh

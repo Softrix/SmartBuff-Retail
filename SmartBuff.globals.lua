@@ -46,7 +46,8 @@ if (not SmartBuffItemSpellCache) then
     spells = {},  -- {[varName] = spellInfo or spellName, ...} - spell data for spells
     itemIDs = {},  -- {[varName] = itemID, ...} - itemIDs for quick lookup
     itemData = {},  -- {[varName] = {minLevel, texture}, ...} - additional item data
-    needsRefresh = {}  -- {[varName] = true/false, ...} - flag for items/spells that need refresh
+    needsRefresh = {},  -- {[varName] = true/false, ...} - flag for items/spells that need refresh
+    varNameByItemID = {}  -- {[itemID] = varName} - reverse index for fast SetBuff cache lookup
   };
 end
 

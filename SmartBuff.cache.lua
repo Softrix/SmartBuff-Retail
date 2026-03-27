@@ -19,7 +19,30 @@ local function defaultToyCache()
   return { version = nil, lastUpdate = 0, toyCount = 0, toybox = {} };
 end
 local function defaultItemSpellCache()
-  return { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {} };
+  return { version = nil, lastUpdate = 0, items = {}, spells = {}, itemIDs = {}, itemData = {}, needsRefresh = {}, varNameByItemID = {} };
+end
+
+-- Reverse index: itemID -> varName for O(1) cache lookup in SetBuff (avoids pairs() over huge cache.items).
+function SMARTBUFF_ItemCacheRebuildVarNameByItemID(cache)
+  if (not cache) then return; end
+  if (not cache.varNameByItemID) then
+    cache.varNameByItemID = {};
+  else
+    wipe(cache.varNameByItemID);
+  end
+  if (not cache.items or not cache.itemIDs) then return; end
+  for varName, _ in pairs(cache.items) do
+    local itemId = cache.itemIDs[varName];
+    if (itemId) then
+      cache.varNameByItemID[itemId] = varName;
+    end
+  end
+end
+
+function SMARTBUFF_ItemCacheBindItemID(cache, itemId, varName)
+  if (not cache or not itemId or not varName) then return; end
+  if (not cache.varNameByItemID) then cache.varNameByItemID = {}; end
+  cache.varNameByItemID[itemId] = varName;
 end
 local function defaultBuffRelationsCache()
   return { version = nil, lastUpdate = 0, chains = {}, links = {} };
@@ -39,6 +62,13 @@ function SMARTBUFF_InitItemSpellCache()
   if (not SmartBuffItemSpellCache) then SmartBuffItemSpellCache = defaultItemSpellCache(); end
   if (not SmartBuffItemSpellCache.itemData) then SmartBuffItemSpellCache.itemData = {}; end
   if (not SmartBuffItemSpellCache.needsRefresh) then SmartBuffItemSpellCache.needsRefresh = {}; end
+  if (not SmartBuffItemSpellCache.varNameByItemID) then
+    SmartBuffItemSpellCache.varNameByItemID = {};
+  end
+  -- SavedVariables from older builds may lack reverse index: rebuild once when items exist but index is empty
+  if (SmartBuffItemSpellCache.items and next(SmartBuffItemSpellCache.items) and not next(SmartBuffItemSpellCache.varNameByItemID)) then
+    SMARTBUFF_ItemCacheRebuildVarNameByItemID(SmartBuffItemSpellCache);
+  end
 end
 function SMARTBUFF_InitBuffRelationsCache()
   if (not SmartBuffBuffRelationsCache) then SmartBuffBuffRelationsCache = defaultBuffRelationsCache(); end
@@ -166,6 +196,8 @@ function SMARTBUFF_SyncItemSpellCache()
       cache.needsRefresh[varName] = true;
     end
   end
+
+  SMARTBUFF_ItemCacheRebuildVarNameByItemID(cache);
 
   cache.version = SMARTBUFF_VERSION;
   cache.lastUpdate = GetTime();

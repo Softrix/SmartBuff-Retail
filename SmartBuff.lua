@@ -1102,6 +1102,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
               cache.items[varName] = itemLink;
               cache.itemIDs[varName] = dataID;
               cache.itemData[varName] = {minLevel or 0, texture or 0};
+              SMARTBUFF_ItemCacheBindItemID(cache, dataID, varName);
               cache.needsRefresh[varName] = false;
               _G[varName] = itemLink;
               local placeholder = "item:" .. tostring(dataID);
@@ -1865,6 +1866,21 @@ local function ExtractItemID(item)
   return nil;
 end
 
+-- O(1) minLevel/texture from SmartBuffItemSpellCache (avoids pairs(cache.items) per buff row).
+local function GetItemSpellCacheMinLevelTexture(cache, buffLink)
+  if (not cache or not cache.itemData or not buffLink) then return nil, nil; end
+  local id = ExtractItemID(buffLink);
+  if (not id) then return nil, nil; end
+  if (not cache.varNameByItemID) then
+    SMARTBUFF_ItemCacheRebuildVarNameByItemID(cache);
+  end
+  local varName = cache.varNameByItemID and cache.varNameByItemID[id];
+  if (not varName) then return nil, nil; end
+  local itemData = cache.itemData[varName];
+  if (not itemData) then return nil, nil; end
+  return itemData[1], itemData[2];
+end
+
 -- Helper for UI display: resolve spell/item IDs and varNames to display names using cache first, then API.
 -- buffType (optional): when provided and SMARTBUFF_IsItem(buffType), resolve numeric/ID as item only;
 -- when spell-like, spell only; when nil, keep current fallback.
@@ -2123,21 +2139,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
       local minLevel, texture = nil, nil;
       local cache = SmartBuffItemSpellCache;
       if (cache and cache.itemData) then
-        -- Find varName by itemLink; cap iterations to avoid "script ran too long"
-        local seen = 0;
-        local maxCacheScan = 64;
-        for varName, itemLink in pairs(cache.items or {}) do
-          seen = seen + 1;
-          if (seen > maxCacheScan) then break; end
-          if (itemLink == cBuffs[i].BuffS) then
-            local itemData = cache.itemData[varName];
-            if (itemData) then
-              minLevel = itemData[1];
-              texture = itemData[2];
-            end
-            break;
-          end
-        end
+        minLevel, texture = GetItemSpellCacheMinLevelTexture(cache, cBuffs[i].BuffS);
       end
 
       -- If not in cache, try API call
@@ -2168,21 +2170,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
       local minLevel, texture = nil, nil;
       local cache = SmartBuffItemSpellCache;
       if (cache and cache.itemData) then
-        -- Find varName by itemLink; cap iterations to avoid "script ran too long"
-        local seen = 0;
-        local maxCacheScan = 64;
-        for varName, itemLink in pairs(cache.items or {}) do
-          seen = seen + 1;
-          if (seen > maxCacheScan) then break; end
-          if (itemLink == cBuffs[i].BuffS) then
-            local itemData = cache.itemData[varName];
-            if (itemData) then
-              minLevel = itemData[1];
-              texture = itemData[2];
-            end
-            break;
-          end
-        end
+        minLevel, texture = GetItemSpellCacheMinLevelTexture(cache, cBuffs[i].BuffS);
       end
 
       -- If not in cache, try API call
