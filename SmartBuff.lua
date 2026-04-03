@@ -10,8 +10,7 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_DATE               = "230326"; -- EU Date: DDMMYY
-SMARTBUFF_VERSION            = "r41." .. SMARTBUFF_DATE;
+SMARTBUFF_VERSION            = "r42.030426"; -- EU Date: DDMMYY
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
@@ -1102,6 +1101,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
               cache.items[varName] = itemLink;
               cache.itemIDs[varName] = dataID;
               cache.itemData[varName] = {minLevel or 0, texture or 0};
+              SMARTBUFF_ItemCacheBindItemID(cache, dataID, varName);
               cache.needsRefresh[varName] = false;
               _G[varName] = itemLink;
               local placeholder = "item:" .. tostring(dataID);
@@ -1865,6 +1865,21 @@ local function ExtractItemID(item)
   return nil;
 end
 
+-- O(1) minLevel/texture from SmartBuffItemSpellCache (avoids pairs(cache.items) per buff row).
+local function GetItemSpellCacheMinLevelTexture(cache, buffLink)
+  if (not cache or not cache.itemData or not buffLink) then return nil, nil; end
+  local id = ExtractItemID(buffLink);
+  if (not id) then return nil, nil; end
+  if (not cache.varNameByItemID) then
+    SMARTBUFF_ItemCacheRebuildVarNameByItemID(cache);
+  end
+  local varName = cache.varNameByItemID and cache.varNameByItemID[id];
+  if (not varName) then return nil, nil; end
+  local itemData = cache.itemData[varName];
+  if (not itemData) then return nil, nil; end
+  return itemData[1], itemData[2];
+end
+
 -- Helper for UI display: resolve spell/item IDs and varNames to display names using cache first, then API.
 -- buffType (optional): when provided and SMARTBUFF_IsItem(buffType), resolve numeric/ID as item only;
 -- when spell-like, spell only; when nil, keep current fallback.
@@ -1996,6 +2011,24 @@ local function GetBuffDisplayName(buffName, buffType)
   return buffName;
 end
 
+-- Retail often returns one table from GetTrackingInfo; older builds returned name, texture, active, category.
+function SMARTBUFF_NormalizeMinimapTrackingInfo(slotIndex)
+  local ok, r1, r2, r3, r4 = pcall(function() return C_Minimap.GetTrackingInfo(slotIndex); end);
+  if (not ok or r1 == nil) then return nil, nil, nil, nil; end
+  if (type(r1) == "table") then
+    return r1.name, r1.texture, r1.active, r1.type;
+  end
+  return r1, r2, r3, r4;
+end
+
+-- Compare spellInfo table (from GetSpellInfo) to another spell ref; both may be tables with .name.
+function SMARTBUFF_SpellInfoNameMatches(spellInfoA, spellRefB)
+  if (spellInfoA == nil or spellRefB == nil) then return false; end
+  local na = (type(spellInfoA) == "table" and spellInfoA.name) or spellInfoA;
+  local nb = (type(spellRefB) == "table" and spellRefB.name) or spellRefB;
+  return na ~= nil and nb ~= nil and na == nb;
+end
+
 function SMARTBUFF_SetBuff(buff, i, ia)
   if (buff == nil or buff[1] == nil) then return i; end
   local isItemType = (SMARTBUFF_IsItem(buff[3]) or buff[3] == SMARTBUFF_CONST_WEAPON);
@@ -2103,9 +2136,9 @@ function SMARTBUFF_SetBuff(buff, i, ia)
     if (cBuffs[i].Type == SMARTBUFF_CONST_TRACK) then
       local b = false;
       for n = 1, C_Minimap.GetNumTrackingTypes() do
-        local trackN, trackT, trackA, trackC = C_Minimap.GetTrackingInfo(n);
+        local trackN, trackT, trackA, trackC = SMARTBUFF_NormalizeMinimapTrackingInfo(n);
         if (trackN ~= nil) then
-          --SMARTBUFF_AddMsgD(n..". "..trackN.." ("..trackC..")");
+          --SMARTBUFF_AddMsgD(n..". "..trackN.." ("..tostring(trackC)..")");
           if (trackN == cBuffs[i].BuffS) then
             b = true;
             --cBuffs[i].IDS = SMARTBUFF_GetSpellID(cBuffs[i].BuffS);
@@ -2123,21 +2156,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
       local minLevel, texture = nil, nil;
       local cache = SmartBuffItemSpellCache;
       if (cache and cache.itemData) then
-        -- Find varName by itemLink; cap iterations to avoid "script ran too long"
-        local seen = 0;
-        local maxCacheScan = 64;
-        for varName, itemLink in pairs(cache.items or {}) do
-          seen = seen + 1;
-          if (seen > maxCacheScan) then break; end
-          if (itemLink == cBuffs[i].BuffS) then
-            local itemData = cache.itemData[varName];
-            if (itemData) then
-              minLevel = itemData[1];
-              texture = itemData[2];
-            end
-            break;
-          end
-        end
+        minLevel, texture = GetItemSpellCacheMinLevelTexture(cache, cBuffs[i].BuffS);
       end
 
       -- If not in cache, try API call
@@ -2168,21 +2187,7 @@ function SMARTBUFF_SetBuff(buff, i, ia)
       local minLevel, texture = nil, nil;
       local cache = SmartBuffItemSpellCache;
       if (cache and cache.itemData) then
-        -- Find varName by itemLink; cap iterations to avoid "script ran too long"
-        local seen = 0;
-        local maxCacheScan = 64;
-        for varName, itemLink in pairs(cache.items or {}) do
-          seen = seen + 1;
-          if (seen > maxCacheScan) then break; end
-          if (itemLink == cBuffs[i].BuffS) then
-            local itemData = cache.itemData[varName];
-            if (itemData) then
-              minLevel = itemData[1];
-              texture = itemData[2];
-            end
-            break;
-          end
-        end
+        minLevel, texture = GetItemSpellCacheMinLevelTexture(cache, cBuffs[i].BuffS);
       end
 
       -- If not in cache, try API call
@@ -3281,28 +3286,41 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
               -- Tracking ability ------------------------------------------------------------------------
               if (cBuff.Type == SMARTBUFF_CONST_TRACK) then
-                --print("Check tracking: "..buffnS)
-                local count = C_Minimap.GetNumTrackingTypes();
-                for n = 1, C_Minimap.GetNumTrackingTypes() do
-                  local trackN, trackT, trackA, trackC = C_Minimap.GetTrackingInfo(n);
-                  if (trackN ~= nil and not trackA) then
-                    SMARTBUFF_AddMsgD(n .. ". " .. trackN .. " (" .. trackC .. ")");
-                    if (trackN == buffnS) then
-                      if (sPlayerClass == "DRUID" and buffnS == SMARTBUFF_DRUID_TRACK.name) then
-                        if (isShapeshifted and sShapename == SMARTBUFF_DRUID_CAT) then
-                          buff = buffnS;
-                          C_Minimap.SetTracking(n, 1);
-                        end
-                      else
-                        buff = buffnS;
-                        C_Minimap.SetTracking(n, 1);
-                        --print("SetTracking: "..n)
+                local druidTrackNeedCat = false;
+                if (sPlayerClass == "DRUID") then
+                  local hu = (type(SMARTBUFF_TRACKHUMANOIDS) == "table" and SMARTBUFF_TRACKHUMANOIDS.name);
+                  local be = (type(SMARTBUFF_TRACKBEASTS) == "table" and SMARTBUFF_TRACKBEASTS.name);
+                  druidTrackNeedCat = (hu ~= nil and buffnS == hu) or (be ~= nil and buffnS == be);
+                end
+                local inCat = SMARTBUFF_SpellInfoNameMatches(sShapename, SMARTBUFF_DRUID_CAT);
+                -- Druid humanoids/beasts: no minimap check, reminder, or toggle until cat form.
+                if (druidTrackNeedCat and not inCat) then
+                  buff = nil;
+                else
+                  local slotIdx, isOn = nil, false;
+                  for n = 1, C_Minimap.GetNumTrackingTypes() do
+                    local trackN, trackT, trackA, trackC = SMARTBUFF_NormalizeMinimapTrackingInfo(n);
+                    if (trackN ~= nil and trackN == buffnS) then
+                      slotIdx = n;
+                      isOn = (trackA == true or trackA == 1);
+                      if (O.Debug) then
+                        SMARTBUFF_AddMsgD(n .. ". " .. trackN .. " (" .. tostring(trackC) .. ") active=" .. tostring(trackA));
                       end
-                      if (buff ~= nil) then
-                        SMARTBUFF_AddMsgD("Tracking enabled: " .. buff);
-                        buff = nil;
-                      end
+                      break;
                     end
+                  end
+                  if (slotIdx == nil) then
+                    buff = nil;
+                  elseif (isOn) then
+                    buff = nil;
+                  elseif (mode == 1) then
+                    buff = buffnS;
+                  elseif (mode == 0 or mode == 5) then
+                    pcall(function() C_Minimap.SetTracking(slotIdx, 1); end);
+                    SMARTBUFF_AddMsgD("Tracking enabled: " .. buffnS);
+                    return 0;
+                  else
+                    buff = nil;
                   end
                 end
 
@@ -4102,7 +4120,6 @@ end
 
 -- END SMARTBUFF_doCast
 
-
 -- checks if the unit is the player
 function SMARTBUFF_IsPlayer(unit)
   if (unit and UnitIsUnit("player", unit)) then
@@ -4650,6 +4667,20 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
 
   if not (chain) then chain = { reagent }; end
 
+  -- Precompute chain item IDs once (avoids string.match per bag slot per FindItem call)
+  local chainMatch = {};
+  for i = 1, #chain do
+    local cid = nil;
+    if type(chain[i]) == "number" then
+      cid = chain[i];
+    elseif type(chain[i]) == "string" then
+      cid = tonumber(string.match(chain[i], "item:(%d+)"));
+    end
+    if cid then
+      chainMatch[cid] = true;
+    end
+  end
+
   if (debug) then
     SMARTBUFF_AddMsgD("FindItem: Searching for reagent=" .. tostring(reagent) .. " (reagentItemID=" .. tostring(reagentItemID) .. "), chain size=" .. #chain);
     for i = 1, #chain do
@@ -4666,23 +4697,8 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
         -- Match reagent's item ID first (so e.g. "item:147707" is found even when chain is LinkFlaskLeg)
         if (reagentItemID and bagItemID == reagentItemID) then
           matched = true;
-        end
-        if (not matched) then
-          for i = 1, #chain, 1 do
-            -- Handle both numeric IDs and item link strings
-            -- Supports Dragonflight item qualities by extracting ID from item links
-            local buffItemID = nil;
-            if type(chain[i]) == "number" then
-              buffItemID = chain[i];
-            elseif type(chain[i]) == "string" then
-              buffItemID = tonumber(string.match(chain[i], "item:(%d+)"));
-            end
-
-            if buffItemID and buffItemID == bagItemID then
-              matched = true;
-              break;
-            end
-          end
+        elseif chainMatch[bagItemID] then
+          matched = true;
         end
         if (matched) then
           local buffItemID = bagItemID;
@@ -4730,7 +4746,7 @@ end
 -- we now search on ItemLink in addition to itemText, in order to support Dragonflight item qualities
 -- Returns: bag, slot, count, texture (first match only - count is stackCount of first match)
 function SMARTBUFF_FindItem(reagent, chain)
-  local bag, slot, firstCount, _, _, texture = SMARTBUFF_FindItemInternal(reagent, chain, true);
+  local bag, slot, firstCount, _, _, texture = SMARTBUFF_FindItemInternal(reagent, chain, O and O.Debug);
   if (reagent == nil) then
     return nil, nil, -1, nil;
   end

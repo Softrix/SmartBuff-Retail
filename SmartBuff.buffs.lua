@@ -1,4 +1,4 @@
-﻿local _;
+local _;
 local S = SMARTBUFF_GLOBALS;
 
 -- ---------------------------------------------------------------------------
@@ -402,6 +402,7 @@ local function GetItemInfoIfNeeded(varName, itemId)
     SmartBuffItemSpellCache.items[varName] = itemLink;
     SmartBuffItemSpellCache.itemIDs[varName] = itemId;
     SmartBuffItemSpellCache.itemData[varName] = {minLevel or 0, texture or 0};  -- Store minLevel and texture
+    SMARTBUFF_ItemCacheBindItemID(SmartBuffItemSpellCache, itemId, varName);
     SmartBuffItemSpellCache.needsRefresh[varName] = false;  -- Mark as valid
     SmartBuffItemSpellCache.version = SMARTBUFF_VERSION;
     SmartBuffItemSpellCache.lastUpdate = GetTime();
@@ -459,6 +460,7 @@ local function InsertItem(t, type, itemId, spellId, duration, link)
       SmartBuffItemSpellCache.items[varName] = item;
       SmartBuffItemSpellCache.itemIDs[varName] = itemId;
       SmartBuffItemSpellCache.itemData[varName] = {minLevel or 0, texture or 0};
+      SMARTBUFF_ItemCacheBindItemID(SmartBuffItemSpellCache, itemId, varName);
       SmartBuffItemSpellCache.needsRefresh[varName] = false;
     elseif (item) then
       -- Item link exists but data incomplete - mark for refresh
@@ -1382,6 +1384,8 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_FINDMINERALS", 2580, isSpellBookBuff); --"Find Minerals"
   GetSpellInfoIfNeeded("SMARTBUFF_FINDHERBS", 2383, isSpellBookBuff); --"Find Herbs"
   GetSpellInfoIfNeeded("SMARTBUFF_FINDTREASURE", 2481, isSpellBookBuff); --"Find Treasure"
+  GetSpellInfoIfNeeded("SMARTBUFF_FINDFISH", 43308, isSpellBookBuff); --"Find Fish"
+  GetSpellInfoIfNeeded("SMARTBUFF_FINDLUMBER", 1256697, isSpellBookBuff); --"Find Lumber" (lumber profession)
   GetSpellInfoIfNeeded("SMARTBUFF_TRACKHUMANOIDS", 19883, isSpellBookBuff); --"Track Humanoids"
   GetSpellInfoIfNeeded("SMARTBUFF_TRACKBEASTS", 1494, isSpellBookBuff); --"Track Beasts"
   GetSpellInfoIfNeeded("SMARTBUFF_TRACKUNDEAD", 19884, isSpellBookBuff); --"Track Undead"
@@ -1390,6 +1394,8 @@ function SMARTBUFF_InitSpellIDs()
   GetSpellInfoIfNeeded("SMARTBUFF_TRACKDEMONS", 19878, isSpellBookBuff); --"Track Demons"
   GetSpellInfoIfNeeded("SMARTBUFF_TRACKGIANTS", 19882, isSpellBookBuff); --"Track Giants"
   GetSpellInfoIfNeeded("SMARTBUFF_TRACKDRAGONKIN", 19879, isSpellBookBuff); --"Track Dragonkin"
+  GetSpellInfoIfNeeded("SMARTBUFF_TRACKMECHANICALS", 229533, isSpellBookBuff); --"Track Mechanicals"
+  GetSpellInfoIfNeeded("SMARTBUFF_TRACKPETS", 122026, isSpellBookBuff); --"Track Pets"
 
   -- Racial
   GetSpellInfoIfNeeded("SMARTBUFF_STONEFORM", 20594,  isSpellBookBuff); --"Stoneform"
@@ -2492,6 +2498,8 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_FINDMINERALS, -1, SMARTBUFF_CONST_TRACK},
     {SMARTBUFF_FINDHERBS, -1, SMARTBUFF_CONST_TRACK},
     {SMARTBUFF_FINDTREASURE, -1, SMARTBUFF_CONST_TRACK},
+    {SMARTBUFF_FINDFISH, -1, SMARTBUFF_CONST_TRACK},
+    {SMARTBUFF_FINDLUMBER, -1, SMARTBUFF_CONST_TRACK},
     {SMARTBUFF_TRACKHUMANOIDS, -1, SMARTBUFF_CONST_TRACK},
     {SMARTBUFF_TRACKBEASTS, -1, SMARTBUFF_CONST_TRACK},
     {SMARTBUFF_TRACKUNDEAD, -1, SMARTBUFF_CONST_TRACK},
@@ -2499,7 +2507,9 @@ function SMARTBUFF_InitSpellList()
     {SMARTBUFF_TRACKELEMENTALS, -1, SMARTBUFF_CONST_TRACK},
     {SMARTBUFF_TRACKDEMONS, -1, SMARTBUFF_CONST_TRACK},
     {SMARTBUFF_TRACKGIANTS, -1, SMARTBUFF_CONST_TRACK},
-    {SMARTBUFF_TRACKDRAGONKIN, -1, SMARTBUFF_CONST_TRACK}
+    {SMARTBUFF_TRACKDRAGONKIN, -1, SMARTBUFF_CONST_TRACK},
+    {SMARTBUFF_TRACKMECHANICALS, -1, SMARTBUFF_CONST_TRACK},
+    {SMARTBUFF_TRACKPETS, -1, SMARTBUFF_CONST_TRACK}
   };
 
   -- Racial
