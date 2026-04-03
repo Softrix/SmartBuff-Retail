@@ -2012,6 +2012,24 @@ local function GetBuffDisplayName(buffName, buffType)
   return buffName;
 end
 
+-- Retail often returns one table from GetTrackingInfo; older builds returned name, texture, active, category.
+function SMARTBUFF_NormalizeMinimapTrackingInfo(slotIndex)
+  local ok, r1, r2, r3, r4 = pcall(function() return C_Minimap.GetTrackingInfo(slotIndex); end);
+  if (not ok or r1 == nil) then return nil, nil, nil, nil; end
+  if (type(r1) == "table") then
+    return r1.name, r1.texture, r1.active, r1.type;
+  end
+  return r1, r2, r3, r4;
+end
+
+-- Compare spellInfo table (from GetSpellInfo) to another spell ref; both may be tables with .name.
+function SMARTBUFF_SpellInfoNameMatches(spellInfoA, spellRefB)
+  if (spellInfoA == nil or spellRefB == nil) then return false; end
+  local na = (type(spellInfoA) == "table" and spellInfoA.name) or spellInfoA;
+  local nb = (type(spellRefB) == "table" and spellRefB.name) or spellRefB;
+  return na ~= nil and nb ~= nil and na == nb;
+end
+
 function SMARTBUFF_SetBuff(buff, i, ia)
   if (buff == nil or buff[1] == nil) then return i; end
   local isItemType = (SMARTBUFF_IsItem(buff[3]) or buff[3] == SMARTBUFF_CONST_WEAPON);
@@ -2119,9 +2137,9 @@ function SMARTBUFF_SetBuff(buff, i, ia)
     if (cBuffs[i].Type == SMARTBUFF_CONST_TRACK) then
       local b = false;
       for n = 1, C_Minimap.GetNumTrackingTypes() do
-        local trackN, trackT, trackA, trackC = C_Minimap.GetTrackingInfo(n);
+        local trackN, trackT, trackA, trackC = SMARTBUFF_NormalizeMinimapTrackingInfo(n);
         if (trackN ~= nil) then
-          --SMARTBUFF_AddMsgD(n..". "..trackN.." ("..trackC..")");
+          --SMARTBUFF_AddMsgD(n..". "..trackN.." ("..tostring(trackC)..")");
           if (trackN == cBuffs[i].BuffS) then
             b = true;
             --cBuffs[i].IDS = SMARTBUFF_GetSpellID(cBuffs[i].BuffS);
@@ -3269,28 +3287,41 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
               -- Tracking ability ------------------------------------------------------------------------
               if (cBuff.Type == SMARTBUFF_CONST_TRACK) then
-                --print("Check tracking: "..buffnS)
-                local count = C_Minimap.GetNumTrackingTypes();
-                for n = 1, C_Minimap.GetNumTrackingTypes() do
-                  local trackN, trackT, trackA, trackC = C_Minimap.GetTrackingInfo(n);
-                  if (trackN ~= nil and not trackA) then
-                    SMARTBUFF_AddMsgD(n .. ". " .. trackN .. " (" .. trackC .. ")");
-                    if (trackN == buffnS) then
-                      if (sPlayerClass == "DRUID" and buffnS == SMARTBUFF_DRUID_TRACK.name) then
-                        if (isShapeshifted and sShapename == SMARTBUFF_DRUID_CAT) then
-                          buff = buffnS;
-                          C_Minimap.SetTracking(n, 1);
-                        end
-                      else
-                        buff = buffnS;
-                        C_Minimap.SetTracking(n, 1);
-                        --print("SetTracking: "..n)
+                local druidTrackNeedCat = false;
+                if (sPlayerClass == "DRUID") then
+                  local hu = (type(SMARTBUFF_TRACKHUMANOIDS) == "table" and SMARTBUFF_TRACKHUMANOIDS.name);
+                  local be = (type(SMARTBUFF_TRACKBEASTS) == "table" and SMARTBUFF_TRACKBEASTS.name);
+                  druidTrackNeedCat = (hu ~= nil and buffnS == hu) or (be ~= nil and buffnS == be);
+                end
+                local inCat = SMARTBUFF_SpellInfoNameMatches(sShapename, SMARTBUFF_DRUID_CAT);
+                -- Druid humanoids/beasts: no minimap check, reminder, or toggle until cat form.
+                if (druidTrackNeedCat and not inCat) then
+                  buff = nil;
+                else
+                  local slotIdx, isOn = nil, false;
+                  for n = 1, C_Minimap.GetNumTrackingTypes() do
+                    local trackN, trackT, trackA, trackC = SMARTBUFF_NormalizeMinimapTrackingInfo(n);
+                    if (trackN ~= nil and trackN == buffnS) then
+                      slotIdx = n;
+                      isOn = (trackA == true or trackA == 1);
+                      if (O.Debug) then
+                        SMARTBUFF_AddMsgD(n .. ". " .. trackN .. " (" .. tostring(trackC) .. ") active=" .. tostring(trackA));
                       end
-                      if (buff ~= nil) then
-                        SMARTBUFF_AddMsgD("Tracking enabled: " .. buff);
-                        buff = nil;
-                      end
+                      break;
                     end
+                  end
+                  if (slotIdx == nil) then
+                    buff = nil;
+                  elseif (isOn) then
+                    buff = nil;
+                  elseif (mode == 1) then
+                    buff = buffnS;
+                  elseif (mode == 0 or mode == 5) then
+                    pcall(function() C_Minimap.SetTracking(slotIdx, 1); end);
+                    SMARTBUFF_AddMsgD("Tracking enabled: " .. buffnS);
+                    return 0;
+                  else
+                    buff = nil;
                   end
                 end
 
@@ -4089,7 +4120,6 @@ function SMARTBUFF_doCast(unit, id, spellName, levels, buffType)
 end
 
 -- END SMARTBUFF_doCast
-
 
 -- checks if the unit is the player
 function SMARTBUFF_IsPlayer(unit)

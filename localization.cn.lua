@@ -17,7 +17,6 @@ SMARTBUFF_CREDITS = "|cffffffff"
 -- 德鲁伊
 SMARTBUFF_DRUID_CAT = "猎豹形态";
 SMARTBUFF_DRUID_MOONKIN = "枭兽形态";
-SMARTBUFF_DRUID_TRACK = "追踪人型生物";
 
 SMARTBUFF_MOTW = "野性印记";
 SMARTBUFF_GOTW = "野性赐福";
