@@ -2,3 +2,4 @@
 *.wowsln
 .vscode
 planning*
+.cursor/

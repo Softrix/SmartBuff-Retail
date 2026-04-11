@@ -91,7 +91,8 @@ local sShapename             = "";
 local tStartZone             = 0;
 local tTicker                = 0;
 local tSync                  = 0;
-local setBuffsPending        = false;  -- SMARTBUFF_ScheduleSetBuffs: one timer at a time
+local setBuffsPending          = false;  -- SMARTBUFF_ScheduleSetBuffs: one timer at a time
+local buffOrderScrollScheduled = false;  -- SMARTBUFF_ScheduleBuffOrderOnScroll (coalesced redraw)
 
 local sRealmName             = nil;
 local sPlayerName            = nil;
@@ -1147,6 +1148,10 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
       if (didUpdate) then
         SMARTBUFF_ScheduleSetBuffs();
       end
+      -- Any successful load can resolve names for rows keyed by item:ID / numeric id (not in ExpectedData)
+      if (SmartBuffOptionsFrame and SmartBuffOptionsFrame:IsVisible()) then
+        SMARTBUFF_ScheduleBuffOrderOnScroll();
+      end
     end
   end
 
@@ -1679,6 +1684,18 @@ function SMARTBUFF_ScheduleSetBuffs()
     if (not InCombatLockdown() and isInit and O and O.Toggle) then
       SMARTBUFF_SetBuffs();
       isSyncReq = true;
+    end
+  end);
+end
+
+-- Global name so SMARTBUFF_OnEvent (defined earlier in file) resolves it; closes over buffOrderScrollScheduled above.
+function SMARTBUFF_ScheduleBuffOrderOnScroll()
+  if (buffOrderScrollScheduled) then return end;
+  buffOrderScrollScheduled = true;
+  C_Timer.After(0, function()
+    buffOrderScrollScheduled = false;
+    if (SmartBuffOptionsFrame and SmartBuffOptionsFrame:IsVisible()) then
+      SMARTBUFF_BuffOrderOnScroll();
     end
   end);
 end
@@ -4594,8 +4611,24 @@ local function SMARTBUFF_FindItemInternal(reagent, chain, debug)
     return nil, nil, 0, 0, nil, nil;
   end
 
-  -- Handle special case: "ScanBagsForSBInit" is just a trigger, not a real item
+  -- Init: read-only bag warm-up (~2x typical slot count); stop on first item or iteration cap (slower systems scan more before SetBuffs).
   if (type(reagent) == "string" and reagent == "ScanBagsForSBInit") then
+    local maxIter = 200;
+    local iter = 0;
+    local foundItem = false;
+    for bag = 0, NUM_BAG_FRAMES do
+      if (foundItem or iter >= maxIter) then break; end
+      local numSlots = C_Container.GetContainerNumSlots(bag) or 0;
+      for slot = 1, numSlots do
+        iter = iter + 1;
+        local id = C_Container.GetContainerItemID(bag, slot);
+        if (id) then
+          foundItem = true;
+          break;
+        end
+        if (iter >= maxIter) then break; end
+      end
+    end
     return nil, nil, 0, 0, nil, nil;
   end
 
@@ -5056,6 +5089,15 @@ function SMARTBUFF_Options_Init(self)
   SMARTBUFF_SetTemplate(true);
   SMARTBUFF_RebindKeys();
   isSyncReq = true;
+  -- Second SetBuffs after a short delay: first pass often runs before C_Item / container cache is warm on login.
+  C_Timer.After(0.4, function()
+    if (not isInit or not O or not O.Toggle or InCombatLockdown()) then return end
+    SMARTBUFF_SetBuffs();
+    isSyncReq = true;
+    if (SmartBuffOptionsFrame and SmartBuffOptionsFrame:IsVisible()) then
+      SMARTBUFF_BuffOrderOnScroll();
+    end
+  end);
   -- Initialize tLastCheck to ensure AutoTimer works correctly after dismounting
   tLastCheck = GetTime();
 end
