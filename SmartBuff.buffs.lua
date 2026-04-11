@@ -35,34 +35,32 @@ S.ToyboxByID = { };
 -- ---------------------------------------------------------------------------
 -- Helper functions: spell/item load (cache or API), validation, toybox population (S.Toybox, S.ToyboxByID)
 -- ---------------------------------------------------------------------------
-local function GetItems(items)
+-- opts (optional): relaxInstant — if GetItemInfoInstant is nil, still keep numeric id (curated lists only).
+--                  skipAsync — omit ContinueOnItemLoad (BuildItemTables uses item:ID; saves many callbacks on large lists).
+local function GetItems(items, opts)
+  opts = opts or {};
+  local relaxInstant = opts.relaxInstant;
+  local skipAsync = opts.skipAsync;
   local t = { };
   for _, id in pairs(items) do
-    -- Validate item ID is a number
     if (type(id) == "number" and id > 0) then
-      -- Validate item ID exists in game using GetItemInfoInstant
-      -- GetItemInfoInstant doesn't rely on cache - returns instantly for real items
-      -- Non-real items will return nil
       local itemID = C_Item.GetItemInfoInstant(id);
-      if (itemID) then
-        -- Item ID is valid and exists in game
-        -- Store item ID initially (will be updated to link when async load completes)
-        local idx = #t + 1;
-        t[idx] = itemID; -- Store numeric ID initially
-
-        -- Async load item link using ContinueOnItemLoad
-        -- This fires immediately if cached, or async if not cached
-        local item = Item:CreateFromItemID(itemID);
-        item:ContinueOnItemLoad(function()
-          local link = item:GetItemLink();
-          if (link) then
-            --print("Item found: "..id..", "..link);
-            t[idx] = link;
-          end
-          -- If link unavailable, keep ID (SMARTBUFF_FindItem handles both)
-        end);
+      if (not itemID and relaxInstant) then
+        itemID = id;
       end
-      -- If GetItemInfoInstant returns nil, item doesn't exist - skip it
+      if (itemID) then
+        local idx = #t + 1;
+        t[idx] = itemID;
+        if (not skipAsync) then
+          local item = Item:CreateFromItemID(itemID);
+          item:ContinueOnItemLoad(function()
+            local link = item:GetItemLink();
+            if (link) then
+              t[idx] = link;
+            end
+          end);
+        end
+      end
     end
   end
   return t;
@@ -718,113 +716,39 @@ function SMARTBUFF_InitItemList()
   GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance6_Q1", 243737); -- Smuggler's Enchanted Edge Q1
   GetItemInfoIfNeeded("SMARTBUFF_MIDNWeaponEnhance6_Q2", 243738); -- Smuggler's Enchanted Edge Q2
 
-  -- Food (well-fed) item vars
---  SMARTBUFF_KIBLERSBITS         = C_Item.GetItemInfo(33874); --"Kibler's Bits"
---  SMARTBUFF_STORMCHOPS          = C_Item.GetItemInfo(33866); --"Stormchops"
-  GetItemInfoIfNeeded("SMARTBUFF_JUICYBEARBURGER", 35565); --"Juicy Bear Burger"
-  GetItemInfoIfNeeded("SMARTBUFF_CRUNCHYSPIDER", 22645); --"Crunchy Spider Surprise"
-  GetItemInfoIfNeeded("SMARTBUFF_LYNXSTEAK", 27635); --"Lynx Steak"
-  GetItemInfoIfNeeded("SMARTBUFF_CHARREDBEARKABOBS", 35563); --"Charred Bear Kabobs"
-  GetItemInfoIfNeeded("SMARTBUFF_BATBITES", 27636); --"Bat Bites"
-  GetItemInfoIfNeeded("SMARTBUFF_ROASTEDMOONGRAZE", 24105); --"Roasted Moongraze Tenderloin"
-  GetItemInfoIfNeeded("SMARTBUFF_MOKNATHALSHORTRIBS", 31672); --"Mok'Nathal Shortribs"
-  GetItemInfoIfNeeded("SMARTBUFF_CRUNCHYSERPENT", 31673); --"Crunchy Serpent"
-  GetItemInfoIfNeeded("SMARTBUFF_ROASTEDCLEFTHOOF", 27658); --"Roasted Clefthoof"
-  GetItemInfoIfNeeded("SMARTBUFF_FISHERMANSFEAST", 33052); --"Fisherman's Feast"
-  GetItemInfoIfNeeded("SMARTBUFF_WARPBURGER", 27659); --"Warp Burger"
-  GetItemInfoIfNeeded("SMARTBUFF_RAVAGERDOG", 27655); --"Ravager Dog"
-  GetItemInfoIfNeeded("SMARTBUFF_SKULLFISHSOUP", 33825); --"Skullfish Soup"
-  GetItemInfoIfNeeded("SMARTBUFF_BUZZARDBITES", 27651); --"Buzzard Bites"
-  GetItemInfoIfNeeded("SMARTBUFF_TALBUKSTEAK", 27660); --"Talbuk Steak"
-  GetItemInfoIfNeeded("SMARTBUFF_GOLDENFISHSTICKS", 27666); --"Golden Fish Sticks"
-  GetItemInfoIfNeeded("SMARTBUFF_SPICYHOTTALBUK", 33872); --"Spicy Hot Talbuk"
-  GetItemInfoIfNeeded("SMARTBUFF_FELTAILDELIGHT", 27662); --"Feltail Delight"
-  GetItemInfoIfNeeded("SMARTBUFF_BLACKENEDSPOREFISH", 27663); --"Blackened Sporefish"
-  GetItemInfoIfNeeded("SMARTBUFF_HOTAPPLECIDER", 34411); --"Hot Apple Cider"
-  GetItemInfoIfNeeded("SMARTBUFF_BROILEDBLOODFIN", 33867); --"Broiled Bloodfin"
-  GetItemInfoIfNeeded("SMARTBUFF_SPICYCRAWDAD", 27667); --"Spicy Crawdad"
-  GetItemInfoIfNeeded("SMARTBUFF_POACHEDBLUEFISH", 27665); --"Poached Bluefish"
-  GetItemInfoIfNeeded("SMARTBUFF_BLACKENEDBASILISK", 27657); --"Blackened Basilisk"
-  GetItemInfoIfNeeded("SMARTBUFF_GRILLEDMUDFISH", 27664); --"Grilled Mudfish"
-  GetItemInfoIfNeeded("SMARTBUFF_CLAMBAR", 30155); --"Clam Bar"
-  GetItemInfoIfNeeded("SMARTBUFF_SAGEFISHDELIGHT", 21217); --"Sagefish Delight"
-  GetItemInfoIfNeeded("SMARTBUFF_SALTPEPPERSHANK", 133557); --"Salt & Pepper Shank"
-  GetItemInfoIfNeeded("SMARTBUFF_PICKLEDSTORMRAY", 133562); --"Pickled Stormray"
-  GetItemInfoIfNeeded("SMARTBUFF_DROGBARSTYLESALMON", 133569); --"Drogbar-Style Salmon"
-  GetItemInfoIfNeeded("SMARTBUFF_BARRACUDAMRGLGAGH", 133567); --"Barracuda Mrglgagh"
-  GetItemInfoIfNeeded("SMARTBUFF_FIGHTERCHOW", 133577); --"Fighter Chow"
-  GetItemInfoIfNeeded("SMARTBUFF_FARONAARFIZZ", 133563); --"Faronaar Fizz"
-  GetItemInfoIfNeeded("SMARTBUFF_BEARTARTARE", 133576); --"Bear Tartare"
-  GetItemInfoIfNeeded("SMARTBUFF_LEGIONCHILI", 118428); --"Legion Chili"
-  GetItemInfoIfNeeded("SMARTBUFF_DEEPFRIEDMOSSGILL", 133561); --"Deep-Fried Mossgill"
-  GetItemInfoIfNeeded("SMARTBUFF_MONDAZI", 154885); --"Mon'Dazi"
-  GetItemInfoIfNeeded("SMARTBUFF_KULTIRAMISU", 154881); --"Kul Tiramisu"
-  GetItemInfoIfNeeded("SMARTBUFF_GRILLEDCATFISH", 154889); --"Grilled Catfish"
-  GetItemInfoIfNeeded("SMARTBUFF_LOALOAF", 154887); --"Loa Loaf"
-  GetItemInfoIfNeeded("SMARTBUFF_HONEYHAUNCHES", 154882); --"Honey-Glazed Haunches"
-  GetItemInfoIfNeeded("SMARTBUFF_RAVENBERRYTARTS", 154883); --"Ravenberry Tarts"
-  GetItemInfoIfNeeded("SMARTBUFF_SWAMPFISHNCHIPS", 154884); --"Swamp Fish 'n Chips"
-  GetItemInfoIfNeeded("SMARTBUFF_SEASONEDLOINS", 154891); --"Seasoned Loins"
-  GetItemInfoIfNeeded("SMARTBUFF_SAILORSPIE", 154888); --"Sailor's Pie"
-  GetItemInfoIfNeeded("SMARTBUFF_SPICEDSNAPPER", 154886); --"Spiced Snapper"
-  --_,SMARTBUFF_HEARTSBANEHEXWURST = C_Item.GetItemInfo(163781); --"Heartsbane Hexwurst"
-  GetItemInfoIfNeeded("SMARTBUFF_ABYSSALFRIEDRISSOLE", 168311); --"Abyssal-Fried Rissole"
-  GetItemInfoIfNeeded("SMARTBUFF_BAKEDPORTTATO", 168313); --"Baked Port Tato"
-  GetItemInfoIfNeeded("SMARTBUFF_BILTONG", 168314); --"Bil'Tong"
-  GetItemInfoIfNeeded("SMARTBUFF_BIGMECH", 168310); --"Mech-Dowel's 'Big Mech'"
-  GetItemInfoIfNeeded("SMARTBUFF_FRAGRANTKAKAVIA", 168312); --"Fragrant Kakavia"
-  GetItemInfoIfNeeded("SMARTBUFF_BANANABEEFPUDDING", 172069); --"Banana Beef Pudding"
-  GetItemInfoIfNeeded("SMARTBUFF_BUTTERSCOTCHRIBS", 172040); --"Butterscotch Marinated Ribs"
-  GetItemInfoIfNeeded("SMARTBUFF_CINNAMONBONEFISH", 172044); --"Cinnamon Bonefish Stew"
-  GetItemInfoIfNeeded("SMARTBUFF_EXTRALEMONYFILET", 184682); --"Extra Lemony Herb Filet"
-  GetItemInfoIfNeeded("SMARTBUFF_FRIEDBONEFISH", 172063); --"Friedn Bonefish"
-  GetItemInfoIfNeeded("SMARTBUFF_IRIDESCENTRAVIOLI", 172049); --"Iridescent Ravioli with Apple Sauce"
-  GetItemInfoIfNeeded("SMARTBUFF_MEATYAPPLEDUMPLINGS", 172048); --"Meaty Apple Dumplings"
-  GetItemInfoIfNeeded("SMARTBUFF_PICKLEDMEATSMOOTHIE", 172068); --"Pickled Meat Smoothie"
-  GetItemInfoIfNeeded("SMARTBUFF_SERAPHTENDERS", 172061); --"Seraph Tenders"
-  GetItemInfoIfNeeded("SMARTBUFF_SPINEFISHSOUFFLE", 172041); --"Spinefish Souffle and Fries"
-  GetItemInfoIfNeeded("SMARTBUFF_STEAKALAMODE", 172051); --"Steak ala Mode"
-  GetItemInfoIfNeeded("SMARTBUFF_SWEETSILVERGILL", 172050); --"Sweet Silvergill Sausages"
-  GetItemInfoIfNeeded("SMARTBUFF_TENEBROUSCROWNROAST", 172045); --"Tenebrous Crown Roast Aspic"
-  -- Dragonflight
-  GetItemInfoIfNeeded("SMARTBUFF_TimelyDemise", 197778); -- Timely Demise (70 Haste)
-  GetItemInfoIfNeeded("SMARTBUFF_FiletOfFangs", 197779); -- Filet of Fangs (70 Crit)
-  GetItemInfoIfNeeded("SMARTBUFF_SeamothSurprise", 197780); -- Seamoth Surprise (70 Vers)
-  GetItemInfoIfNeeded("SMARTBUFF_SaltBakedFishcake", 197781); -- Salt-Baked Fishcake (70 Mastery)
-  GetItemInfoIfNeeded("SMARTBUFF_FeistyFishSticks", 197782); -- Feisty Fish Sticks (45 Haste/Crit)
-  GetItemInfoIfNeeded("SMARTBUFF_SeafoodPlatter", 197783); -- Aromatic Seafood Platter (45 Haste/Vers)
-  GetItemInfoIfNeeded("SMARTBUFF_SeafoodMedley", 197784); -- Sizzling Seafood Medley (45 Haste/Mastery)
-  GetItemInfoIfNeeded("SMARTBUFF_RevengeServedCold", 197785); -- Revenge, Served Cold (45 Crit/Verst)
-  GetItemInfoIfNeeded("SMARTBUFF_Tongueslicer", 197786); -- Thousandbone Tongueslicer (45 Crit/Mastery)
-  GetItemInfoIfNeeded("SMARTBUFF_GreatCeruleanSea", 197787); -- Great Cerulean Sea (45 Vers/Mastery)
-  GetItemInfoIfNeeded("SMARTBUFF_FatedFortuneCookie", 197792); -- Fated Fortune Cookie (76 primary stat)
-  GetItemInfoIfNeeded("SMARTBUFF_KaluakBanquet", 197794); -- Feast: Grand Banquet of the Kalu'ak (76 primary stat)
-  GetItemInfoIfNeeded("SMARTBUFF_HoardOfDelicacies", 197795); -- Feast: Hoard of Draconic Delicacies (76 primary stat)
-  GetItemInfoIfNeeded("SMARTBUFF_DeviouslyDeviledEgg", 204072); -- Deviously Deviled Eggs
-
-  -- Well-fed food: item ID list (S.FoodItems) for buff checks (TWW / Midnight focus; legacy IDs commented)
+  -- Well-fed foods: item IDs by expansion (single source of truth). SMARTBUFF_FOOD rows are built in SMARTBUFF_BuildItemTables (60 min each).
+  -- relaxInstant: do not drop ids when Instant is nil at login; skipAsync: no mass ContinueOnItemLoad (rows use item:ID). Bag changes still refresh via BAG_UPDATE → SetBuffs.
+  -- Trim or comment blocks as you deprecate expansions. Legacy WotLK/CT/MoP/WoD ID lists kept below as comments for reference.
   S.FoodItems = GetItems({
-    -- WotLK -- Deprecating
-    -- 39691, 34125, 42779, 42997, 42998, 42999, 43000, 34767, 42995, 34769, 34754, 34758, 34766, 42994, 42996, 34756, 34768, 42993, 34755, 43001, 34757, 34752, 34751, 34750, 34749, 34764, 34765, 34763, 34762, 42942, 43268, 34748,
-    -- CT -- Deprecating
-    -- 62651, 62652, 62653, 62654, 62655, 62656, 62657, 62658, 62659, 62660, 62661, 62662, 62663, 62664, 62665, 62666, 62667, 62668, 62669, 62670, 62671, 62649,
-    -- MoP -- Deprecating
-    -- 74645, 74646, 74647, 74648, 74649, 74650, 74652, 74653, 74655, 74656, 86069, 86070, 86073, 86074, 81400, 81401, 81402, 81403, 81404, 81405, 81406, 81408, 81409, 81410, 81411, 81412, 81413, 81414,
-    -- WoD -- Deprecating
-    -- 111431, 111432, 111433, 111434, 111435, 111436, 111437, 111438, 111439, 111440, 11441, 111442, 111443, 111444, 111445, 111446, 111447, 111448, 111449, 111450, 111451, 111452, 111453, 111454,127991, 111457, 111458, 118576,
-    -- TWW almost all food items
+    -- Classic / TBC / WotLK (formerly per-item GetItemInfoIfNeeded + SMARTBUFF_FOOD literals)
+    21217, 22645, 24105, 27635, 27636, 27651, 27655, 27657, 27658, 27659, 27660, 27662, 27663, 27664, 27665, 27666, 27667,
+    30155, 31672, 31673, 33052, 33825, 33866, 33867, 33872, 33874, 34411, 35563, 35565,
+    -- Legion / Battle for Azeroth
+    118428, 133557, 133561, 133562, 133563, 133567, 133569, 133576, 133577,
+    154881, 154882, 154883, 154884, 154885, 154886, 154887, 154888, 154889, 154891, 163781,
+    -- Shadowlands
+    168310, 168311, 168312, 168313, 168314, 172040, 172041, 172044, 172045, 172048, 172049, 172050, 172051, 172061, 172063, 172068, 172069, 184682,
+    -- Dragonflight
+    197778, 197779, 197780, 197781, 197782, 197783, 197784, 197785, 197786, 197787, 197792, 197794, 197795, 204072,
+    -- The War Within
     222733, 222728, 222732, 222720, 222735, 222731, 222721, 222730, 225855, 222729, 225592, 222736, 222726, 222718, 222724, 222745, 222725, 222703, 222715,
     222710, 222712, 222704, 222727, 222722, 222711, 222705, 222708, 222707, 223968, 222713, 222723, 222714, 222702, 222709, 222719, 222717, 222716, 222706,
-    -- TWW adds hearty food version to 31 the above foods that make it persist through death
+    -- TWW hearty (persist through death)
     222781, 222766, 222776, 222780, 222778, 222768, 222783, 222779, 222751, 222773, 222753, 222774, 222752, 222758, 222770, 222775, 222777, 222759, 222760,
     222765, 222763, 222769, 222761, 222772, 222757, 222762, 222754, 222755, 222756, 222767, 222750, 222764, 222771,
-    -- Midnight foods 36 IDs
+    -- Midnight
     242272, 242273, 242274, 242275, 242276, 242277, 242278, 242280, 242281, 242282, 242283, 242284, 242285, 242286, 242287, 242288, 242289, 242290,
     242291, 242292, 242293, 242294, 242295, 242296, 242302, 242303, 242304, 242305, 242306, 242307, 242308, 242309, 255845, 255846, 255847, 255848,
-    -- Midnight hearty foods 36 IDs
+    -- Midnight hearty
     242744, 242745, 242746, 242747, 242748, 242749, 242750, 242751, 242752, 242753, 242754, 242755, 242756, 242757, 242758, 242759, 242760, 242761,
     242762, 242763, 242764, 242765, 242766, 242767, 242768, 242769, 242770, 242771, 242772, 242773, 242774, 242775, 242776, 266985, 266996, 268679
-  });
+  }, { relaxInstant = true, skipAsync = true });
+  --[[ Deprecated bulk IDs (was commented above S.FoodItems):
+    WotLK: 39691, 34125, 42779, 42997, 42998, 42999, 43000, 34767, 42995, 34769, 34754, 34758, 34766, 42994, 42996, 34756, 34768, 42993, 34755, 43001, 34757, 34752, 34751, 34750, 34749, 34764, 34765, 34763, 34762, 42942, 43268, 34748
+    CT: 62651, 62652, 62653, 62654, 62655, 62656, 62657, 62658, 62659, 62660, 62661, 62662, 62663, 62664, 62665, 62666, 62667, 62668, 62669, 62670, 62671, 62649
+    MoP: 74645, 74646, 74647, 74648, 74649, 74650, 74652, 74653, 74655, 74656, 86069, 86070, 86073, 86074, 81400, 81401, 81402, 81403, 81404, 81405, 81406, 81408, 81409, 81410, 81411, 81412, 81413, 81414
+    WoD: 111431, 111432, 111433, 111434, 111435, 111436, 111437, 111438, 111439, 111440, 11441, 111442, 111443, 111444, 111445, 111446, 111447, 111448, 111449, 111450, 111451, 111452, 111453, 111454, 127991, 111457, 111458, 118576
+  ]]
 
   -- Teas: Relaxed buff (separate from well fed; checked by buff name like food). TeaItemIds is source of truth.
   S.TeaItemIds = { 242297, 242298, 242299, 242300, 242301 };
@@ -1648,115 +1572,26 @@ end
 -- ---------------------------------------------------------------------------
 function SMARTBUFF_BuildItemTables()
 
-  -- FOOD
-    SMARTBUFF_FOOD = {
-    {SMARTBUFF_ABYSSALFRIEDRISSOLE, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BAKEDPORTTATO, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BANANABEEFPUDDING, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BARRACUDAMRGLGAGH, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BATBITES,  15, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BEARTARTARE, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BILTONG, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BIGMECH, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BLACKENEDBASILISK, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BLACKENEDSPOREFISH, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BROILEDBLOODFIN, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BUTTERSCOTCHRIBS, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_BUZZARDBITES, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_CHARREDBEARKABOBS, 15, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_CINNAMONBONEFISH, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_CLAMBAR, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_CRUNCHYSERPENT, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_CRUNCHYSPIDER, 15, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_DEEPFRIEDMOSSGILL, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_DROGBARSTYLESALMON, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_EXTRALEMONYFILET, 20, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_FARONAARFIZZ, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_FELTAILDELIGHT, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_FIGHTERCHOW, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_FRAGRANTKAKAVIA, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_FRIEDBONEFISH, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_GOLDENFISHSTICKS, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_GRILLEDCATFISH, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_GRILLEDMUDFISH, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_HEARTSBANEHEXWURST, 5, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_HONEYHAUNCHES, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_IRIDESCENTRAVIOLI, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_JUICYBEARBURGER,   15, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_KIBLERSBITS,   20, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_KULTIRAMISU, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_LEGIONCHILI, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_LOALOAF, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_LYNXSTEAK,   15, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_MEATYAPPLEDUMPLINGS, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_MOKNATHALSHORTRIBS, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_MONDAZI, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_PICKLEDMEATSMOOTHIE, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_PICKLEDSTORMRAY, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_POACHEDBLUEFISH, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_RAVAGERDOG, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_RAVENBERRYTARTS, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_ROASTEDCLEFTHOOF, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_ROASTEDMOONGRAZE,  15, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SAGEFISHDELIGHT, 15, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SAILORSPIE, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SALTPEPPERSHANK, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SEASONEDLOINS, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SERAPHTENDERS, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SKULLFISHSOUP, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SPICEDSNAPPER, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SPICYCRAWDAD, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SPICYHOTTALBUK, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SPINEFISHSOUFFLE, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_STEAKALAMODE, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_STORMCHOPS,  30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SWAMPFISHNCHIPS, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SWEETSILVERGILL, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_TALBUKSTEAK, 30, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_TENEBROUSCROWNROAST, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_WARPBURGER, 30, SMARTBUFF_CONST_FOOD},
-    -- Dragonflight
-    {SMARTBUFF_TimelyDemise, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_FiletOfFangs, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SeamothSurprise, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SaltBakedFishcake, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_FeistyFishSticks, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SeafoodPlatter, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_SeafoodMedley, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_RevengeServedCold, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_Tongueslicer, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_GreatCeruleanSea, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_FatedFortuneCookie, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_KaluakBanquet, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_HoardOfDelicacies, 60, SMARTBUFF_CONST_FOOD},
-    {SMARTBUFF_DeviouslyDeviledEgg, 60, SMARTBUFF_CONST_FOOD},
-  };
+  -- FOOD: built only from S.FoodItems (+ teas below). Duration 60 for all rows (former per-food minutes not carried in ID list).
+  -- All foods share well-fed aura so it's safe to use 60 for all rows
+  SMARTBUFF_FOOD = {};
 
-  -- Helper: item ID from value (number, "item:ID", or link)
   local function itemIdFrom(val)
     if (type(val) == "number" and val > 0) then return val; end
     if (type(val) == "string") then return tonumber(string.match(val, "item:(%d+)")); end
     return nil;
   end
-  local function foodAlreadyHasItemId(id)
-    if (not id) then return false; end
-    for _, entry in pairs(SMARTBUFF_FOOD) do
-      if (entry and entry[1] and itemIdFrom(entry[1]) == id) then return true; end
-    end
-    return false;
-  end
-  -- Add from S.FoodItems using canonical "item:ID" only and dedupe by ID so we never get two rows for the same item
+
   local seenFoodIds = {};
-  for n, name in pairs(S.FoodItems) do
+  for _, name in pairs(S.FoodItems) do
     if (name) then
       local id = itemIdFrom(name);
       if (id) then
-        if (not seenFoodIds[id] and not foodAlreadyHasItemId(id)) then
+        if (not seenFoodIds[id]) then
           seenFoodIds[id] = true;
           tinsert(SMARTBUFF_FOOD, 1, {"item:" .. tostring(id), 60, SMARTBUFF_CONST_FOOD});
         end
       else
-        -- Fallback if we couldn't get an ID (unexpected)
         tinsert(SMARTBUFF_FOOD, 1, {name, 60, SMARTBUFF_CONST_FOOD});
       end
     end
@@ -1767,7 +1602,7 @@ function SMARTBUFF_BuildItemTables()
       if (name) then
         local id = itemIdFrom(name);
         if (id) then
-          if (not seenFoodIds[id] and not foodAlreadyHasItemId(id)) then
+          if (not seenFoodIds[id]) then
             seenFoodIds[id] = true;
             tinsert(SMARTBUFF_FOOD, 1, {"item:" .. tostring(id), 60, SMARTBUFF_CONST_FOOD, nil, nil, S.TeaItemIds});
           end
