@@ -1714,6 +1714,8 @@ function SMARTBUFF_BuildItemTables()
   addItem(198857, 385941,  30); -- Lucky Duck
   -- TWW
   addItem(212518, 431709, 60);  -- Vial of Endless Draconic Scales
+  -- Midnight
+  addItem(246903, 1244178, 60);  -- Guise of the Phase Diver
   -- Other Toys
   addItem(174906, 270058,  60); -- Lightning-Forged Augment Rune
   addItem(153023, 224001,  60); -- Lightforged Augment Rune
