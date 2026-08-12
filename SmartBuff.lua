@@ -4273,26 +4273,46 @@ end
 -- END SMARTBUFF_IsPlayer
 
 
--- Returns buff data if buffname found on target; nil otherwise. Uses C_UnitAuras (Retail).
-function SMARTBUFF_UnitBuffByBuffName(target, buffname, filter)
-  local maxAuras = 40;  -- WoW API limit: aura index 1..40 per unit; GetAuraDataByIndex returns nil past last aura
+-- Resolve spell name / optional spellID from a string or C_Spell.GetSpellInfo table.
+local function resolveSpellAuraRef(spellRef)
+  if (not spellRef) then return nil, nil; end
+  if (type(spellRef) == "table") then
+    return spellRef.name, spellRef.spellID;
+  end
+  return spellRef, nil;
+end
 
-  for auraIndex = 1, maxAuras do
-    local auraInfo = C_UnitAuras.GetAuraDataByIndex(target, auraIndex, filter);
-    if not auraInfo then return end;
+-- 12.1+: index/slot/instance aura APIs Lua-error while auras are secret; name/ID lookups remain allowed.
+-- Returns auraInfo, resolvedSpellName (string) or nil, nil.
+local function getAuraDataBySpellRef(unit, spellRef, filter)
+  local spellName, spellID = resolveSpellAuraRef(spellRef);
+  if (not unit or (not spellName and not spellID)) then return nil, spellName; end
 
-    local auraName = auraInfo.name;
-    -- Guard: name can be nil or secret value; validate compare with pcall
-    if auraName then
-      local compareOk, isMatch = pcall(function() return auraName == buffname end);
-      if compareOk and isMatch then
-        local duration = tonumber(auraInfo.duration) or 0;
-        local expirationTime = tonumber(auraInfo.expirationTime) or 0;
-        return buffname, auraInfo.icon, (auraInfo.charges or 0), auraInfo.dispelName,
-          duration, expirationTime, auraInfo.sourceUnit;
-      end
+  local ok, auraInfo;
+  if (spellID) then
+    ok, auraInfo = pcall(C_UnitAuras.GetUnitAuraBySpellID, unit, spellID);
+    if (ok and auraInfo) then
+      return auraInfo, spellName or auraInfo.name;
     end
   end
+  if (spellName) then
+    ok, auraInfo = pcall(C_UnitAuras.GetAuraDataBySpellName, unit, spellName, filter);
+    if (ok and auraInfo) then
+      return auraInfo, spellName;
+    end
+  end
+  return nil, spellName;
+end
+
+-- Returns buff data if buffname found on target; nil otherwise. Uses C_UnitAuras (Retail).
+function SMARTBUFF_UnitBuffByBuffName(target, buffname, filter)
+  local auraInfo, spellName = getAuraDataBySpellRef(target, buffname, filter);
+  if (not auraInfo or not spellName) then return; end
+
+  local duration = tonumber(auraInfo.duration) or 0;
+  local expirationTime = tonumber(auraInfo.expirationTime) or 0;
+  return spellName, auraInfo.icon, (auraInfo.charges or 0), auraInfo.dispelName,
+    duration, expirationTime, auraInfo.sourceUnit;
 end
 
 -- Returns true if any eligible unit in the subgroup has our buff (sourceUnit == "player"). Used for single-target group buffs.
@@ -4533,33 +4553,27 @@ function SMARTBUFF_UpdateBuffDuration(buff, duration)
 end
 
 -- Returns aura data if spellname found on target; nil otherwise. Uses C_UnitAuras (Retail).
+-- spellname may be a localized string or a GetSpellInfo table (.name / .spellID).
 function SMARTBUFF_UnitAuraBySpellName(target, spellname, filter)
-  local maxAuras = 40;  -- WoW API limit: aura index 1..40 per unit; GetAuraDataByIndex returns nil past last aura
+  local auraInfo, name = getAuraDataBySpellRef(target, spellname, filter);
+  if (not auraInfo or not name) then return; end
 
-  for auraIndex = 1, maxAuras do
-    local auraInfo = C_UnitAuras.GetAuraDataByIndex(target, auraIndex, filter);
-    if not auraInfo then return end;
-
-    local auraName = auraInfo.name;
-    -- Guard: name can be nil or secret value; validate compare with pcall
-    if auraName then
-      local compareOk, isMatch = pcall(function() return auraName == spellname end);
-      if compareOk and isMatch then
-        local expirationTime = tonumber(auraInfo.expirationTime) or 0;
-        return spellname, expirationTime, auraInfo.sourceUnit;
-      end
-    end
-  end
+  local expirationTime = tonumber(auraInfo.expirationTime) or 0;
+  return name, expirationTime, auraInfo.sourceUnit;
 end
 
 function SMARTBUFF_CheckBuff(unit, buffName, isMine)
   if (not unit or not buffName) then
     return false, 0;
   end
+  local wantName = resolveSpellAuraRef(buffName);
+  if (not wantName) then
+    return false, 0;
+  end
   local buff, timeleft, caster = SMARTBUFF_UnitAuraBySpellName(unit, buffName, "HELPFUL");
   if (buff) then
     SMARTBUFF_AddMsgD(UnitName(unit) .. " buff found: " .. buff, 0, 1, 0.5);
-    if (buff == buffName) then
+    if (buff == wantName) then
       timeleft = (tonumber(timeleft) or 0) - GetTime();
       if (timeleft > 0) then
         timeleft = timeleft;
