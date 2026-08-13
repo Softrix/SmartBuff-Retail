@@ -10,7 +10,7 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_VERSION            = "r42.081126"; -- EU Date: DDMMYY
+SMARTBUFF_VERSION            = "r42.260813"; --Date: YYMMDD; sorts better
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
@@ -2443,6 +2443,30 @@ function SMARTBUFF_RefreshSAButtonIdleState(hasPending)
   end
 end
 
+-- 12.1+: tainted code cannot boolean-test secret booleans (e.g. UnitIsPVP when unit identity is secret).
+-- Returns true/false when known; nil when secret so callers can skip instead of erroring.
+local function knownBool(v)
+  if (issecretvalue(v)) then return nil; end
+  if (v) then return true; end
+  return false;
+end
+
+-- Party/raid-style gate used by timer paths. wantAlive true = living player; false = dead player.
+-- Any secret Unit* bool → false (skip).
+local function isKnownFriendlyPlayerUnit(unit, wantAlive)
+  if (not unit) then return false; end
+  if (knownBool(UnitExists(unit)) ~= true) then return false; end
+  if (knownBool(UnitIsConnected(unit)) ~= true) then return false; end
+  if (knownBool(UnitIsFriend("player", unit)) ~= true) then return false; end
+  if (knownBool(UnitIsPlayer(unit)) ~= true) then return false; end
+  local dead = knownBool(UnitIsDeadOrGhost(unit));
+  if (dead == nil) then return false; end
+  if (wantAlive) then
+    return not dead;
+  end
+  return dead;
+end
+
 function SMARTBUFF_PreCheck(mode, force)
   if (not isInit) then return false end
 
@@ -2471,8 +2495,8 @@ function SMARTBUFF_PreCheck(mode, force)
         or UnitOnTaxi("player") or UnitIsDeadOrGhost("player") or UnitIsCorpse("player")
         or (mode ~= 1 and (SMARTBUFF_IsPicnic("player") or SMARTBUFF_IsFishing("player")))
         or (UnitInVehicle("player") or UnitHasVehicleUI("player"))
-        --or (mode == 1 and (O.ToggleAutoRest and IsResting()) and not UnitIsPVP("player"))
-        or (not O.BuffInCities and IsResting() and not UnitIsPVP("player"))) then
+        --or (mode == 1 and (O.ToggleAutoRest and IsResting()) and knownBool(UnitIsPVP("player")) ~= true)
+        or (not O.BuffInCities and IsResting() and knownBool(UnitIsPVP("player")) ~= true)) then
     if (UnitIsDeadOrGhost("player")) then
       SMARTBUFF_CheckBuffTimers();
     end
@@ -2559,7 +2583,7 @@ end
 
 -- if unit is dead, remove all timers
 function SMARTBUFF_CheckUnitBuffTimers(unit)
-  if (UnitExists(unit) and UnitIsConnected(unit) and UnitIsFriend("player", unit) and UnitIsPlayer(unit) and UnitIsDeadOrGhost(unit)) then
+  if (isKnownFriendlyPlayerUnit(unit, false)) then
     local _, uc = UnitClass(unit);
     local fd = nil;
     if (uc == "HUNTER") then
@@ -2603,7 +2627,7 @@ function SMARTBUFF_ResetBuffTimers()
     n = 0;
     if (cGrp[subgroup] ~= nil) then
       for _, unit in pairs(cGrp[subgroup]) do
-        if (unit and UnitExists(unit) and UnitIsConnected(unit) and UnitIsFriend("player", unit) and UnitIsPlayer(unit) and not UnitIsDeadOrGhost(unit)) then
+        if (isKnownFriendlyPlayerUnit(unit, true)) then
           _, uc = UnitClass(unit);
           i = 1;
           while (cBuffs[i] and cBuffs[i].BuffS) do
@@ -2743,7 +2767,7 @@ function SMARTBUFF_SyncBuffTimers()
     n = 0;
     if (cGrp[subgroup] ~= nil) then
       for _, unit in pairs(cGrp[subgroup]) do
-        if (unit and UnitExists(unit) and UnitIsConnected(unit) and UnitIsFriend("player", unit) and UnitIsPlayer(unit) and not UnitIsDeadOrGhost(unit)) then
+        if (isKnownFriendlyPlayerUnit(unit, true)) then
           _, uc = UnitClass(unit);
           i = 1;
           while (cBuffs[i] and cBuffs[i].BuffS) do
@@ -3238,6 +3262,25 @@ function SMARTBUFF_HunterResolvePetSummonSpell(callSpellName, callSpellId, callI
 end
 
 
+-- Unit eligibility for BuffUnit. Any secret Unit* bool → not eligible (skip unit).
+local function isUnitEligibleForBuff(unit, playerIsPvP)
+  if (knownBool(UnitExists(unit)) ~= true) then return false; end
+  if (knownBool(UnitIsFriend("player", unit)) ~= true) then return false; end
+  if (knownBool(UnitIsDeadOrGhost(unit)) ~= false) then return false; end
+  if (knownBool(UnitIsCorpse(unit)) ~= false) then return false; end
+  if (knownBool(UnitIsConnected(unit)) ~= true) then return false; end
+  if (knownBool(UnitIsVisible(unit)) ~= true) then return false; end
+  if (knownBool(UnitOnTaxi(unit)) ~= false) then return false; end
+  if (cBlocklist[unit]) then return false; end
+
+  local unitIsPvP = knownBool(UnitIsPVP(unit));
+  if (unitIsPvP == nil) then return false; end
+  if ((not unitIsPvP and (not playerIsPvP or O.BuffPvP)) or (unitIsPvP and (playerIsPvP or O.BuffPvP))) then
+    return true;
+  end
+  return false;
+end
+
 -- Buffs a unit
 function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
   local bs = nil;  -- Buff settings for current buff
@@ -3266,15 +3309,13 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
   local iId = nil; -- Item ID of current buff
   local iSlot = -1; -- Item slot of current buff
 
-  if (UnitIsPVP("player")) then isPvP = true end
+  isPvP = (knownBool(UnitIsPVP("player")) == true);
 
   SMARTBUFF_CheckUnitBuffTimers(unit);
 
   --SMARTBUFF_AddMsgD("Checking " .. unit);
 
-  if (UnitExists(unit) and UnitIsFriend("player", unit) and not UnitIsDeadOrGhost(unit) and not UnitIsCorpse(unit)
-        and UnitIsConnected(unit) and UnitIsVisible(unit) and not UnitOnTaxi(unit) and not cBlocklist[unit]
-        and ((not UnitIsPVP(unit) and (not isPvP or O.BuffPvP)) or (UnitIsPVP(unit) and (isPvP or O.BuffPvP)))) then
+  if (isUnitEligibleForBuff(unit, isPvP)) then
     --and not SMARTBUFF_UnitIsIgnored(unit)
 
     --print("Prep Check");
@@ -3415,10 +3456,10 @@ function SMARTBUFF_BuffUnit(unit, subgroup, mode, spell)
 
             -- Note: Only players (and pets) are valid targets for group buffs; NPCs do not benefit from buffs.
             if (not SMARTBUFF_IsInList(unit, un, bs.IgnoreList) and (((cBuff.Type == SMARTBUFF_CONST_GROUP or cBuff.Type == SMARTBUFF_CONST_ITEMGROUP)
-                    and UnitPlayerControlled(unit)
+                    and knownBool(UnitPlayerControlled(unit)) == true
                     and (bs[ur]
                       or (bs.SelfOnly and SMARTBUFF_IsPlayer(unit))
-                      or (bs[uc] and (UnitIsPlayer(unit) or uct == SMARTBUFF_HUMANOID or (uc == "DRUID" and (uct == SMARTBUFF_BEAST or uct == SMARTBUFF_ELEMENTAL))))
+                      or (bs[uc] and (knownBool(UnitIsPlayer(unit)) == true or uct == SMARTBUFF_HUMANOID or (uc == "DRUID" and (uct == SMARTBUFF_BEAST or uct == SMARTBUFF_ELEMENTAL))))
                       or (bs["HPET"] and uct == SMARTBUFF_BEAST and uc ~= "DRUID")
                       or (bs["DKPET"] and uct == SMARTBUFF_UNDEAD)
                       or (bs["WPET"] and (uct == SMARTBUFF_DEMON or (uc ~= "DRUID" and uct == SMARTBUFF_ELEMENTAL)) and ucf ~= SMARTBUFF_DEMONTYPE)))
@@ -4321,7 +4362,7 @@ end
 function SMARTBUFF_AnyEligibleGroupUnitHasMyBuff(subgroup, buffnS, bs)
   if (not subgroup or not buffnS or not cGroups or not cGroups[subgroup]) then return false end
   for _, u in pairs(cGroups[subgroup]) do
-    if (u and UnitExists(u) and UnitPlayerControlled(u)) then
+    if (u and knownBool(UnitExists(u)) == true and knownBool(UnitPlayerControlled(u)) == true) then
       local _, _, _, _, _, _, src = SMARTBUFF_UnitBuffByBuffName(u, buffnS, "HELPFUL");
       if (src and UnitIsUnit("player", src)) then
         if (not bs) then return true end
@@ -4332,7 +4373,7 @@ function SMARTBUFF_AnyEligibleGroupUnitHasMyBuff(subgroup, buffnS, bs)
         local ucf = UnitCreatureFamily(u) or "";
         if (not SMARTBUFF_IsInList(u, un, bs.IgnoreList)
             and (bs[ur] or (bs.SelfOnly and SMARTBUFF_IsPlayer(u))
-              or (bs[uc] and (UnitIsPlayer(u) or uct == SMARTBUFF_HUMANOID or (uc == "DRUID" and (uct == SMARTBUFF_BEAST or uct == SMARTBUFF_ELEMENTAL))))
+              or (bs[uc] and (knownBool(UnitIsPlayer(u)) == true or uct == SMARTBUFF_HUMANOID or (uc == "DRUID" and (uct == SMARTBUFF_BEAST or uct == SMARTBUFF_ELEMENTAL))))
               or (bs["HPET"] and uct == SMARTBUFF_BEAST and uc ~= "DRUID")
               or (bs["DKPET"] and uct == SMARTBUFF_UNDEAD)
               or (bs["WPET"] and (uct == SMARTBUFF_DEMON or (uc ~= "DRUID" and uct == SMARTBUFF_ELEMENTAL)) and ucf ~= SMARTBUFF_DEMONTYPE))
