@@ -23,7 +23,8 @@
 
 ## Retail: buff visibility (authoritative for this addon)
 - **PvP match active** (`C_PvP.GetActiveMatchState() >= 3`): player buffs are **secret to addons regardless of combat** (OOC or IC). Do not trust aura/`BuffUnit` for real state; **BGRes**, **skipChecks**, castsequence / spell-succeeded progress apply.
-- **Outside PvP** (open world, dungeons, raids, non-PvP instances, etc.): buffs are **secret while in combat**, **visible OOC**. Normal **`Check`** / **`BuffUnit`** self scans are for out-of-combat; in-combat use **castsequence** / progress paths.
+- **Mythic+ timer running** (`C_ChallengeMode.IsChallengeModeActive()`): player buffs are **secret to addons regardless of combat**. SmartBuff **soft-disables** itself (runtime only, no saved setting change): no scans, reminders, castsequence or action button until the timer ends. Countdown, key prep and Mythic 0 follow the normal out-of-combat rule.
+- **Outside PvP and timed M+** (open world, dungeons, raids, non-PvP instances, etc.): buffs are **secret while in combat**, **visible OOC**. Normal **`Check`** / **`BuffUnit`** self scans are for out-of-combat; in-combat use **castsequence** / progress paths.
 
 ## Implementation Guidelines
 - Always ask for permission before implementing changes
