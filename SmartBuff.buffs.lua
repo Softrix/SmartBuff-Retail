@@ -2163,7 +2163,7 @@ function SMARTBUFF_InitSpellList()
   -- Warrior
   if (SMARTBUFF_PLAYERCLASS == "WARRIOR") then
     SMARTBUFF_BUFFLIST = {
-      {SMARTBUFF_BATTLESHOUT, 60, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainWarriorShout}, -- S.LinkAp removed - chain only contains BATTLESHOUT itself
+      {SMARTBUFF_BATTLESHOUT, 60, SMARTBUFF_CONST_GROUP, nil, "HPET;WPET;DKPET", nil, S.ChainWarriorShout},
       {SMARTBUFF_BERSERKERRAGE, 0.165, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_SHIELDBLOCK, 0.1666, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_BATSTANCE, -1, SMARTBUFF_CONST_SELF, nil, nil, nil, S.ChainWarriorStance},

@@ -6,14 +6,15 @@
 SMARTBUFF_WHATSNEW = "\n\n|cffffffff         Whats new:|r\n\n"
   .."          |cffffffffMidnight & Classic versions by Codermik, additional retail\n"
   .."          programming by MrWizard and Speedwaystar.\n"
+  .."          Changes in r42.261126:\n\n"
+  .."             * Fix: Group buffs in LFR, Mythic+, Delves and Horrific Visions\n"
+  .."             * Fix: Warrior Battle Shout now buffs the group\n"
+  .."             * Fix: SmartBuff pauses itself while the Mythic+ timer runs\n"
+  .."             * Fix: Delve companions are ignored for group buffs\n"
+  .."\n\n"
   .."          Changes in r42.260813:\n\n"
   .."             * Fix: 12.1 API Fixes - first pass\n"
   .."             * Fix: 12.1 API Fixes - hardening pass\n"
-  .."\n\n"
-  .."          Changes in r42.042726:\n\n"
-  .."             * New UI Option: Hide Action Button if Idle\n"
-  .."             * Internal: Food init cleanup\n"
-  .."             * Internal: Optimization of inventory scan (hopefully)\n"
   .."\n\n"
   .."          |c0000FF96Many thanks to Chris S., Samantha R. and\n"
   .."          Twilight's Sundries for their kind donations.\n"
@@ -263,6 +264,9 @@ SMARTBUFF_MSG_CHARGES        = "charges";
 SMARTBUFF_MSG_SOUNDS         = "Splash Sound Selection: "
 SMARTBUFF_MSG_SPECCHANGED    = "Spec changed (%s), loading buff templates...";
 SMARTBUFF_MSG_PVP_PREP_ONLY  = "Due to API limitation, buffing only works during prep and is disabled once the match starts.";
+SMARTBUFF_MSG_MYTHICPLUS_STARTING = "Mythic+ starting: buffing will pause while the timer runs (buffs are locked down).";
+SMARTBUFF_MSG_MYTHICPLUS_PAUSED   = "Paused while the Mythic+ timer is running.";
+SMARTBUFF_MSG_MYTHICPLUS_RESUMED  = "Mythic+ timer ended, resumed.";
 -- After next castsequence spell: "Player needs <spell> (in-combat)" — aligns with in-combat option wording. "" = OOC-style only.
 SMARTBUFF_MSG_CASTSEQUENCE_SUFFIX = " (in-combat)";
 

@@ -10,7 +10,7 @@
 -- and options frame on first load... could be annoying if done too often
 -- What's new is pulled from the SMARTBUFF_WHATSNEW string in localization.en.lua
 -- this is mostly optional, but good for internal housekeeping
-SMARTBUFF_VERSION            = "r42.260813"; --Date: YYMMDD; sorts better
+SMARTBUFF_VERSION            = "r42.261126"; --Date: YYMMDD; sorts better
 -- Update the NR below to force reload of SB_Buffs on first login
 -- This is now OPTIONAL for most changes - only needed for major logical reworks or large patch changes.
 -- Definition changes (spell IDs, Links, Chain) in buffs.lua no longer require version bumps.
@@ -128,6 +128,8 @@ local inCombatCastsequenceLastSucceededAt = 0;
 local SMARTBUFF_IN_COMBAT_CASTSEQUENCE_POP_DEBOUNCE = 0.35;
 -- O.InCombat CIn path: KeyButton holds /castsequence reset=combat ... (non-PvP instance or arena/BG prep; off during active match).
 local inCombatCastsequenceActive = false;
+-- Runtime only (never saved): true while the Mythic+ timer runs; see updateChallengeModePause.
+local isChallengeModePaused = false;
 local SMARTBUFF_IN_COMBAT_CASTSEQUENCE_MACRO_MAX = 255;
 -- Invalid spell name appended to /castsequence: sequence sticks here after real casts until reset=combat (no wrap to spell 1).
 local SMARTBUFF_IN_COMBAT_CASTSEQUENCE_SENTINEL = "null";
@@ -643,15 +645,6 @@ local function initBuffSettings(cBI, reset)
     cBuff.Reminder = true;
     cBuff.RBTime = 0;
     cBuff.ManaLimit = 0;
-    if (cBI.Type == SMARTBUFF_CONST_GROUP or cBI.Type == SMARTBUFF_CONST_ITEMGROUP) then
-      for n in pairs(cClasses) do
-        if (cBI.Type == SMARTBUFF_CONST_GROUP and not string.find(cBI.Params, cClasses[n])) then
-          cBuff[cClasses[n]] = true;
-        else
-          cBuff[cClasses[n]] = false;
-        end
-      end
-    end
     -- Restore EnableS from cache only when building the SAME template that was last saved; otherwise new templates incorrectly inherit enabled state from another.
     -- NOTE: Could be useful to evaluate later: propagate initial state from Solo to never-used profiles (so users don't start from blank slate), then allow customizing.
     if (SmartBuffBuffListCache and SmartBuffBuffListCache.enabledBuffs and SmartBuffBuffListCache.lastTemplate == getCurrentTemplate()) then
@@ -680,6 +673,19 @@ local function initBuffSettings(cBI, reset)
   if (cBuff.IgnoreList == nil) then cBuff.IgnoreList = {}; end               -- to 2.1a
   if (cBuff.RH == nil) then cBuff.RH = false; end                            -- to 4.0b
   if (cBuff.SkipBGResQueue == nil) then cBuff.SkipBGResQueue = false; end
+  -- Fill only missing class/role flags: rows saved before their type became GROUP (e.g. Battle Shout) have none,
+  -- and user-unchecked flags are stored as false so they are kept.
+  if (cBI.Type == SMARTBUFF_CONST_GROUP or cBI.Type == SMARTBUFF_CONST_ITEMGROUP) then
+    for n in pairs(cClasses) do
+      if (cBuff[cClasses[n]] == nil) then
+        if (cBI.Type == SMARTBUFF_CONST_GROUP and not string.find(cBI.Params, cClasses[n])) then
+          cBuff[cClasses[n]] = true;
+        else
+          cBuff[cClasses[n]] = false;
+        end
+      end
+    end
+  end
 end
 
 local function initBuffOrder(reset)
@@ -778,6 +784,14 @@ local function isPlayerInGuild()
   return IsInGuild()   -- and GetGuildInfo("player")
 end
 
+-- 12.1+: tainted code cannot boolean-test secret booleans (e.g. UnitIsPVP when unit identity is secret).
+-- Returns true/false when known; nil when secret so callers can skip instead of erroring.
+local function knownBool(v)
+  if (issecretvalue(v)) then return nil; end
+  if (v) then return true; end
+  return false;
+end
+
 local function sendSmartbuffVersion(player, unit)
   -- if ive announced to this player / the player is me then just return.
   if player == UnitName("player") then return end
@@ -841,6 +855,7 @@ function SMARTBUFF_OnLoad(self)
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:RegisterEvent("GROUP_ROSTER_UPDATE")
   self:RegisterEvent("ACTIVE_DELVE_DATA_UPDATE")
+  self:RegisterEvent("CHALLENGE_MODE_START")
 
   --One of them allows SmartBuff to be closed with the Escape key
   tinsert(UISpecialFrames, "SmartBuffOptionsFrame");
@@ -948,7 +963,7 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     SMARTBUFF_Ticker(true);
 
     if (O.Toggle) then
-      if (O.InCombat) then
+      if (O.InCombat and not isChallengeModePaused) then
         -- Filtered CIn /castsequence (template order). No CIn buffs enabled → build empty → stamp fails → key cleared.
         SMARTBUFF_StampInCombatCastsequence();
       else
@@ -1123,9 +1138,13 @@ local arg1, arg2, arg3, arg4, arg5 = ...;
     end
     -- Still in combat after rez: rebuild castsequence (same rules as REGEN). Client resets /castsequence on death;
     -- Enable path here resets Lua progress (nextIndex, expected list, notifies) and refreshes the macro.
-    if (O and O.Toggle and O.InCombat and UnitAffectingCombat("player")) then
+    if (O and O.Toggle and O.InCombat and not isChallengeModePaused and UnitAffectingCombat("player")) then
       SMARTBUFF_StampInCombatCastsequence();
     end
+  end
+
+  if (event == "CHALLENGE_MODE_START") then
+    SMARTBUFF_AddMsg(SMARTBUFF_TITLE .. ": " .. SMARTBUFF_MSG_MYTHICPLUS_STARTING, true);
   end
 
   -- Cache-related event handlers for partial reloads
@@ -1234,6 +1253,23 @@ end
 
 -- END SMARTBUFF_OnEvent
 
+-- Mythic+ timer running: auras are secret to addons even out of combat, so SmartBuff pauses itself until the timer
+-- ends (complete, reset, depleted or left instance). Runtime only: O.Toggle and saved settings are never changed.
+-- Polled from OnUpdate; chat messages fire once per transition and only when SmartBuff is enabled.
+local function updateChallengeModePause()
+  local isActive = (knownBool(C_ChallengeMode.IsChallengeModeActive()) == true);
+  if (isActive == isChallengeModePaused) then return; end
+  isChallengeModePaused = isActive;
+  SMARTBUFF_AddMsgD("Mythic+ pause = " .. tostring(isActive));
+  if (isActive) then
+    SMARTBUFF_DisableInCombatCastsequenceMacro();
+    SMARTBUFF_Splash_Clear();
+  end
+  if (O.Toggle) then
+    local msg = isActive and SMARTBUFF_MSG_MYTHICPLUS_PAUSED or SMARTBUFF_MSG_MYTHICPLUS_RESUMED;
+    SMARTBUFF_AddMsg(SMARTBUFF_TITLE .. ": " .. msg, true);
+  end
+end
 
 function SMARTBUFF_OnUpdate(self, elapsed)
   if not self.Elapsed then
@@ -1254,6 +1290,7 @@ function SMARTBUFF_OnUpdate(self, elapsed)
       end
     end
   else
+    updateChallengeModePause();
     SMARTBUFF_Ticker();
     SMARTBUFF_Check(1);
   end
@@ -1477,9 +1514,15 @@ function SMARTBUFF_SetTemplate(force)
   wipe(cAddUnitList);
   wipe(cIgnoreUnitList);
 
-  -- Raid Setup (or Arena/BG when in raid)
+  -- Raid Setup (Raid, LFR or raid instance template, or Arena/BG when in raid)
   local isArenaOrBG = (currentTemplate == smartBuffTemplateForGroupKey("Arena")) or (currentTemplate == smartBuffTemplateForGroupKey("Battleground"));
-  if (currentTemplate == smartBuffTemplateForGroupKey("Raid") or isRaidInstanceTemplate) or (isArenaOrBG and IsInRaid()) then
+  local isRaidUnitsTemplate = (currentTemplate == smartBuffTemplateForGroupKey("Raid"))
+    or (currentTemplate == smartBuffTemplateForGroupKey("LFR")) or isRaidInstanceTemplate;
+  local isPartyUnitsTemplate = (currentTemplate == smartBuffTemplateForGroupKey("Party"))
+    or (currentTemplate == smartBuffTemplateForGroupKey("MythicKeystone"))
+    or (currentTemplate == smartBuffTemplateForGroupKey("Delve"))
+    or (currentTemplate == smartBuffTemplateForGroupKey("HorrificVision"));
+  if (isRaidUnitsTemplate or (isArenaOrBG and IsInRaid())) then
     cClassGroups = {};
     local name, server, rank, subgroup, level, class, classeng, zone, online, isDead;
     local sRUnit = nil;
@@ -1533,8 +1576,8 @@ function SMARTBUFF_SetTemplate(force)
 
     SMARTBUFF_AddMsgD("Raid Unit-Setup finished");
 
-    -- Party Setup (or Arena/BG when in party)
-  elseif (currentTemplate == smartBuffTemplateForGroupKey("Party")) or (isArenaOrBG and IsInGroup()) then
+    -- Party Setup (Party, Mythic Keystone, Delve or Horrific Vision template, or Arena/BG when in party)
+  elseif (isPartyUnitsTemplate or (isArenaOrBG and IsInGroup())) then
     cClassGroups = {};
     local curTm = buffsTemplateTable(currentTemplate);
     if (curTm and curTm.SelfFirst) then
@@ -1546,12 +1589,18 @@ function SMARTBUFF_SetTemplate(force)
     cGroups[1][0] = "player";
     SMARTBUFF_AddUnitToClass("player", 0);
     for j = 1, 4, 1 do
-      cGroups[1][j] = "party" .. j;
-      SMARTBUFF_AddUnitToClass("party", j);
-      SMARTBUFF_AddToUnitList(1, "party" .. j, 1);
-      SMARTBUFF_AddToUnitList(2, "party" .. j, 1);
-      name, _, _, _, _, _, _, online, _, _ = GetRaidRosterInfo(j);
-      if name and online then sendSmartbuffVersion(name, "party") end
+      local partyUnit = "party" .. j;
+      -- NPC companions (delve, follower dungeon) are never buff targets; empty/secret slots stay for later checks.
+      local isNpcPartyMember = (knownBool(UnitExists(partyUnit)) == true and knownBool(UnitIsPlayer(partyUnit)) == false);
+      if (not isNpcPartyMember) then
+        cGroups[1][j] = partyUnit;
+        SMARTBUFF_AddUnitToClass("party", j);
+        SMARTBUFF_AddToUnitList(1, partyUnit, 1);
+        SMARTBUFF_AddToUnitList(2, partyUnit, 1);
+        if (knownBool(UnitIsPlayer(partyUnit)) == true and knownBool(UnitIsConnected(partyUnit)) == true) then
+          sendSmartbuffVersion(GetUnitName(partyUnit, true), "party");
+        end
+      end
     end
     SMARTBUFF_AddMsgD("Party Unit-Setup finished");
 
@@ -2415,7 +2464,7 @@ function SMARTBUFF_RefreshSAButtonIdleState(hasPending)
   if (not isInit or not O) then
     return;
   end
-  if (not O.Toggle) then
+  if (not O.Toggle or isChallengeModePaused) then
     if (not InCombatLockdown()) then
       SmartBuff_KeyButton:Hide();
     end
@@ -2441,14 +2490,6 @@ function SMARTBUFF_RefreshSAButtonIdleState(hasPending)
   else
     SmartBuff_KeyButton:Hide();
   end
-end
-
--- 12.1+: tainted code cannot boolean-test secret booleans (e.g. UnitIsPVP when unit identity is secret).
--- Returns true/false when known; nil when secret so callers can skip instead of erroring.
-local function knownBool(v)
-  if (issecretvalue(v)) then return nil; end
-  if (v) then return true; end
-  return false;
 end
 
 -- Party/raid-style gate used by timer paths. wantAlive true = living player; false = dead player.
@@ -2478,6 +2519,14 @@ function SMARTBUFF_PreCheck(mode, force)
     if (mode == 0) then
       SMARTBUFF_AddMsg(SMARTBUFF_MSG_DISABLED);
     end
+    return false;
+  end
+
+  if (isChallengeModePaused) then
+    if (mode == 0) then
+      SMARTBUFF_AddMsg(SMARTBUFF_TITLE .. ": " .. SMARTBUFF_MSG_MYTHICPLUS_PAUSED);
+    end
+    SMARTBUFF_RefreshSAButtonIdleState(false);
     return false;
   end
 
@@ -2751,7 +2800,7 @@ end
 
 -- Synchronize the internal buff timers with the UI timers
 function SMARTBUFF_SyncBuffTimers()
-  if (not isInit or isSync or isSetBuffs or SMARTBUFF_IsTalentFrameVisible()) then return; end
+  if (not isInit or isSync or isSetBuffs or isChallengeModePaused or SMARTBUFF_IsTalentFrameVisible()) then return; end
   isSync = true;
   tSync = GetTime();
 
@@ -4285,8 +4334,9 @@ function SMARTBUFF_DoCast(unit, id, spellName, levels, buffType)
         return 3;
       end
     else
-      -- TODO: This function is restricted to group only
-      if (UnitInRange(unit) ~= 1) then
+      -- UnitInRange only checks party/raid members (checkedRange false for player/others); unchecked or secret = in range.
+      local inRange, checkedRange = UnitInRange(unit);
+      if (knownBool(checkedRange) == true and knownBool(inRange) == false) then
         return 3;
       end
     end
@@ -6451,7 +6501,7 @@ function SMARTBUFF_ShowSAButton()
   if (InCombatLockdown()) then
     return;
   end
-  if (O.HideSAButton) then
+  if (O.HideSAButton or isChallengeModePaused) then
     SmartBuff_KeyButton:Hide();
   elseif (O.HideSAIfIdle) then
     return;
