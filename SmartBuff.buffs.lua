@@ -1112,6 +1112,7 @@ function SMARTBUFF_InitSpellIDs()
   getSpellInfoIfNeeded("SMARTBUFF_DRUID_MOONKIN", 24858, isSpellBookBuff); --"Moonkin Form"
   getSpellInfoIfNeeded("SMARTBUFF_DRUID_BEAR", 5487, isSpellBookBuff); --"Bear Form"
   getSpellInfoIfNeeded("SMARTBUFF_MOTW", 1126, isSpellBookBuff); --"Mark of the Wild"
+  getSpellInfoIfNeeded("SMARTBUFF_SYMBIOTICRELATIONSHIP", 474750, isSpellBookBuff); --"Symbiotic Relationship"
   getSpellInfoIfNeeded("SMARTBUFF_BARKSKIN", 22812, isSpellBookBuff); --"Barkskin"
   getSpellInfoIfNeeded("SMARTBUFF_TIGERSFURY", 5217, isSpellBookBuff); --"Tiger's Fury"
 
@@ -2076,6 +2077,7 @@ function SMARTBUFF_InitSpellList()
       {SMARTBUFF_DRUID_CAT, -1, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_DRUID_TREE, 0.5, SMARTBUFF_CONST_SELF},
       {SMARTBUFF_MOTW, 60, SMARTBUFF_CONST_GROUP, {9}, "HPET;WPET;DKPET"},
+      {SMARTBUFF_SYMBIOTICRELATIONSHIP, 60, SMARTBUFF_CONST_GROUP, {1}, "WARRIOR;DRUID;SHAMAN;HUNTER;ROGUE;MAGE;PRIEST;PALADIN;WARLOCK;DEATHKNIGHT;MONK;DEMONHUNTER;EVOKER", nil, nil, "single"},
       {SMARTBUFF_BARKSKIN, 0.25, SMARTBUFF_CONST_FORCESELF},
       {SMARTBUFF_TIGERSFURY, 0.1, SMARTBUFF_CONST_SELF, nil, SMARTBUFF_DRUID_CAT},
     };
