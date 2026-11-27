@@ -81,5 +81,3 @@ If you would like to help support the addon development please see the addon opt
 
 The Curse project page can be found here:
 https://www.curseforge.com/wow/addons/smartbuff-retail-burning-crusade-classic
-
-
